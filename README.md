@@ -9,7 +9,15 @@ Download Link: [Windows 64-bit](https://github.com/HackerPoet/MarbleMarcher/raw/
 
 Video Explanation: https://youtu.be/9U0XVdvQwAI
 
-### Building
+## System Dependencies
+* [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
+* [SFML](https://www.sfml-dev.org)
+
+## Building
 * `mkdir build && cd build`
 * `cmake ..`
 * `cmake --build .`
+
+Or from the repository directory:
+
+* `cmake --build build`
