@@ -23,8 +23,8 @@ On macOS these can be conveniently installed using Homebrew:
 ## Building
 * `mkdir build && cd build`
 * `cmake ..`
-    * Note that the `resources.c` file containing the embedded, binary resources from the `assets` folder will only be generated if `resources.c` does not already exist inside the `src` folder.
-    * To successfully rebuild the binary resources, remove the `resources.c` file and (force) a CMake rebuild
+    * Note that the `resources.c` file containing the embedded, binary resources from the `assets` folder will only be generated if the assets have been modified
+    * To successfully rebuild the binary resources the `CMakeLists.txt` might need to be resaved
 * `cmake --build .`
 
 Alternatively, one can use the platform-dependent build system, for example `Make`:
