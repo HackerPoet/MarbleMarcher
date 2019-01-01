@@ -23,12 +23,12 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
-#include <delayimp.h>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <thread>
 #include <mutex>
+#include <boost/filesystem.hpp>
 
 //Constants
 static const float mouse_sensitivity = 0.005f;
@@ -63,94 +63,67 @@ void LockMouse(sf::RenderWindow& window) {
 void UnlockMouse(sf::RenderWindow& window) {
   window.setMouseCursorVisible(true);
 }
-void extractDLL(const char* fname, int res_id) {
-  //Get the current path of the executable
-  HMODULE hModule = GetModuleHandleW(NULL);
-  CHAR path[MAX_PATH];
-  GetModuleFileName(hModule, path, MAX_PATH);
 
-  //Replace the exe filename with the dll
-  std::string str(path);
-  size_t last_dir = str.find_last_of('\\');
-  str = str.substr(0, last_dir + 1) + std::string(fname);
-
-  //Copy the dll to the path
-  const Res res_dll(res_id);
-  std::ofstream fout(str, std::ios::binary);
-  fout.write((const char*)res_dll.ptr, res_dll.size);
-  fout.close();
-}
-
-#ifdef _DEBUG
 int main(int argc, char *argv[]) {
-#else
-int WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR lpCmdLine, int nCmdShow) {
-#endif
-  //Extract openAL dll
-  extractDLL("openal32.dll", IDR_OPENAL);
-
   //Make sure shader is supported
   if (!sf::Shader::isAvailable()) {
-    MessageBox(nullptr, TEXT("Graphics card does not support shaders"), TEXT("ERROR"), MB_OK);
+    std::cout << "Graphics card does not support shaders" << std::endl;
     return 1;
   }
   //Load the vertex shader
   sf::Shader shader;
-  if (!shader.loadFromMemory(Res(IDR_VERT).Str(), sf::Shader::Vertex)) {
-    MessageBox(nullptr, TEXT("Failed to compile vertex shader"), TEXT("ERROR"), MB_OK);
+  if (!shader.loadFromMemory(LOAD_RESOURCE(vert_glsl).Str(), sf::Shader::Vertex)) {
+    std::cout << "Failed to compile vertex shader" << std::endl;
     return 1;
   }
   //Load the fragment shader
-  if (!shader.loadFromMemory(Res(IDR_FRAG).Str(), sf::Shader::Fragment)) {
-    MessageBox(nullptr, TEXT("Failed to compile fragment shader"), TEXT("ERROR"), MB_OK);
+  if (!shader.loadFromMemory(LOAD_RESOURCE(frag_glsl).Str(), sf::Shader::Fragment)) {
+    std::cout << "Failed to compile fragment shader" << std::endl;
     return 1;
   }
 
   //Load the font
   sf::Font font;
-  const Res font_res(IDR_FONT);
+  const Res font_res = LOAD_RESOURCE(Orbitron_Bold_ttf);
   if (!font.loadFromMemory(font_res.ptr, font_res.size)) {
-    MessageBox(nullptr, TEXT("Unable to load font"), TEXT("ERROR"), MB_OK);
+    std::cout << "Unable to load font" << std::endl;
     return 1;
   }
   //Load the mono font
   sf::Font font_mono;
-  const Res font_mono_res(IDR_FONT_MONO);
+  const Res font_mono_res = LOAD_RESOURCE(Inconsolata_Bold_ttf);
   if (!font_mono.loadFromMemory(font_mono_res.ptr, font_mono_res.size)) {
-    MessageBox(nullptr, TEXT("Unable to load mono font"), TEXT("ERROR"), MB_OK);
+    std::cout << "Unable to load mono font" << std::endl;
     return 1;
   }
 
   //Load the music
   sf::Music menu_music;
-  const Res menu_music_res(IDR_MENU_MUS);
+  const Res menu_music_res = LOAD_RESOURCE(menu_ogg);
   menu_music.openFromMemory(menu_music_res.ptr, menu_music_res.size);
   menu_music.setLoop(true);
   menu_music.setVolume(music_vol);
   sf::Music level1_music;
-  const Res level1_music_res(IDR_LEVEL1_MUS);
+  const Res level1_music_res = LOAD_RESOURCE(level1_ogg);
   level1_music.openFromMemory(level1_music_res.ptr, level1_music_res.size);
   level1_music.setLoop(true);
   sf::Music level2_music;
-  const Res level2_music_res(IDR_LEVEL2_MUS);
+  const Res level2_music_res = LOAD_RESOURCE(level2_ogg);
   level2_music.openFromMemory(level2_music_res.ptr, level2_music_res.size);
   level2_music.setLoop(true);
   sf::Music credits_music;
-  const Res credits_music_res(IDR_CREDITS_MUS);
+  const Res credits_music_res = LOAD_RESOURCE(credits_ogg);
   credits_music.openFromMemory(credits_music_res.ptr, credits_music_res.size);
   credits_music.setLoop(true);
 
   //Get the directory for saving and loading high scores
-  char *pValue = nullptr; size_t len = 0;
-  if (_dupenv_s(&pValue, &len, "APPDATA") != 0 || pValue == nullptr) {
-    MessageBox(nullptr, TEXT("Failed to find AppData directory"), TEXT("ERROR"), MB_OK);
-    return 1;
-  }
-  const std::string save_dir = std::string(pValue, len-1) + "\\MarbleMarcher";
-  free(pValue);
-  if (CreateDirectory(save_dir.c_str(), NULL) == 0 && GetLastError() != ERROR_ALREADY_EXISTS) {
-    MessageBox(nullptr, TEXT("Failed to create save directory"), TEXT("ERROR"), MB_OK);
-    return 1;
+  const std::string save_dir = std::string(std::getenv("HOME")) + "/.MarbleMarcher";
+  if (!boost::filesystem::exists(save_dir)) {
+    bool success = boost::filesystem::create_directory(save_dir);
+    if (!success) {
+      std::cout << "Failed to create save directory" << std::endl;
+      return 1;
+    }
   }
   const std::string save_file = save_dir + "\\scores.bin";
 

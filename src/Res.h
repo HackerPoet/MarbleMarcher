@@ -15,12 +15,17 @@
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "resource.h"
 #include <string>
+
+#define LOAD_RESOURCE(NAME) ([]() {\
+  extern const char NAME[];\
+  extern const unsigned NAME##_size;\
+  return Res(&NAME, NAME##_size);\
+})()
 
 //Loading resources
 struct Res {
-  Res(int id);
+  Res(const void* ptr, size_t size);
   inline std::string Str() const { return std::string((const char*)ptr, size); }
   const void* ptr;
   size_t size;

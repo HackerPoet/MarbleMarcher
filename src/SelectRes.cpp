@@ -26,7 +26,7 @@ const Resolution all_resolutions[num_resolutions] = {
 };
 
 SelectRes::SelectRes(const sf::Font* _font) : font(_font), is_fullscreen(false) {
-  Res hover_res(IDR_HOVER_SND);
+  Res hover_res = LOAD_RESOURCE(menu_hover_wav);
   buff_hover.loadFromMemory(hover_res.ptr, hover_res.size);
   sound_hover.setBuffer(buff_hover);
 }

@@ -11,13 +11,21 @@ Video Explanation: https://youtu.be/9U0XVdvQwAI
 
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
-* [SFML](https://www.sfml-dev.org)
+* [SFML 2.5.0](https://www.sfml-dev.org)
+* Boost Filesystem
+
+On macOS these can be conveniently installed using Homebrew:
+
+`brew install eigen boost sfml`
+
+(Note that SFML might require a newer version than the one from Homebrew, in which case a manual installation is required)
 
 ## Building
 * `mkdir build && cd build`
 * `cmake ..`
+    * Note that the `resources.c` file containing the embedded, binary resources from the `assets` folder will only be generated if `resources.c` does not already exist inside the `src` folder
 * `cmake --build .`
 
-Or from the repository directory:
+Alternatively, one can use the platform-dependent build system, for example `Make`:
 
-* `cmake --build build`
+* `make`

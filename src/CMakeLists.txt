@@ -2,6 +2,7 @@ add_library(MarbleMarcherSources
   Level.cpp
   Overlays.cpp
   Res.cpp
+  resources.c
   Scene.cpp
   Scores.cpp
   SelectRes.cpp

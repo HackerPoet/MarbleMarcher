@@ -15,11 +15,6 @@
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
 #include "Res.h"
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
 
-Res::Res(int id) {
-  HRSRC src = ::FindResource(NULL, MAKEINTRESOURCE(id), RT_RCDATA);
-  ptr = ::LockResource(::LoadResource(NULL, src));
-  size = (size_t)::SizeofResource(NULL, src);
-}
+Res::Res(const void* ptr, size_t size)
+  : ptr(ptr), size(size) {}

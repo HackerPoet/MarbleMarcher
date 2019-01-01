@@ -28,19 +28,19 @@ Overlays::Overlays(const sf::Font* _font, const sf::Font* _font_mono) :
   draw_scale(1.0f),
   top_level(true) {
   memset(all_hover, 0, sizeof(all_hover));
-  const Res hover_res(IDR_HOVER_SND);
+  const Res hover_res = LOAD_RESOURCE(menu_hover_wav);
   buff_hover.loadFromMemory(hover_res.ptr, hover_res.size);
   sound_hover.setBuffer(buff_hover);
-  const Res click_res(IDR_CLICK_SND);
+  const Res click_res = LOAD_RESOURCE(menu_click_wav);
   buff_click.loadFromMemory(click_res.ptr, click_res.size);
   sound_click.setBuffer(buff_click);
-  const Res count_res(IDR_COUNT_SND);
+  const Res count_res = LOAD_RESOURCE(count_down_wav);
   buff_count.loadFromMemory(count_res.ptr, count_res.size);
   sound_count.setBuffer(buff_count);
-  const Res go_res(IDR_GO_SND);
+  const Res go_res = LOAD_RESOURCE(count_go_wav);
   buff_go.loadFromMemory(go_res.ptr, go_res.size);
   sound_go.setBuffer(buff_go);
-  const Res arrow_res(IDR_ARROW);
+  const Res arrow_res = LOAD_RESOURCE(arrow_png);
   arrow_tex.loadFromMemory(arrow_res.ptr, arrow_res.size);
   arrow_tex.setSmooth(true);
   arrow_spr.setTexture(arrow_tex);
