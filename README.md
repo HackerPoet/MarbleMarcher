@@ -8,3 +8,8 @@ fall off the level or get crushed by the fractal!  There are 15 levels to unlock
 Download Link: [Windows 64-bit](https://github.com/HackerPoet/MarbleMarcher/raw/master/MarbleMarcher.zip)
 
 Video Explanation: https://youtu.be/9U0XVdvQwAI
+
+### Building
+* `mkdir build && cd build`
+* `cmake ..`
+* `cmake --build .`
