@@ -19,10 +19,10 @@
 #include <SFML/Audio.hpp>
 
 struct Resolution {
-  Resolution(int w, int h, char* i) : width(w), height(h), info(i) {}
+  Resolution(int w, int h, const char* i) : width(w), height(h), info(i) {}
   int width;
   int height;
-  char* info;
+  const char* info;
 };
 static const int num_resolutions = 5;
 const extern Resolution all_resolutions[num_resolutions];
