@@ -11,7 +11,9 @@ find_package(Boost COMPONENTS system filesystem REQUIRED)
 ## TARGETS
 
 add_subdirectory(src)
-target_include_directories(MarbleMarcherSources PUBLIC ${EIGEN3_INCLUDE_DIR})
+target_include_directories(MarbleMarcherSources PUBLIC
+  ${EIGEN3_INCLUDE_DIR}
+)
 
 add_executable(MarbleMarcher src/Main.cpp)
 target_link_libraries(MarbleMarcher
@@ -66,7 +68,7 @@ endfunction(hash_assets)
 # by checking whether the MD5 hash differs from the cached hash
 hash_assets()
 if(${changed_assets})
-  message("Skipping resource assembly since assets folder has not been changed since last build.")
-else()
   create_resources(assets src/resources.c)
+else()
+  message("Skipping resource assembly since assets folder has not been changed since last build.")
 endif()
