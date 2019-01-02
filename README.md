@@ -28,7 +28,8 @@ Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
 * `mkdir build && cd build`
 * `cmake ..`
     * If you use `vcpkg`, add the flag `-DCMAKE_TOOLCHAIN_FILE=[path/to/vcpkg]/scripts/buildsystems/vcpkg.cmake`
-* `cmake --build .`
+* `cd ..`
+* `cmake --build build`
     * Note that the `resources.c` file containing the embedded, binary resources from the `assets` folder will only be generated if the assets have been modified
     * To successfully rebuild the binary resources the `CMakeLists.txt` might need to be resaved
 
