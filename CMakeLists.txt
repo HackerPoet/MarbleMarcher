@@ -41,7 +41,7 @@ function(create_resources dir output)
     # Convert hex data for C compatibility
     string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," filedata ${filedata})
     # Append data to output file
-    file(APPEND ${output} "const unsigned char ${filename}[] = {${filedata}};\nconst unsigned ${filename}_size = sizeof(${filename});\n")
+    file(APPEND ${output} "extern const unsigned char ${filename}_bytes[] = {${filedata}};\nextern const unsigned ${filename}_size = sizeof(${filename}_bytes);\n")
   endforeach()
 endfunction()
 
@@ -66,10 +66,11 @@ endfunction(hash_assets)
 
 # Only update the binary resources if they haven been changed
 # by checking whether the MD5 hash differs from the cached hash
+set(resource_file src/resources.cpp)
 set(changed_assets false)
 hash_assets(changed_assets)
-if(${changed_assets})
-  create_resources(assets src/resources.c)
+if(${changed_assets} OR NOT EXISTS ${resource_file})
+  create_resources(assets ${resource_file})
 else()
   message("Skipping resource assembly since assets folder has not been changed since last build.")
 endif()

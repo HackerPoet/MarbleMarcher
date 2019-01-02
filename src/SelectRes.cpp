@@ -15,7 +15,7 @@
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
 #include "SelectRes.h"
-#include "Res.h"
+#include "LoadedResources.h"
 
 const Resolution all_resolutions[num_resolutions] = {
   Resolution(640, 360, "I don't have a dedicated GPU"),
@@ -26,7 +26,7 @@ const Resolution all_resolutions[num_resolutions] = {
 };
 
 SelectRes::SelectRes(const sf::Font* _font) : font(_font), is_fullscreen(false) {
-  Res hover_res = LOAD_RESOURCE(menu_hover_wav);
+  Res hover_res = menu_hover_wav_resource;
   buff_hover.loadFromMemory(hover_res.ptr, hover_res.size);
   sound_hover.setBuffer(buff_hover);
 }

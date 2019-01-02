@@ -17,11 +17,10 @@
 #pragma once
 #include <string>
 
-#define LOAD_RESOURCE(NAME) ([]() {\
-  extern const char NAME[];\
-  extern const unsigned NAME##_size;\
-  return Res(&NAME, NAME##_size);\
-})()
+#define LOAD_RESOURCE(NAME)\
+  extern "C" const unsigned char NAME##_bytes[];\
+  extern "C" const unsigned NAME##_size;\
+  const Res NAME##_resource = Res(&NAME##_bytes, NAME##_size);
 
 //Loading resources
 struct Res {
