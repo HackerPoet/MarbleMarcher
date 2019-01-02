@@ -66,7 +66,8 @@ Scene::Scene(sf::Music* m1, sf::Music* m2) :
   flag_pos(0.0f, 0.0f, 0.0f),
   timer(0),
   music_1(m1),
-  music_2(m2) {
+  music_2(m2),
+  cur_level(0) {
   frac_params.setOnes();
   frac_params_smooth.setOnes();
   SnapCamera();
