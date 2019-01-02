@@ -12,13 +12,17 @@ Video Explanation: https://youtu.be/9U0XVdvQwAI
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 * [SFML 2.5.0](https://www.sfml-dev.org)
-* Boost Filesystem
+* [Boost Filesystem](https://www.boost.org)
 
-On macOS these can be conveniently installed using Homebrew:
+On macOS these can be conveniently installed using [Homebrew](https://brew.sh):
 
 `brew install eigen boost sfml`
 
 (Note that SFML might require a newer version than the one from Homebrew, in which case a manual installation is required)
+
+Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
+
+`vcpkg install eigen3 boost-filesystem sfml`
 
 ## Building
 * `mkdir build && cd build`
