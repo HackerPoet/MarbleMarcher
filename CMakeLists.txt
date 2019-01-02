@@ -64,7 +64,7 @@ function(hash_assets changed_assets)
   endforeach(asset_file assets)
 endfunction(hash_assets)
 
-# Only update the binary resources if they haven been changed
+# Only update the binary resources if they have been changed
 # by checking whether the MD5 hash differs from the cached hash
 set(resource_file src/resources.cpp)
 set(changed_assets false)
