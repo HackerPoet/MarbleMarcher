@@ -30,6 +30,12 @@
 #include <mutex>
 #include <boost/filesystem.hpp>
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
+namespace fs = boost::filesystem;
+
 //Constants
 static const float mouse_sensitivity = 0.005f;
 static const float wheel_sensitivity = 0.2f;
@@ -117,15 +123,20 @@ int main(int argc, char *argv[]) {
   credits_music.setLoop(true);
 
   //Get the directory for saving and loading high scores
-  const std::string save_dir = std::string(std::getenv("HOME")) + "/.MarbleMarcher";
-  if (!boost::filesystem::exists(save_dir)) {
-    bool success = boost::filesystem::create_directory(save_dir);
+#ifdef _WIN32
+  const fs::path save_dir = fs::path(std::getenv("APPDATA")) / "MarbleMarcher";
+#else
+  const fs::path save_dir = fs::path(std::getenv("HOME")) / ".MarbleMarcher";
+#endif
+  
+  if (!fs::exists(save_dir)) {
+    bool success = fs::create_directory(save_dir);
     if (!success) {
       std::cout << "Failed to create save directory" << std::endl;
       return 1;
     }
   }
-  const std::string save_file = save_dir + "\\scores.bin";
+  const std::string save_file = (save_dir / "scores.bin").string();
 
   //Load scores if available
   high_scores.Load(save_file);
