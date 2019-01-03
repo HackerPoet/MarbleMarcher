@@ -41,7 +41,7 @@ function(create_resources dir output)
     # Convert hex data for C compatibility
     string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," filedata ${filedata})
     # Append data to output file
-    file(APPEND ${output} "extern const unsigned char ${filename}_bytes[] = {${filedata}};\nextern const unsigned ${filename}_size = sizeof(${filename}_bytes);\n")
+    file(APPEND ${output} "extern \"C\" const unsigned char ${filename}_bytes[] = {${filedata}};\nextern \"C\" const unsigned ${filename}_size = sizeof(${filename}_bytes);\n")
   endforeach()
 endfunction()
 
