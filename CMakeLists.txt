@@ -19,6 +19,8 @@ add_executable(MarbleMarcher src/Main.cpp)
 target_link_libraries(MarbleMarcher
   MarbleMarcherSources
   Eigen3::Eigen
+  sfml-system
+  sfml-window
   sfml-graphics
   sfml-audio
   ${Boost_SYSTEM_LIBRARY}
