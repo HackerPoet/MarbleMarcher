@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 ## DEPENDENCIES
 
 find_package(Eigen3 3.3 REQUIRED)
-find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
+find_package(SFML 2.5 COMPONENTS system window graphics audio REQUIRED)
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 
 ## TARGETS
