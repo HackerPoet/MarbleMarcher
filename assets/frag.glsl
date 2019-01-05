@@ -14,7 +14,7 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
-#version 400
+#version 120
 #define AMBIENT_OCCLUSION_COLOR_DELTA vec3(0.7)
 #define AMBIENT_OCCLUSION_STRENGTH 0.008
 #define ANTIALIASING_SAMPLES 1
@@ -40,8 +40,6 @@
 #define SUN_SHARPNESS 2.0
 #define SUN_SIZE 0.004
 #define VIGNETTE_STRENGTH 0.5
-
-out vec4 fragColor;
 
 uniform mat4 iMat;
 uniform vec2 iResolution;
@@ -346,5 +344,5 @@ void main() {
 	}
 
 	col *= iExposure / (ANTIALIASING_SAMPLES * ANTIALIASING_SAMPLES);
-  fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+  gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

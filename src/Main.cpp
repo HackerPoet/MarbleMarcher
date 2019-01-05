@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
   settings.depthBits = 24;
   settings.stencilBits = 8;
   settings.antialiasingLevel = 1;
-  settings.majorVersion = 3;
+  settings.majorVersion = 2;
   settings.minorVersion = 0;
 
   //Create the window
