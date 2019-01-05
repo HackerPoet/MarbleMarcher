@@ -252,7 +252,9 @@ int main(int argc, char *argv[]) {
             game_mode = PAUSED;
           }
         } else if (keycode == sf::Keyboard::R) {
-          scene.ResetLevel();
+          if (game_mode == PLAYING) {
+            scene.ResetLevel();
+          }
         }
         all_keys[keycode] = true;
       } else if (event.type == sf::Event::KeyReleased) {
@@ -329,7 +331,9 @@ int main(int argc, char *argv[]) {
             }
           }
         } else if (event.mouseButton.button == sf::Mouse::Right) {
-          scene.ResetLevel();
+          if (game_mode == PLAYING) {
+            scene.ResetLevel();
+          }
         }
       } else if (event.type == sf::Event::MouseButtonReleased) {
         mouse_pos = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
