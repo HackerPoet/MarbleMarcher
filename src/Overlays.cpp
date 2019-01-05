@@ -100,9 +100,10 @@ void Overlays::UpdateLevels(float mouse_x, float mouse_y) {
 
 void Overlays::UpdatePaused(float mouse_x, float mouse_y) {
   //Update text boxes
-  MakeText("Paused", 550, 288, 54, sf::Color::White, all_text[PAUSED]);
-  MakeText("Quit", 508, 356, 40, sf::Color::White, all_text[QUIT]);
-  MakeText("Continue", 670, 356, 40, sf::Color::White, all_text[CONTINUE]);
+  MakeText("Paused", 540, 288, 54, sf::Color::White, all_text[PAUSED]);
+  MakeText("Continue", 370, 356, 40, sf::Color::White, all_text[CONTINUE]);
+  MakeText("Restart", 620, 356, 40, sf::Color::White, all_text[RESTART]);
+  MakeText("Quit", 845, 356, 40, sf::Color::White, all_text[QUIT]);
 
   //Update mouse sensitivity setting
   const char* mouse_txt = "Mouse Sensitivity:  High";
@@ -111,10 +112,10 @@ void Overlays::UpdatePaused(float mouse_x, float mouse_y) {
   } else if (mouse_setting == 2) {
     mouse_txt = "Mouse Sensitivity:  Low";
   }
-  MakeText(mouse_txt, 420, 500, 40, sf::Color::White, all_text[MOUSE]);
+  MakeText(mouse_txt, 410, 500, 40, sf::Color::White, all_text[MOUSE]);
 
   //Check if mouse intersects anything
-  UpdateHover(QUIT, MOUSE, mouse_x, mouse_y);
+  UpdateHover(CONTINUE, MOUSE, mouse_x, mouse_y);
 }
 
 void Overlays::DrawMenu(sf::RenderWindow& window) {

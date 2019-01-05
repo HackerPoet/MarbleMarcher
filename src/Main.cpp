@@ -310,8 +310,19 @@ int main(int argc, char *argv[]) {
             scene.SetMode(Scene::INTRO);
             game_mode = MAIN_MENU;
           } else if (game_mode == PAUSED) {
-            const Overlays::Texts selected = overlays.GetOption(Overlays::QUIT, Overlays::MOUSE);
-            if (selected == Overlays::QUIT) {
+            const Overlays::Texts selected = overlays.GetOption(Overlays::CONTINUE, Overlays::MOUSE);
+            if (selected == Overlays::CONTINUE) {
+              scene.GetCurMusic().setVolume(music_vol);
+              scene.SetExposure(1.0f);
+              LockMouse(window);
+              game_mode = PLAYING;
+            } else if (selected == Overlays::RESTART) {
+              scene.ResetLevel();
+              scene.GetCurMusic().setVolume(music_vol);
+              scene.SetExposure(1.0f);
+              LockMouse(window);
+              game_mode = PLAYING;
+            } else if (selected == Overlays::QUIT) {
               scene.SetMode(Scene::INTRO);
               scene.StopAllMusic();
               menu_music.play();
@@ -321,11 +332,6 @@ int main(int argc, char *argv[]) {
                 game_mode = MAIN_MENU;
                 scene.SetExposure(1.0f);
               }
-            } else if (selected == Overlays::CONTINUE) {
-              scene.GetCurMusic().setVolume(music_vol);
-              scene.SetExposure(1.0f);
-              LockMouse(window);
-              game_mode = PLAYING;
             } else if (selected == Overlays::MOUSE) {
               mouse_setting = (mouse_setting + 1) % 3;
             }
