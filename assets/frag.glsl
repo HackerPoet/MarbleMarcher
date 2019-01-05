@@ -198,12 +198,15 @@ vec4 col_scene(vec4 p) {
 //##########################################
 vec4 ray_march(inout vec4 p, vec4 ray, float sharpness) {
 	//March the ray
-	float d = MIN_DIST;
+	float d = DE(p);
+	if (d < 0.0 && sharpness == 1.0) {
+		vec3 v = iMarblePos.xyz - iMat[3].xyz;
+		d = dot(v, v) / dot(v, ray.xyz) - iMarbleRad;
+	}
 	float s = 0.0;
 	float td = 0.0;
 	float min_d = 1.0;
 	for (; s < MAX_MARCHES; s += 1.0) {
-		d = DE(p);
 		if (d < MIN_DIST) {
 			s += d / MIN_DIST;
 			break;
@@ -213,6 +216,7 @@ vec4 ray_march(inout vec4 p, vec4 ray, float sharpness) {
 		td += d;
 		p += ray * d;
 		min_d = min(min_d, sharpness * d / td);
+		d = DE(p);
 	}
 	return vec4(d, s, td, min_d);
 }
