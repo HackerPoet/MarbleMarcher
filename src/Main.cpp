@@ -33,6 +33,9 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#define ERROR_MSG(x) MessageBox(nullptr, TEXT(x), TEXT("ERROR"), MB_OK);
+#else
+#define ERROR_MSG(x) std::cerr << x << std::endl;
 #endif
 
 //Constants
@@ -85,18 +88,18 @@ int main(int argc, char *argv[]) {
 #endif
   //Make sure shader is supported
   if (!sf::Shader::isAvailable()) {
-    std::cout << "Graphics card does not support shaders" << std::endl;
+    ERROR_MSG("Graphics card does not support shaders");
     return 1;
   }
   //Load the vertex shader
   sf::Shader shader;
   if (!shader.loadFromMemory(vert_glsl_resource.Str(), sf::Shader::Vertex)) {
-    std::cout << "Failed to compile vertex shader" << std::endl;
+    ERROR_MSG("Failed to compile vertex shader");
     return 1;
   }
   //Load the fragment shader
   if (!shader.loadFromMemory(frag_glsl_resource.Str(), sf::Shader::Fragment)) {
-    std::cout << "Failed to compile fragment shader" << std::endl;
+    ERROR_MSG("Failed to compile fragment shader");
     return 1;
   }
 
@@ -104,14 +107,14 @@ int main(int argc, char *argv[]) {
   sf::Font font;
   const Res font_res = Orbitron_Bold_ttf_resource;
   if (!font.loadFromMemory(font_res.ptr, font_res.size)) {
-    std::cout << "Unable to load font" << std::endl;
+    ERROR_MSG("Unable to load font");
     return 1;
   }
   //Load the mono font
   sf::Font font_mono;
   const Res font_mono_res = Inconsolata_Bold_ttf_resource;
   if (!font_mono.loadFromMemory(font_mono_res.ptr, font_mono_res.size)) {
-    std::cout << "Unable to load mono font" << std::endl;
+    ERROR_MSG("Unable to load mono font");
     return 1;
   }
 
@@ -148,7 +151,7 @@ int main(int argc, char *argv[]) {
     bool success = mkdir(save_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0;
 #endif
     if (!success) {
-      std::cout << "Failed to create save directory" << std::endl;
+      ERROR_MSG("Failed to create save directory");
       return 1;
     }
   }
