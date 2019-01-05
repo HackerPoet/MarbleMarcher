@@ -18,7 +18,7 @@
 #include "Res.h"
 
 const Resolution all_resolutions[num_resolutions] = {
-  Resolution(320, 180, "I have potato:"),
+  Resolution(320, 180, "I have potato?"),
   Resolution(640, 360, "GTX 960 or lower:"),
   Resolution(960, 540, "GTX 970 or similar:"),
   Resolution(1280, 720, "GTX 980 or similar:"),
