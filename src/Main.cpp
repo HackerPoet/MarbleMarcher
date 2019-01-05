@@ -23,18 +23,17 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <thread>
 #include <mutex>
-#include <boost/filesystem.hpp>
 
 #ifdef _WIN32
 #include <Windows.h>
 #endif
-
-namespace fs = boost::filesystem;
 
 //Constants
 static const float mouse_sensitivity = 0.005f;
@@ -68,6 +67,15 @@ void LockMouse(sf::RenderWindow& window) {
 }
 void UnlockMouse(sf::RenderWindow& window) {
   window.setMouseCursorVisible(true);
+}
+int dirExists(const char *path) {
+  struct stat info;
+  if (stat(path, &info) != 0) {
+    return 0;
+  } else if (info.st_mode & S_IFDIR) {
+    return 1;
+  }
+  return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -124,19 +132,23 @@ int main(int argc, char *argv[]) {
 
   //Get the directory for saving and loading high scores
 #ifdef _WIN32
-  const fs::path save_dir = fs::path(std::getenv("APPDATA")) / "MarbleMarcher";
+  const std::string save_dir = std::string(std::getenv("APPDATA")) + "\\MarbleMarcher";
 #else
-  const fs::path save_dir = fs::path(std::getenv("HOME")) / ".MarbleMarcher";
+  const std::string save_dir = std::string(std::getenv("HOME")) + "/.MarbleMarcher";
 #endif
   
-  if (!fs::exists(save_dir)) {
-    bool success = fs::create_directory(save_dir);
+  if (!dirExists(save_dir.c_str())) {
+#if defined(_WIN32)
+    bool success = CreateDirectory(save_dir.c_str(), NULL) != 0 || GetLastError() == ERROR_ALREADY_EXISTS;
+#else
+    bool success = mkdir(save_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0;
+#endif
     if (!success) {
       std::cout << "Failed to create save directory" << std::endl;
       return 1;
     }
   }
-  const std::string save_file = (save_dir / "scores.bin").string();
+  const std::string save_file = save_dir + "/scores.bin";
 
   //Load scores if available
   high_scores.Load(save_file);

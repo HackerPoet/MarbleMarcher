@@ -6,25 +6,24 @@ set(CMAKE_CXX_STANDARD 11)
 
 find_package(Eigen3 3.3 REQUIRED)
 find_package(SFML 2.5 COMPONENTS system window graphics audio REQUIRED)
-find_package(Boost COMPONENTS system filesystem REQUIRED)
 
 ## TARGETS
 
 add_subdirectory(src)
 target_include_directories(MarbleMarcherSources PUBLIC
   ${EIGEN3_INCLUDE_DIR}
+  ${SFML_INCLUDE_DIR}
 )
+target_compile_definitions(MarbleMarcherSources PRIVATE SFML_STATIC)
 
 add_executable(MarbleMarcher src/Main.cpp)
+target_compile_definitions(MarbleMarcher PRIVATE SFML_STATIC)
 target_link_libraries(MarbleMarcher
   MarbleMarcherSources
-  Eigen3::Eigen
   sfml-system
   sfml-window
   sfml-graphics
   sfml-audio
-  ${Boost_SYSTEM_LIBRARY}
-  ${Boost_FILESYSTEM_LIBRARY}
 )
 
 ## RESOURCES
