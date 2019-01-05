@@ -78,7 +78,11 @@ int dirExists(const char *path) {
   return 0;
 }
 
+#if defined(_WIN32)
+int WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR lpCmdLine, int nCmdShow) {
+#else
 int main(int argc, char *argv[]) {
+#endif
   //Make sure shader is supported
   if (!sf::Shader::isAvailable()) {
     std::cout << "Graphics card does not support shaders" << std::endl;

@@ -16,7 +16,11 @@ target_include_directories(MarbleMarcherSources PUBLIC
 )
 target_compile_definitions(MarbleMarcherSources PRIVATE SFML_STATIC)
 
-add_executable(MarbleMarcher src/Main.cpp)
+if(WIN32)
+  add_executable(MarbleMarcher WIN32 src/Main.cpp)
+else()
+  add_executable(MarbleMarcher src/Main.cpp)
+endif()
 target_compile_definitions(MarbleMarcher PRIVATE SFML_STATIC)
 target_link_libraries(MarbleMarcher
   MarbleMarcherSources
