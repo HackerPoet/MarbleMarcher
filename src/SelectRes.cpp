@@ -18,11 +18,13 @@
 #include "LoadedResources.h"
 
 const Resolution all_resolutions[num_resolutions] = {
-  Resolution(640, 360, "I don't have a dedicated GPU"),
-  Resolution(960, 540, "I have a low-end GPU"),
-  Resolution(1280, 720, "I have a mid-range GPU"),
-  Resolution(1600, 900, "I have a high-end GPU"),
-  Resolution(1920, 1080, "Will be fast enough someday...")
+  Resolution(320, 180, "I have potato:"),
+  Resolution(640, 360, "GTX 960 or lower:"),
+  Resolution(960, 540, "GTX 970 or similar:"),
+  Resolution(1280, 720, "GTX 980 or similar:"),
+  Resolution(1600, 900, "GTX 1080 or similar:"),
+  Resolution(1920, 1080, "GTX 1080 Ti or similar:"),
+  Resolution(2560, 1440, "RTX 2080 Ti or higher:")
 };
 
 SelectRes::SelectRes(const sf::Font* _font) : font(_font), is_fullscreen(false) {
@@ -32,12 +34,12 @@ SelectRes::SelectRes(const sf::Font* _font) : font(_font), is_fullscreen(false) 
 }
 
 int SelectRes::Select(const sf::Vector2i& mouse_pos) {
-  const int select_ix = (mouse_pos.y + 60) / 100 - 2;
-  const int select_bounds = (mouse_pos.y + 60) % 100;
+  const int select_ix = (mouse_pos.y + 25) / 60 - 2;
+  const int select_bounds = (mouse_pos.y + 25) % 60;
   if (select_ix < 0 || select_ix > num_resolutions) {
     return -1;
   }
-  if (select_bounds > 60) {
+  if (select_bounds > 42) {
     return -1;
   }
   return select_ix;
@@ -48,18 +50,17 @@ void SelectRes::Draw(sf::RenderWindow& window, const sf::Vector2i& mouse_pos) {
   window.draw(MakeText("Select Resolution", 320.0f, 26.0f, 48));
   for (int i = 0; i < num_resolutions; ++i) {
     const Resolution& res = all_resolutions[i];
-    const float y1 = 140.0f + float(i)*100.0f;
-    const float y2 = 170.0f + float(i)*100.0f;
+    const float y = 90.0f + float(i)*60.0f;
     const bool is_sel = (i == sel_ix);
-    window.draw(MakeText(res.info, 320.0f, y1, 28, is_sel));
+    window.draw(MakeText(res.info, 20.0f, y + 5.0f, 32, is_sel, false));
     const std::string res_str = std::to_string(res.width) + " x " + std::to_string(res.height);
-    window.draw(MakeText(res_str.c_str(), 320.0f, y2, 42, is_sel));
+    window.draw(MakeText(res_str.c_str(), 390.0f, y, 42, is_sel, false));
   }
   const char* ftxt = (is_fullscreen ? "Full Screen [X]" : "Full Screen [ ]");
-  window.draw(MakeText(ftxt, 320.0f, 660.0f, 40, sel_ix == num_resolutions));
+  window.draw(MakeText(ftxt, 320.0f, 530.0f, 40, sel_ix == num_resolutions));
 }
 
-sf::Text SelectRes::MakeText(const char* str, float x, float y, int size, bool selected) const {
+sf::Text SelectRes::MakeText(const char* str, float x, float y, int size, bool selected, bool centered) const {
   sf::Text text;
   text.setString(str);
   text.setFont(*font);
@@ -67,14 +68,16 @@ sf::Text SelectRes::MakeText(const char* str, float x, float y, int size, bool s
   text.setLetterSpacing(0.8f);
   text.setPosition(x, y);
   text.setFillColor(selected ? sf::Color::White : sf::Color(128,128,128));
-  const sf::FloatRect text_bounds = text.getLocalBounds();
-  text.setOrigin(text_bounds.width / 2, text_bounds.height / 2);
+  if (centered) {
+    const sf::FloatRect text_bounds = text.getLocalBounds();
+    text.setOrigin(text_bounds.width / 2, text_bounds.height / 2);
+  }
   return text;
 }
 
 const Resolution* SelectRes::Run() {
   //Create the window
-  sf::VideoMode window_size(640, 720, 24);
+  sf::VideoMode window_size(640, 600, 24);
   sf::RenderWindow window(window_size, "Marble Marcher", sf::Style::Close);
   window.setVerticalSyncEnabled(true);
   window.requestFocus();

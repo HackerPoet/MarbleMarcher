@@ -24,7 +24,7 @@ struct Resolution {
   int height;
   const char* info;
 };
-static const int num_resolutions = 5;
+static const int num_resolutions = 7;
 const extern Resolution all_resolutions[num_resolutions];
 
 class SelectRes {
@@ -35,7 +35,7 @@ public:
 
   int Select(const sf::Vector2i& mouse_pos);
   void Draw(sf::RenderWindow& window, const sf::Vector2i& mouse_pos);
-  sf::Text MakeText(const char* str, float x, float y, int size, bool centered=true) const;
+  sf::Text MakeText(const char* str, float x, float y, int size, bool selected=true, bool centered=true) const;
   const Resolution* Run();
 
 private:
