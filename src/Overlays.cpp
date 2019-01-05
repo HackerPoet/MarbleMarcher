@@ -16,7 +16,7 @@
 */
 #include "Overlays.h"
 #include "Level.h"
-#include "LoadedResources.h"
+#include "Res.h"
 #include "Scores.h"
 
 static const float pi = 3.14159265359f;
@@ -28,20 +28,15 @@ Overlays::Overlays(const sf::Font* _font, const sf::Font* _font_mono) :
   draw_scale(1.0f),
   top_level(true) {
   memset(all_hover, 0, sizeof(all_hover));
-  const Res hover_res = menu_hover_wav_resource;
-  buff_hover.loadFromMemory(hover_res.ptr, hover_res.size);
+  buff_hover.loadFromFile(menu_hover_wav);
   sound_hover.setBuffer(buff_hover);
-  const Res click_res = menu_click_wav_resource;
-  buff_click.loadFromMemory(click_res.ptr, click_res.size);
+  buff_click.loadFromFile(menu_click_wav);
   sound_click.setBuffer(buff_click);
-  const Res count_res = count_down_wav_resource;
-  buff_count.loadFromMemory(count_res.ptr, count_res.size);
+  buff_count.loadFromFile(count_down_wav);
   sound_count.setBuffer(buff_count);
-  const Res go_res = count_go_wav_resource;
-  buff_go.loadFromMemory(go_res.ptr, go_res.size);
+  buff_go.loadFromFile(count_go_wav);
   sound_go.setBuffer(buff_go);
-  const Res arrow_res = arrow_png_resource;
-  arrow_tex.loadFromMemory(arrow_res.ptr, arrow_res.size);
+  arrow_tex.loadFromFile(arrow_png);
   arrow_tex.setSmooth(true);
   arrow_spr.setTexture(arrow_tex);
   arrow_spr.setOrigin(arrow_spr.getLocalBounds().width / 2, arrow_spr.getLocalBounds().height / 2);

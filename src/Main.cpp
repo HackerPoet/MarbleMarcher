@@ -17,7 +17,7 @@
 #include "Scene.h"
 #include "Level.h"
 #include "Overlays.h"
-#include "LoadedResources.h"
+#include "Res.h"
 #include "SelectRes.h"
 #include "Scores.h"
 #include <SFML/Audio.hpp>
@@ -93,48 +93,42 @@ int main(int argc, char *argv[]) {
   }
   //Load the vertex shader
   sf::Shader shader;
-  if (!shader.loadFromMemory(vert_glsl_resource.Str(), sf::Shader::Vertex)) {
+  if (!shader.loadFromFile(vert_glsl, sf::Shader::Vertex)) {
     ERROR_MSG("Failed to compile vertex shader");
     return 1;
   }
   //Load the fragment shader
-  if (!shader.loadFromMemory(frag_glsl_resource.Str(), sf::Shader::Fragment)) {
+  if (!shader.loadFromFile(frag_glsl, sf::Shader::Fragment)) {
     ERROR_MSG("Failed to compile fragment shader");
     return 1;
   }
 
   //Load the font
   sf::Font font;
-  const Res font_res = Orbitron_Bold_ttf_resource;
-  if (!font.loadFromMemory(font_res.ptr, font_res.size)) {
+  if (!font.loadFromFile(Orbitron_Bold_ttf)) {
     ERROR_MSG("Unable to load font");
     return 1;
   }
   //Load the mono font
   sf::Font font_mono;
-  const Res font_mono_res = Inconsolata_Bold_ttf_resource;
-  if (!font_mono.loadFromMemory(font_mono_res.ptr, font_mono_res.size)) {
+  if (!font_mono.loadFromFile(Inconsolata_Bold_ttf)) {
     ERROR_MSG("Unable to load mono font");
     return 1;
   }
 
   //Load the music
   sf::Music menu_music;
-  const Res menu_music_res = menu_ogg_resource;
-  menu_music.openFromMemory(menu_music_res.ptr, menu_music_res.size);
+  menu_music.openFromFile(menu_ogg);
   menu_music.setLoop(true);
   menu_music.setVolume(music_vol);
   sf::Music level1_music;
-  const Res level1_music_res = level1_ogg_resource;
-  level1_music.openFromMemory(level1_music_res.ptr, level1_music_res.size);
+  level1_music.openFromFile(level1_ogg);
   level1_music.setLoop(true);
   sf::Music level2_music;
-  const Res level2_music_res = level2_ogg_resource;
-  level2_music.openFromMemory(level2_music_res.ptr, level2_music_res.size);
+  level2_music.openFromFile(level2_ogg);
   level2_music.setLoop(true);
   sf::Music credits_music;
-  const Res credits_music_res = credits_ogg_resource;
-  credits_music.openFromMemory(credits_music_res.ptr, credits_music_res.size);
+  credits_music.openFromFile(credits_ogg);
   credits_music.setLoop(true);
 
   //Get the directory for saving and loading high scores
