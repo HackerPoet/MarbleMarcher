@@ -186,7 +186,8 @@ void Overlays::DrawLevelDesc(sf::RenderWindow& window, int level) {
 void Overlays::DrawFPS(sf::RenderWindow& window, int fps) {
   sf::Text text;
   std::string fps_str = std::to_string(fps) + "fps";
-  MakeText(fps_str.c_str(), 1280, 720, 24, sf::Color::White, text, false);
+  const sf::Color col = (fps < 50 ? sf::Color::Red : sf::Color::White);
+  MakeText(fps_str.c_str(), 1280, 720, 24, col, text, false);
   const sf::FloatRect text_bounds = text.getLocalBounds();
   text.setOrigin(text_bounds.width, text_bounds.height);
   window.draw(text);
