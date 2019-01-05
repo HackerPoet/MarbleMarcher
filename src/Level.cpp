@@ -227,7 +227,7 @@ const Level all_levels[num_levels] = {
     2.9f,                                            //Orbit Distance
     Eigen::Vector3f(0.0f, 2.1431f, 0.0f),            //Marble Position
     Eigen::Vector3f(0.0, -2.12f, 0.0),               //Flag Position
-    -6.0f,                                           //Death Barrier
+    -999.0f,                                         //Death Barrier
     true,                                            //Is Planet
     "Planet Crusher",                                //Description
     0.0f, 0.08f, 0.0f),                              //Animation
