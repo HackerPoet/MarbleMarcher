@@ -1,0 +1,9 @@
+add_library(MarbleMarcherSources
+  Level.cpp
+  Overlays.cpp
+  Res.cpp
+  resources.cpp
+  Scene.cpp
+  Scores.cpp
+  SelectRes.cpp
+)
