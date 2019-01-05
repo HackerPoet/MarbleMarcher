@@ -17,7 +17,8 @@ target_include_directories(MarbleMarcherSources PUBLIC
 target_compile_definitions(MarbleMarcherSources PRIVATE SFML_STATIC)
 
 if(WIN32)
-  add_executable(MarbleMarcher WIN32 src/Main.cpp)
+  add_executable(MarbleMarcher WIN32 src/Main.cpp src/Resource.rc assets/icon.ico)
+  set_source_files_properties(icon.ico Resource.rc PROPERTIES LANGUAGE RC)
 else()
   add_executable(MarbleMarcher src/Main.cpp)
 endif()
