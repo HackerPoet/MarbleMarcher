@@ -92,7 +92,7 @@ void Overlays::UpdateLevels(float mouse_x, float mouse_y) {
     const sf::FloatRect text_bounds = all_text[i + L0].getLocalBounds();
     all_text[i + L0].setOrigin(text_bounds.width / 2, text_bounds.height / 2);
   }
-  MakeText("Back", 620, 660, 40, sf::Color::White, all_text[BACK2]);
+  MakeText("Back", 590, 660, 40, sf::Color::White, all_text[BACK2]);
 
   //Check if mouse intersects anything
   UpdateHover(L0, BACK2, mouse_x, mouse_y);
