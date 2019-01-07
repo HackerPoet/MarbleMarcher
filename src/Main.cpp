@@ -58,7 +58,6 @@ enum GameMode {
 static sf::Vector2i mouse_pos;
 static float mouse_wheel = 0.0f;
 static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
-static int frame_num = 0;
 static bool lock_mouse = false;
 static GameMode game_mode = MAIN_MENU;
 
@@ -448,7 +447,6 @@ int main(int argc, char *argv[]) {
 
     //Finally display to the screen
     window.display();
-    frame_num += 1;
     mouse_wheel = 0.0f;
 
     //If V-Sync is running higher than desired fps, slow down!
