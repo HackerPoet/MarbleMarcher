@@ -694,7 +694,7 @@ bool Scene::MarbleCollision(float& delta_v) {
   //Check if the marble has been crushed by the fractal
   if (de < marble_rad * 0.001f) {
     sound_shatter.play();
-    marble_pos.y() = -999.0f;
+    marble_pos.y() = -9999.0f;
     return false;
   }
 
