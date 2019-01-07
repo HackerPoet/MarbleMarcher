@@ -212,6 +212,7 @@ int main(int argc, char *argv[]) {
   //Main loop
   sf::Clock clock;
   float smooth_fps = 60.0f;
+  int lag_ms = 0;
   while (window.isOpen()) {
     sf::Event event;
     float mouse_wheel = 0.0f;
@@ -398,30 +399,37 @@ int main(int argc, char *argv[]) {
       overlays.UpdatePaused((float)mouse_pos.x, (float)mouse_pos.y);
     }
 
-    //Update the shader values
-    scene.Write(shader);
-
-    //Setup full-screen shader
-    sf::RenderStates states = sf::RenderStates::Default;
-    states.shader = &shader;
-    sf::RectangleShape rect;
-    rect.setSize(window_res);
-    rect.setPosition(0, 0);
-
-    //Draw the fractal
-    if (fullscreen) {
-      //Draw to the render texture
-      renderTexture.draw(rect, states);
-      renderTexture.display();
-
-      //Draw render texture to main window
-      sf::Sprite sprite(renderTexture.getTexture());
-      sprite.setScale(float(screen_size.width) / float(resolution->width),
-                      float(screen_size.height) / float(resolution->height));
-      window.draw(sprite);
+    bool skip_frame = false;
+    if (lag_ms >= 16) {
+      //If there is too much lag, just do another frame of physics and skip the draw
+      lag_ms -= 16;
+      skip_frame = true;
     } else {
-      //Draw directly to the main window
-      window.draw(rect, states);
+      //Update the shader values
+      scene.Write(shader);
+
+      //Setup full-screen shader
+      sf::RenderStates states = sf::RenderStates::Default;
+      states.shader = &shader;
+      sf::RectangleShape rect;
+      rect.setSize(window_res);
+      rect.setPosition(0, 0);
+
+      //Draw the fractal
+      if (fullscreen) {
+        //Draw to the render texture
+        renderTexture.draw(rect, states);
+        renderTexture.display();
+
+        //Draw render texture to main window
+        sf::Sprite sprite(renderTexture.getTexture());
+        sprite.setScale(float(screen_size.width) / float(resolution->width),
+                        float(screen_size.height) / float(resolution->height));
+        window.draw(sprite);
+      } else {
+        //Draw directly to the main window
+        window.draw(rect, states);
+      }
     }
 
     //Draw text overlays to the window
@@ -445,17 +453,22 @@ int main(int argc, char *argv[]) {
     }
     overlays.DrawFPS(window, int(smooth_fps + 0.5f));
 
-    //Finally display to the screen
-    window.display();
+    if (!skip_frame) {
+      //Finally display to the screen
+      window.display();
 
-    //If V-Sync is running higher than desired fps, slow down!
-    const float s = clock.restart().asSeconds();
-    if (s > 0.001f) {
-      smooth_fps = smooth_fps*0.9f + (1.0f / s)*0.1f;
-    }
-    const int time_diff_ms = int(16.66667f - s*1000.0f);
-    if (time_diff_ms > 0) {
-      sf::sleep(sf::milliseconds(time_diff_ms));
+      //If V-Sync is running higher than desired fps, slow down!
+      const float s = clock.restart().asSeconds();
+      if (s > 0.0f) {
+        smooth_fps = smooth_fps*0.9f + std::min(1.0f / s, 60.0f)*0.1f;
+      }
+      const int time_diff_ms = int(16.66667f - s*1000.0f);
+      if (time_diff_ms > 0) {
+        sf::sleep(sf::milliseconds(time_diff_ms));
+        lag_ms = std::max(lag_ms - time_diff_ms, 0);
+      } else if (time_diff_ms < 0) {
+        lag_ms += std::max(-time_diff_ms, 0);
+      }
     }
   }
 
