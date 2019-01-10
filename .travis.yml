@@ -1,0 +1,39 @@
+language: cpp
+
+addons:
+  apt:
+    packages:
+      - libxrandr-dev
+      - libudev-dev
+      - libfreetype6-dev
+      - libopenal-dev
+      - libvorbis-dev
+      - libflac-dev
+      - libblas-dev
+
+compiler:
+  - clang
+  - gcc
+
+before_script:
+  - mkdir ${TRAVIS_BUILD_DIR}/deps && cd ${TRAVIS_BUILD_DIR}/deps
+  # Build Eigen
+  - wget http://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz
+  - tar xvzf 3.3.7.tar.gz
+  - cd eigen-eigen-323c052e1731/
+  - mkdir build && cd build
+  - cmake -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/usr .. && cmake -L ..
+  - make install
+  # Download/Build SFML
+  - cd ${TRAVIS_BUILD_DIR}/deps
+  - wget https://www.sfml-dev.org/files/SFML-2.5.1-sources.zip
+  - unzip SFML-2.5.1-sources.zip
+  - cd SFML-2.5.1
+  - mkdir build && cd build
+  - cmake -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/usr .. && cmake -L ..
+  - make install
+
+script:
+  - mkdir -p ${TRAVIS_BUILD_DIR}/build && cd ${TRAVIS_BUILD_DIR}/build
+  - cmake -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/usr  -DCMAKE_CXX_FLAGS="-I${TRAVIS_BUILD_DIR}/usr/include -I${TRAVIS_BUILD_DIR}/usr/include/eigen3" .. && cmake -LA ..
+  - make
