@@ -162,9 +162,6 @@ int main(int argc, char *argv[]) {
 
   //GL settings
   sf::ContextSettings settings;
-  settings.depthBits = 24;
-  settings.stencilBits = 8;
-  settings.antialiasingLevel = 1;
   settings.majorVersion = 2;
   settings.minorVersion = 0;
 
