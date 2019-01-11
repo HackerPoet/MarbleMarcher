@@ -32,6 +32,7 @@ public:
   SelectRes(const sf::Font* _font);
 
   bool FullScreen() const { return is_fullscreen; }
+  bool SmoothingEnabled() const { return is_smoothingEnabled; }
 
   int Select(const sf::Vector2i& mouse_pos);
   void Draw(sf::RenderWindow& window, const sf::Vector2i& mouse_pos);
@@ -42,6 +43,7 @@ private:
   const sf::Font* font;
 
   bool is_fullscreen;
+  bool is_smoothingEnabled = true;
 
   sf::Sound sound_hover;
   sf::SoundBuffer buff_hover;

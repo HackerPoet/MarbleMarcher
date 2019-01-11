@@ -35,7 +35,7 @@ SelectRes::SelectRes(const sf::Font* _font) : font(_font), is_fullscreen(false) 
 int SelectRes::Select(const sf::Vector2i& mouse_pos) {
   const int select_ix = (mouse_pos.y + 25) / 60 - 2;
   const int select_bounds = (mouse_pos.y + 25) % 60;
-  if (select_ix < 0 || select_ix > num_resolutions) {
+  if (select_ix < 0 || select_ix > num_resolutions + 1) {
     return -1;
   }
   if (select_bounds > 42) {
@@ -56,7 +56,10 @@ void SelectRes::Draw(sf::RenderWindow& window, const sf::Vector2i& mouse_pos) {
     window.draw(MakeText(res_str.c_str(), 390.0f, y, 42, is_sel, false));
   }
   const char* ftxt = (is_fullscreen ? "Full Screen [X]" : "Full Screen [ ]");
-  window.draw(MakeText(ftxt, 320.0f, 530.0f, 40, sel_ix == num_resolutions));
+  window.draw(MakeText(ftxt, 320.0f, 525.0f, 40, sel_ix == num_resolutions));
+
+  const char* smtxt = (is_smoothingEnabled ? "Full Screen smoothing [X]" : "Full Screen smoothing [ ]");
+  window.draw(MakeText(smtxt, 320.0f, 585.0f, 40, sel_ix == num_resolutions + 1));
 }
 
 sf::Text SelectRes::MakeText(const char* str, float x, float y, int size, bool selected, bool centered) const {
@@ -76,7 +79,7 @@ sf::Text SelectRes::MakeText(const char* str, float x, float y, int size, bool s
 
 const Resolution* SelectRes::Run() {
   //Create the window
-  sf::VideoMode window_size(640, 600, 24);
+  sf::VideoMode window_size(640, 640, 24);
   sf::RenderWindow window(window_size, "Marble Marcher", sf::Style::Close);
   window.setVerticalSyncEnabled(true);
   window.requestFocus();
@@ -105,6 +108,8 @@ const Resolution* SelectRes::Run() {
           window.close();
         } else if (sel_ix == num_resolutions) {
           is_fullscreen = !is_fullscreen;
+        } else if (sel_ix == num_resolutions + 1) {
+          is_smoothingEnabled = !is_smoothingEnabled;
         }
       } else if (event.type == sf::Event::MouseButtonReleased) {
         mouse_pos = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
