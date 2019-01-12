@@ -156,6 +156,7 @@ int main(int argc, char *argv[]) {
   SelectRes select_res(&font_mono);
   const Resolution* resolution = select_res.Run();
   bool fullscreen = select_res.FullScreen();
+  bool smoothingEnabled = select_res.SmoothingEnabled();
   if (resolution == nullptr) {
     return 0;
   }
@@ -193,7 +194,7 @@ int main(int argc, char *argv[]) {
   sf::RenderTexture renderTexture;
   if (fullscreen) {
     renderTexture.create(resolution->width, resolution->height, settings);
-    renderTexture.setSmooth(true);
+    renderTexture.setSmooth(smoothingEnabled);
     renderTexture.setActive(true);
     window.setActive(false);
   }
