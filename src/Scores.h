@@ -23,11 +23,23 @@ class Scores {
 public:
   Scores() { memset(this, -1, sizeof(Scores)); }
 
-  bool Has(int level) {
+  bool HasUnlocked(int level) const {
+    return level <= 0 || scores[level - 1] >= 0;
+  }
+  bool HasCompleted(int level) const {
     return scores[level] >= 0;
   }
   int Get(int level) const {
     return scores[level];
+  }
+
+  int GetStartLevel() const {
+    for (int i = 0; i < num_levels; ++i) {
+      if (!HasCompleted(i)) {
+        return i;
+      }
+    }
+    return 0;
   }
 
   bool Update(int level, int score) {

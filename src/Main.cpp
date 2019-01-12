@@ -293,7 +293,7 @@ int main(int argc, char *argv[]) {
               game_mode = MAIN_MENU;
               scene.SetExposure(1.0f);
             } else if (selected >= Overlays::L0 && selected <= Overlays::L14) {
-              if (high_scores.Has(selected - Overlays::L0)) {
+              if (high_scores.HasUnlocked(selected - Overlays::L0)) {
                 menu_music.stop();
                 game_mode = PLAYING;
                 scene.SetExposure(1.0f);

@@ -153,7 +153,7 @@ bool Scene::IsHighScore() const {
 
 void Scene::StartNewGame() {
   play_single = false;
-  cur_level = 0;
+  cur_level = high_scores.GetStartLevel();
   HideObjects();
   SetMode(ORBIT);
 }

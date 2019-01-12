@@ -87,7 +87,7 @@ void Overlays::UpdateLevels(float mouse_x, float mouse_y) {
   for (int i = 0; i < num_levels; ++i) {
     const float y = 80.0f + float(i/3) * 120.0f;
     const float x = 240.0f + float(i%3) * 400.0f;
-    const char* txt = high_scores.Has(i) ? all_levels[i].txt : "???";
+    const char* txt = high_scores.HasUnlocked(i) ? all_levels[i].txt : "???";
     MakeText(txt, x, y, 32, sf::Color::White, all_text[i + L0]);
     const sf::FloatRect text_bounds = all_text[i + L0].getLocalBounds();
     all_text[i + L0].setOrigin(text_bounds.width / 2, text_bounds.height / 2);
@@ -235,7 +235,7 @@ void Overlays::DrawLevels(sf::RenderWindow& window) {
   }
   //Draw the times
   for (int i = 0; i < num_levels; ++i) {
-    if (high_scores.Has(i)) {
+    if (high_scores.HasCompleted(i)) {
       sf::Text text;
       const float y = 98.0f + float(i / 3) * 120.0f;
       const float x = 148.0f + float(i % 3) * 400.0f;
