@@ -155,8 +155,9 @@ int main(int argc, char *argv[]) {
   //Have user select the resolution
   SelectRes select_res(&font_mono);
   const Resolution* resolution = select_res.Run();
-  bool fullscreen = select_res.FullScreen();
-  bool smoothingEnabled = select_res.SmoothingEnabled();
+  const bool fullscreen = select_res.FullScreen();
+  const bool smoothingEnabled = select_res.SmoothingEnabled();
+  const int pixelSize = select_res.PixelSize();
   if (resolution == nullptr) {
     return 0;
   }
@@ -177,7 +178,7 @@ int main(int argc, char *argv[]) {
     screen_size = sf::VideoMode::getDesktopMode();
     window_style = sf::Style::Fullscreen;
   } else {
-    screen_size = sf::VideoMode(resolution->width, resolution->height, 24);
+    screen_size = sf::VideoMode(resolution->width * pixelSize, resolution->height * pixelSize, 24);
     window_style = sf::Style::Close;
   }
   sf::RenderWindow window(screen_size, "Marble Marcher", window_style, settings);
@@ -185,19 +186,12 @@ int main(int argc, char *argv[]) {
   window.setKeyRepeatEnabled(false);
   window.requestFocus();
 
-  //If native resolution is the same, then we don't need a render texture
-  if (resolution->width == screen_size.width && resolution->height == screen_size.height) {
-    fullscreen = false;
-  }
-
-  //Create the render texture if needed
+  //Create the render texture in any case
   sf::RenderTexture renderTexture;
-  if (fullscreen) {
-    renderTexture.create(resolution->width, resolution->height, settings);
-    renderTexture.setSmooth(smoothingEnabled);
-    renderTexture.setActive(true);
-    window.setActive(false);
-  }
+  renderTexture.create(resolution->width, resolution->height, settings);
+  renderTexture.setSmooth(smoothingEnabled);
+  renderTexture.setActive(true);
+  window.setActive(false);
 
   //Create the fractal scene
   Scene scene(&level1_music, &level2_music);
@@ -416,21 +410,15 @@ int main(int argc, char *argv[]) {
       rect.setSize(window_res);
       rect.setPosition(0, 0);
 
-      //Draw the fractal
-      if (fullscreen) {
-        //Draw to the render texture
-        renderTexture.draw(rect, states);
-        renderTexture.display();
+      //Draw the fractal to the render texture
+      renderTexture.draw(rect, states);
+      renderTexture.display();
 
-        //Draw render texture to main window
-        sf::Sprite sprite(renderTexture.getTexture());
-        sprite.setScale(float(screen_size.width) / float(resolution->width),
-                        float(screen_size.height) / float(resolution->height));
-        window.draw(sprite);
-      } else {
-        //Draw directly to the main window
-        window.draw(rect, states);
-      }
+      //Draw render texture to main window
+      sf::Sprite sprite(renderTexture.getTexture());
+      sprite.setScale(float(screen_size.width) / float(resolution->width),
+                      float(screen_size.height) / float(resolution->height));
+      window.draw(sprite);
     }
 
     //Draw text overlays to the window
