@@ -19,6 +19,7 @@
 #include <SFML/Audio.hpp>
 
 extern int mouse_setting;
+extern bool music_on;
 
 class Overlays {
 public:
@@ -34,6 +35,7 @@ public:
     CONTINUE,
     RESTART,
     QUIT,
+    MUSIC,
     MOUSE,
     CONTROLS_L,
     CONTROLS_R,

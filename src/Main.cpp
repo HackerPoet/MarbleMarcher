@@ -60,6 +60,16 @@ static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
 static bool lock_mouse = false;
 static GameMode game_mode = MAIN_MENU;
 
+float GetVol() {
+  if (!music_on) {
+    return 0.0f;
+  } else if (game_mode == PAUSED) {
+    return music_vol / 4;
+  } else {
+    return music_vol;
+  }
+}
+
 void LockMouse(sf::RenderWindow& window) {
   window.setMouseCursorVisible(false);
   const sf::Vector2u size = window.getSize();
@@ -118,7 +128,6 @@ int main(int argc, char *argv[]) {
   sf::Music menu_music;
   menu_music.openFromFile(menu_ogg);
   menu_music.setLoop(true);
-  menu_music.setVolume(music_vol);
   sf::Music level1_music;
   level1_music.openFromFile(level1_ogg);
   level1_music.setLoop(true);
@@ -204,6 +213,7 @@ int main(int argc, char *argv[]) {
   //Create the menus
   Overlays overlays(&font, &font_mono);
   overlays.SetScale(float(screen_size.width) / 1280.0f);
+  menu_music.setVolume(GetVol());
   menu_music.play();
 
   //Main loop
@@ -221,12 +231,13 @@ int main(int argc, char *argv[]) {
         const sf::Keyboard::Key keycode = event.key.code;
         if (event.key.code < 0 || event.key.code >= sf::Keyboard::KeyCount) { continue; }
         if (game_mode == CREDITS) {
+          game_mode = MAIN_MENU;
           UnlockMouse(window);
           scene.SetMode(Scene::INTRO);
           scene.SetExposure(1.0f);
           credits_music.stop();
+          menu_music.setVolume(GetVol());
           menu_music.play();
-          game_mode = MAIN_MENU;
         } else if (keycode == sf::Keyboard::Escape) {
           if (game_mode == MAIN_MENU) {
             window.close();
@@ -235,18 +246,18 @@ int main(int argc, char *argv[]) {
             game_mode = MAIN_MENU;
             scene.SetExposure(1.0f);
           } else if (game_mode == SCREEN_SAVER) {
-            scene.SetMode(Scene::INTRO);
             game_mode = MAIN_MENU;
+            scene.SetMode(Scene::INTRO);
           } else if (game_mode == PAUSED) {
-            scene.GetCurMusic().setVolume(music_vol);
+            game_mode = PLAYING;
+            scene.GetCurMusic().setVolume(GetVol());
             scene.SetExposure(1.0f);
             LockMouse(window);
-            game_mode = PLAYING;
           } else if (game_mode == PLAYING) {
-            scene.GetCurMusic().setVolume(music_vol / 4);
+            game_mode = PAUSED;
+            scene.GetCurMusic().setVolume(GetVol());
             UnlockMouse(window);
             scene.SetExposure(0.5f);
-            game_mode = PAUSED;
           }
         } else if (keycode == sf::Keyboard::R) {
           if (game_mode == PLAYING) {
@@ -264,10 +275,10 @@ int main(int argc, char *argv[]) {
           if (game_mode == MAIN_MENU) {
             const Overlays::Texts selected = overlays.GetOption(Overlays::PLAY, Overlays::EXIT);
             if (selected == Overlays::PLAY) {
-              menu_music.stop();
               game_mode = PLAYING;
+              menu_music.stop();
               scene.StartNewGame();
-              scene.GetCurMusic().setVolume(music_vol);
+              scene.GetCurMusic().setVolume(GetVol());
               scene.GetCurMusic().play();
               LockMouse(window);
             } else if (selected == Overlays::CONTROLS) {
@@ -276,8 +287,8 @@ int main(int argc, char *argv[]) {
               game_mode = LEVELS;
               scene.SetExposure(0.5f);
             } else if (selected == Overlays::SCREEN_SAVER) {
-              scene.SetMode(Scene::SCREEN_SAVER);
               game_mode = SCREEN_SAVER;
+              scene.SetMode(Scene::SCREEN_SAVER);
             } else if (selected == Overlays::EXIT) {
               window.close();
               break;
@@ -294,11 +305,11 @@ int main(int argc, char *argv[]) {
               scene.SetExposure(1.0f);
             } else if (selected >= Overlays::L0 && selected <= Overlays::L14) {
               if (high_scores.HasUnlocked(selected - Overlays::L0)) {
-                menu_music.stop();
                 game_mode = PLAYING;
+                menu_music.stop();
                 scene.SetExposure(1.0f);
                 scene.StartSingle(selected - Overlays::L0);
-                scene.GetCurMusic().setVolume(music_vol);
+                scene.GetCurMusic().setVolume(GetVol());
                 scene.GetCurMusic().play();
                 LockMouse(window);
               }
@@ -309,26 +320,31 @@ int main(int argc, char *argv[]) {
           } else if (game_mode == PAUSED) {
             const Overlays::Texts selected = overlays.GetOption(Overlays::CONTINUE, Overlays::MOUSE);
             if (selected == Overlays::CONTINUE) {
-              scene.GetCurMusic().setVolume(music_vol);
+              game_mode = PLAYING;
+              scene.GetCurMusic().setVolume(GetVol());
               scene.SetExposure(1.0f);
               LockMouse(window);
-              game_mode = PLAYING;
             } else if (selected == Overlays::RESTART) {
+              game_mode = PLAYING;
               scene.ResetLevel();
-              scene.GetCurMusic().setVolume(music_vol);
+              scene.GetCurMusic().setVolume(GetVol());
               scene.SetExposure(1.0f);
               LockMouse(window);
-              game_mode = PLAYING;
             } else if (selected == Overlays::QUIT) {
-              scene.SetMode(Scene::INTRO);
-              scene.StopAllMusic();
-              menu_music.play();
               if (scene.IsSinglePlay()) {
                 game_mode = LEVELS;
               } else {
                 game_mode = MAIN_MENU;
                 scene.SetExposure(1.0f);
               }
+              scene.SetMode(Scene::INTRO);
+              scene.StopAllMusic();
+              menu_music.setVolume(GetVol());
+              menu_music.play();
+            } else if (selected == Overlays::MUSIC) {
+              music_on = !music_on;
+              level1_music.setVolume(GetVol());
+              level2_music.setVolume(GetVol());
             } else if (selected == Overlays::MOUSE) {
               mouse_setting = (mouse_setting + 1) % 3;
             }

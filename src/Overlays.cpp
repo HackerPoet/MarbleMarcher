@@ -21,6 +21,7 @@
 
 static const float pi = 3.14159265359f;
 int mouse_setting = 0;
+bool music_on = true;
 
 Overlays::Overlays(const sf::Font* _font, const sf::Font* _font_mono) :
   font(_font),
@@ -105,6 +106,10 @@ void Overlays::UpdatePaused(float mouse_x, float mouse_y) {
   MakeText("Restart", 620, 356, 40, sf::Color::White, all_text[RESTART]);
   MakeText("Quit", 845, 356, 40, sf::Color::White, all_text[QUIT]);
 
+  //Update music setting
+  const char* music_txt = (music_on ? "Music:  On" : "Music:  Off");
+  MakeText(music_txt, 410, 500, 40, sf::Color::White, all_text[MUSIC]);
+
   //Update mouse sensitivity setting
   const char* mouse_txt = "Mouse Sensitivity:  High";
   if (mouse_setting == 1) {
@@ -112,7 +117,7 @@ void Overlays::UpdatePaused(float mouse_x, float mouse_y) {
   } else if (mouse_setting == 2) {
     mouse_txt = "Mouse Sensitivity:  Low";
   }
-  MakeText(mouse_txt, 410, 500, 40, sf::Color::White, all_text[MOUSE]);
+  MakeText(mouse_txt, 410, 550, 40, sf::Color::White, all_text[MOUSE]);
 
   //Check if mouse intersects anything
   UpdateHover(CONTINUE, MOUSE, mouse_x, mouse_y);
