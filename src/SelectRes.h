@@ -33,6 +33,7 @@ public:
 
   bool FullScreen() const { return is_fullscreen; }
   bool SmoothingEnabled() const { return is_smoothingEnabled; }
+  int PixelSize() const { return what_pixelSize; }
 
   int Select(const sf::Vector2i& mouse_pos);
   void Draw(sf::RenderWindow& window, const sf::Vector2i& mouse_pos);
@@ -44,6 +45,7 @@ private:
 
   bool is_fullscreen;
   bool is_smoothingEnabled = true;
+  int what_pixelSize = 1;
 
   sf::Sound sound_hover;
   sf::SoundBuffer buff_hover;

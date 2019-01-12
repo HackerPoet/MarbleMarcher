@@ -56,10 +56,19 @@ void SelectRes::Draw(sf::RenderWindow& window, const sf::Vector2i& mouse_pos) {
     window.draw(MakeText(res_str.c_str(), 390.0f, y, 42, is_sel, false));
   }
   const char* ftxt = (is_fullscreen ? "Full Screen [X]" : "Full Screen [ ]");
-  window.draw(MakeText(ftxt, 320.0f, 525.0f, 40, sel_ix == num_resolutions));
+  window.draw(MakeText(ftxt, 320.0f, 525.0f, 40, sel_ix == num_resolutions, true));
 
-  const char* smtxt = (is_smoothingEnabled ? "Full Screen smoothing [X]" : "Full Screen smoothing [ ]");
-  window.draw(MakeText(smtxt, 320.0f, 585.0f, 40, sel_ix == num_resolutions + 1));
+  const char* smtxt = (is_smoothingEnabled ? "Smoothing [X]" : "Smoothing [ ]");
+  window.draw(MakeText(smtxt, 320.0f, 585.0f, 40, sel_ix == num_resolutions + 1, true));
+
+  const char* pstxt;
+  switch (what_pixelSize) {
+    case 1: pstxt = "Windowed pixel size (select with keys): [1] 2  3  4 "; break;
+    case 2: pstxt = "Windowed pixel size (select with keys):  1 [2] 3  4 "; break;
+    case 3: pstxt = "Windowed pixel size (select with keys):  1  2 [3] 4 "; break;
+    case 4: pstxt = "Windowed pixel size (select with keys):  1  2  3 [4]"; break;
+  }
+  window.draw(MakeText(pstxt, 320.0f, 645.0f, 25, false, true));
 }
 
 sf::Text SelectRes::MakeText(const char* str, float x, float y, int size, bool selected, bool centered) const {
@@ -79,7 +88,7 @@ sf::Text SelectRes::MakeText(const char* str, float x, float y, int size, bool s
 
 const Resolution* SelectRes::Run() {
   //Create the window
-  sf::VideoMode window_size(640, 640, 24);
+  sf::VideoMode window_size(640, 680, 24);
   sf::RenderWindow window(window_size, "Marble Marcher", sf::Style::Close);
   window.setVerticalSyncEnabled(true);
   window.requestFocus();
@@ -99,6 +108,14 @@ const Resolution* SelectRes::Run() {
         if (keycode == sf::Keyboard::Escape) {
           window.close();
           break;
+        } else if (keycode == sf::Keyboard::Num1) {
+          what_pixelSize = 1;
+        } else if (keycode == sf::Keyboard::Num2) {
+          what_pixelSize = 2;
+        } else if (keycode == sf::Keyboard::Num3) {
+          what_pixelSize = 3;
+        } else if (keycode == sf::Keyboard::Num4) {
+          what_pixelSize = 4;
         }
       } else if (event.type == sf::Event::MouseButtonPressed) {
         mouse_pos = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
