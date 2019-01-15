@@ -29,6 +29,8 @@ public:
     LEVELS,
     CONTROLS,
     SCREEN_SAVER,
+    TOGGLE_MOON_GRAVITY,
+    TOGGLE_SCALE_MARBLE,
     EXIT,
     CREDITS,
     PAUSED,
@@ -68,6 +70,11 @@ public:
   void DrawArrow(sf::RenderWindow& window, const sf::Vector3f& v3);
   void DrawCredits(sf::RenderWindow& window);
   void DrawLevels(sf::RenderWindow& window);
+
+  void toggleScaleMarble();
+  void toggleMoonGravity();
+  bool getMoonGravity();
+  bool getScaleMarble();
 
 protected:
   void MakeText(const char* str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono=false);

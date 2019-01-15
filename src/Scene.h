@@ -52,9 +52,9 @@ public:
   sf::Music& GetCurMusic() const;
   void StopAllMusic();
 
-  void StartNewGame();
+  void StartNewGame(bool moon_gravity, bool scale_marble);
   void StartNextLevel();
-  void StartSingle(int level);
+  void StartSingle(int level, bool moon_gravity, bool scale_marble);
   void ResetLevel();
 
   void UpdateMarble(float dx=0.0f, float dy=0.0f);

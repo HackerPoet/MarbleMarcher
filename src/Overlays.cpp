@@ -53,6 +53,9 @@ Overlays::Texts Overlays::GetOption(Texts from, Texts to) {
   return Texts::TITLE;
 }
 
+bool toggle_scale_marble = false;
+bool toggle_moon_gravity = false;
+
 void Overlays::UpdateMenu(float mouse_x, float mouse_y) {
   //Update text boxes
   MakeText("Marble\nMarcher", 60, 20, 72, sf::Color::White, all_text[TITLE]);
@@ -64,6 +67,19 @@ void Overlays::UpdateMenu(float mouse_x, float mouse_y) {
   MakeText("\xA9""2019 CodeParade\nMusic by PettyTheft", 16, 652, 32, sf::Color::White, all_text[CREDITS], true);
   all_text[TITLE].setLineSpacing(0.76f);
   all_text[CREDITS].setLineSpacing(0.9f);
+
+  bool hasCompletedAll = true;
+  for (int i = 0; i < num_levels; ++i) {
+    if (!high_scores.Has(i)) {
+      hasCompletedAll = false;
+      break;
+    }
+  }
+
+  if (hasCompletedAll) {
+    MakeText(toggle_scale_marble ? "[X] Scroll scales marble" : "[ ] Scroll scales marble", 680, 590, 30, sf::Color::White, all_text[TOGGLE_SCALE_MARBLE], true);
+    MakeText(toggle_moon_gravity ? "[X] Moon Gravity" : "[ ] Moon Gravity", 680, 640, 30, sf::Color::White, all_text[TOGGLE_MOON_GRAVITY], true);
+  }
 
   //Check if mouse intersects anything
   UpdateHover(PLAY, EXIT, mouse_x, mouse_y);
@@ -287,4 +303,19 @@ void Overlays::UpdateHover(Texts from, Texts to, float mouse_x, float mouse_y) {
       all_hover[i] = false;
     }
   }
+}
+
+void Overlays::toggleScaleMarble() {
+  toggle_scale_marble = !toggle_scale_marble;
+}
+
+void Overlays::toggleMoonGravity() {
+  toggle_moon_gravity = !toggle_moon_gravity;
+}
+
+bool Overlays::getMoonGravity() {
+  return toggle_moon_gravity;
+}
+bool Overlays::getScaleMarble() {
+  return toggle_scale_marble;
 }

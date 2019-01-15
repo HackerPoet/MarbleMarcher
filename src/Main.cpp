@@ -277,7 +277,7 @@ int main(int argc, char *argv[]) {
             if (selected == Overlays::PLAY) {
               game_mode = PLAYING;
               menu_music.stop();
-              scene.StartNewGame();
+              scene.StartNewGame(overlays.getMoonGravity(), overlays.getScaleMarble());
               scene.GetCurMusic().setVolume(GetVol());
               scene.GetCurMusic().play();
               LockMouse(window);
@@ -292,6 +292,10 @@ int main(int argc, char *argv[]) {
             } else if (selected == Overlays::EXIT) {
               window.close();
               break;
+            } else if (selected == Overlays::Overlays::TOGGLE_SCALE_MARBLE) {
+              overlays.toggleScaleMarble();
+            } else if (selected == Overlays::TOGGLE_MOON_GRAVITY) {
+              overlays.toggleMoonGravity();
             }
           } else if (game_mode == CONTROLS) {
             const Overlays::Texts selected = overlays.GetOption(Overlays::BACK, Overlays::BACK);
@@ -308,7 +312,7 @@ int main(int argc, char *argv[]) {
                 game_mode = PLAYING;
                 menu_music.stop();
                 scene.SetExposure(1.0f);
-                scene.StartSingle(selected - Overlays::L0);
+                scene.StartSingle(selected - Overlays::L0, overlays.getMoonGravity(), overlays.getScaleMarble());
                 scene.GetCurMusic().setVolume(GetVol());
                 scene.GetCurMusic().play();
                 LockMouse(window);

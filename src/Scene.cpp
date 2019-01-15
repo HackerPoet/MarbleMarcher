@@ -151,7 +151,13 @@ bool Scene::IsHighScore() const {
   }
 }
 
-void Scene::StartNewGame() {
+bool scale_marble_flag = false;
+bool moon_gravity_flag = false;
+
+void Scene::StartNewGame(bool moon_gravity, bool scale_marble) {
+  scale_marble_flag = scale_marble;
+  moon_gravity_flag = moon_gravity;
+
   play_single = false;
   cur_level = high_scores.GetStartLevel();
   HideObjects();
@@ -175,7 +181,10 @@ void Scene::StartNextLevel() {
   }
 }
 
-void Scene::StartSingle(int level) {
+void Scene::StartSingle(int level, bool moon_gravity, bool scale_marble) {
+  scale_marble_flag = scale_marble;
+  moon_gravity_flag = moon_gravity;
+
   play_single = true;
   cur_level = level;
   HideObjects();
@@ -238,7 +247,10 @@ void Scene::UpdateMarble(float dx, float dy) {
   bool onGround = false;
   float max_delta_v = 0.0f;
   for (int i = 0; i < num_phys_steps; ++i) {
-    const float force = marble_rad * gravity / num_phys_steps;
+    float force = marble_rad * gravity / num_phys_steps;
+    if (moon_gravity_flag) {
+      force /= 6;
+    }
     if (all_levels[cur_level].planet) {
       marble_vel -= marble_pos.normalized() * force;
     } else {
@@ -284,7 +296,9 @@ void Scene::UpdateMarble(float dx, float dy) {
       const float fz = marble_pos.z() - flag_pos.z();
       if (fx*fx + fz*fz < 6 * marble_rad*marble_rad) {
         final_time = timer;
-        high_scores.Update(cur_level, final_time);
+        if (!scale_marble_flag && !moon_gravity_flag) {
+          high_scores.Update(cur_level, final_time);
+        }
         SetMode(GOAL);
         sound_goal.play();
       }
@@ -443,7 +457,11 @@ void Scene::UpdateDeOrbit() {
 
 void Scene::UpdateNormal(float dx, float dy, float dz) {
   //Update camera zoom
-  cam_dist *= std::pow(2.0f, -dz);
+  if (scale_marble_flag) {
+    marble_rad *= std::pow(2.0f, -dz);
+  } else {
+    cam_dist *= std::pow(2.0f, -dz);
+  }
   cam_dist = std::min(std::max(cam_dist, 5.0f), 30.0f);
   cam_dist_smooth = cam_dist_smooth*zoom_smooth + cam_dist*(1 - zoom_smooth);
 
