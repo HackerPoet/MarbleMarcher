@@ -18,6 +18,8 @@
 #include "Level.h"
 #include "Res.h"
 #include "Scores.h"
+#include "Scene.h"
+
 
 static const float pi = 3.14159265359f;
 int mouse_setting = 0;
@@ -137,6 +139,13 @@ void Overlays::DrawControls(sf::RenderWindow& window) {
 
 void Overlays::DrawTimer(sf::RenderWindow& window, int t, bool is_high_score) {
   sf::Text text;
+/*  Eigen::Vector3f marble_vel = Scene::GetVelocity();
+  float x = marble_vel.x()*1000., y = marble_vel.y()*1000., z = marble_vel.z()*1000.;
+  char buf[128];
+  snprintf(buf, sizeof(buf), "vel: % .3fmU, % .3fmU, % .3fmU (%.3fmU)\n", x,y,z, std::sqrt(x*x+y*y+z*z));
+  MakeText(buf, 0, 0, 40, sf::Color::White, text);
+*/
+
   if (t < 0) {
     return;
   } else if (t < 3*60) {

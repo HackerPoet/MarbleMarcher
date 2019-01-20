@@ -82,6 +82,9 @@ Scene::Scene(sf::Music* m1, sf::Music* m2) :
   buff_shatter.loadFromFile(shatter_wav);
   sound_shatter.setBuffer(buff_shatter);
 }
+Eigen::Vector3f Scene::GetVelocity() {
+	return marble_vel;
+}
 
 void Scene::LoadLevel(int level) {
   cur_level = level;
@@ -233,7 +236,6 @@ void Scene::UpdateMarble(float dx, float dy) {
     dx /= mag;
     dy /= mag;
   }
-
   //Apply all physics (gravity and collision)
   bool onGround = false;
   float max_delta_v = 0.0f;

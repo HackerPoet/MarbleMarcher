@@ -39,6 +39,7 @@ public:
   void SetFlag(float x, float y, float z);
   void SetMode(CamMode mode);
   void SetExposure(float e) { exposure = e; }
+  Eigen::Vector3f GetVelocity();
 
   const Eigen::Vector3f& GetMarble() const { return marble_pos; };
   float GetCamLook() const { return cam_look_x_smooth; }

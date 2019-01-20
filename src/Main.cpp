@@ -94,6 +94,28 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR lpCmdLine, int nCmdShow) {
 #else
 int main(int argc, char *argv[]) {
 #endif
+
+  //!! Record/playback mode
+  bool recording = argv[1][0] == 'r';
+  int record_frame = 0;
+  struct Record {
+    sf::Vector2i mouse_delta;
+    std::array<bool,4> keys;
+    Record& operator=(const Record& t) = default;
+  };
+  std::vector<Record> inputs = {};
+  // read file
+  if (!recording) {
+    std::ifstream file;
+    file.open(argv[2], std::ios::in | std::ios::binary);
+    if (!file) { printf("uh no file"); return 0; }
+    while (file) {
+      Record buffer;
+      file.read((char*)&buffer, sizeof(Record));
+      inputs.push_back(buffer);
+    }
+  }
+
   //Make sure shader is supported
   if (!sf::Shader::isAvailable()) {
     ERROR_MSG("Graphics card does not support shaders");
@@ -163,7 +185,8 @@ int main(int argc, char *argv[]) {
 
   //Have user select the resolution
   SelectRes select_res(&font_mono);
-  const Resolution* resolution = select_res.Run();
+  Resolution res = Resolution(540/9*16, 540, "uh");
+  const Resolution* resolution = &res; //select_res.Run();
   bool fullscreen = select_res.FullScreen();
   if (resolution == nullptr) {
     return 0;
@@ -216,6 +239,15 @@ int main(int argc, char *argv[]) {
   menu_music.setVolume(GetVol());
   menu_music.play();
 
+  //!! Start playing immediately
+  game_mode = PLAYING;
+  menu_music.stop();
+  scene.StartSingle(0);
+  scene.GetCurMusic().setVolume(GetVol());
+  scene.GetCurMusic().play();
+  LockMouse(window);
+
+
   //Main loop
   sf::Clock clock;
   float smooth_fps = 60.0f;
@@ -261,8 +293,12 @@ int main(int argc, char *argv[]) {
           }
         } else if (keycode == sf::Keyboard::R) {
           if (game_mode == PLAYING) {
+            record_frame = 0;
+            recording = false;
             scene.ResetLevel();
           }
+        } else if (keycode == sf::Keyboard::P) {
+            recording = true;
         }
         all_keys[keycode] = true;
       } else if (event.type == sf::Event::KeyReleased) {
@@ -331,6 +367,16 @@ int main(int argc, char *argv[]) {
               scene.SetExposure(1.0f);
               LockMouse(window);
             } else if (selected == Overlays::QUIT) {
+              //!! quitting game and writing recorded inputs to disk
+              if (recording) {
+                  std::ofstream out;
+                  out.open (argv[2], std::ios::out | std::ios::binary);
+                for (auto const& value: inputs) {
+                  out.write((char*)&value, (int)sizeof(Record));
+                }
+              }
+              return 0;
+              //!!
               if (scene.IsSinglePlay()) {
                 game_mode = LEVELS;
               } else {
@@ -384,16 +430,33 @@ int main(int argc, char *argv[]) {
     } else if (game_mode == SCREEN_SAVER) {
       scene.UpdateCamera();
     } else if (game_mode == PLAYING || game_mode == CREDITS) {
+      //!! MAIN LOOP
+      std::array<bool, 4> keys = {
+        all_keys[sf::Keyboard::Left] || all_keys[sf::Keyboard::A],
+        all_keys[sf::Keyboard::Right] || all_keys[sf::Keyboard::D],
+        all_keys[sf::Keyboard::Down] || all_keys[sf::Keyboard::S],
+        all_keys[sf::Keyboard::Up] || all_keys[sf::Keyboard::W]
+      };
+      //Collect mouse input
+      sf::Vector2i mouse_delta = mouse_pos - screen_center;
+      struct Record rec = { mouse_delta, keys };
+      if (scene.GetMode() == Scene::CamMode::MARBLE) {
+        if (recording) {
+          inputs.push_back(rec);
+        } else {
+          rec = inputs[record_frame++];
+          mouse_delta = rec.mouse_delta;
+          keys = rec.keys;
+        }
+      }
       //Collect keyboard input
       const float force_lr =
-        (all_keys[sf::Keyboard::Left] || all_keys[sf::Keyboard::A] ? -1.0f : 0.0f) +
-        (all_keys[sf::Keyboard::Right] || all_keys[sf::Keyboard::D] ? 1.0f : 0.0f);
+        (keys[0] ? -1.0f : 0.0f) +
+        (keys[1] ? 1.0f : 0.0f);
       const float force_ud =
-        (all_keys[sf::Keyboard::Down] || all_keys[sf::Keyboard::S] ? -1.0f : 0.0f) +
-        (all_keys[sf::Keyboard::Up] || all_keys[sf::Keyboard::W] ? 1.0f : 0.0f);
-
-      //Collect mouse input
-      const sf::Vector2i mouse_delta = mouse_pos - screen_center;
+        (keys[2] ? -1.0f : 0.0f) +
+        (keys[3] ? 1.0f : 0.0f);
+      
       sf::Mouse::setPosition(screen_center, window);
       float ms = mouse_sensitivity;
       if (mouse_setting == 1) {
