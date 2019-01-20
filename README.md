@@ -1,5 +1,11 @@
 # Marble Marcher
 
+## Replay system
+
+In order to use the replay system, run `build/MarbleMarcher r <filename> <level id>` for recording and `build/MarbleMarcher p <filename> <level id>` for playing. `Tab` speeds up the game to normal speed, `p` resumes recording from current frame.
+
+## Original README
+
 [![Build Status](https://travis-ci.org/jgoldfar/MarbleMarcher.svg?branch=master)](https://travis-ci.org/jgoldfar/MarbleMarcher)
 
 Marble Marcher is a video game demo that uses a fractal physics engine and fully procedural rendering to produce beautiful and unique gameplay unlike anything you've seen before.

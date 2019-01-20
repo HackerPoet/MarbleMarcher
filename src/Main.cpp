@@ -242,7 +242,7 @@ int main(int argc, char *argv[]) {
   //!! Start playing immediately
   game_mode = PLAYING;
   menu_music.stop();
-  scene.StartSingle(0);
+  scene.StartSingle(std::stoi(argv[3]));
   scene.GetCurMusic().setVolume(GetVol());
   scene.GetCurMusic().play();
   LockMouse(window);
@@ -298,6 +298,7 @@ int main(int argc, char *argv[]) {
             scene.ResetLevel();
           }
         } else if (keycode == sf::Keyboard::P) {
+            inputs.resize(record_frame);
             recording = true;
         }
         all_keys[keycode] = true;
@@ -441,6 +442,9 @@ int main(int argc, char *argv[]) {
       sf::Vector2i mouse_delta = mouse_pos - screen_center;
       struct Record rec = { mouse_delta, keys };
       if (scene.GetMode() == Scene::CamMode::MARBLE) {
+        if (record_frame == inputs.size()) {
+            recording = true;
+        }
         if (recording) {
           inputs.push_back(rec);
         } else {
@@ -538,7 +542,8 @@ int main(int argc, char *argv[]) {
       if (s > 0.0f) {
         smooth_fps = smooth_fps*0.9f + std::min(1.0f / s, 60.0f)*0.1f;
       }
-      const int time_diff_ms = int(16.66667f - s*1000.0f);
+      float ftime = !all_keys[sf::Keyboard::Tab] && scene.GetMode() == Scene::MARBLE ? 200.0f : 16.66667f;
+      const int time_diff_ms = int(ftime - s*1000.0f);
       if (time_diff_ms > 0) {
         sf::sleep(sf::milliseconds(time_diff_ms));
         lag_ms = std::max(lag_ms - time_diff_ms, 0);
