@@ -66,8 +66,9 @@ public:
   void DrawFPS(sf::RenderWindow& window, int fps);
   void DrawPaused(sf::RenderWindow& window);
   void DrawArrow(sf::RenderWindow& window, const sf::Vector3f& v3);
-  void DrawCredits(sf::RenderWindow& window);
+  void DrawCredits(sf::RenderWindow& window, bool fullrun, int t);
   void DrawLevels(sf::RenderWindow& window);
+  void DrawSumTime(sf::RenderWindow& window, int t);
 
 protected:
   void MakeText(const char* str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono=false);

@@ -219,9 +219,9 @@ void Overlays::DrawArrow(sf::RenderWindow& window, const sf::Vector3f& v3) {
   }
 }
 
-void Overlays::DrawCredits(sf::RenderWindow& window) {
+void Overlays::DrawCredits(sf::RenderWindow& window, bool fullrun, int t) {
   const char* txt =
-    "Congratulations, you beat all the levels!\n\n"
+    "Congratulations, you beat all the levels!\n\n\n\n"
     "I hope it was as fun to play this demo as\n"
     "it was to make it. For more information about\n"
     "this game and other projects, check out my\n"
@@ -231,6 +231,14 @@ void Overlays::DrawCredits(sf::RenderWindow& window) {
   MakeText(txt, 50, 100, 44, sf::Color::White, text);
   text.setLineSpacing(1.3f);
   window.draw(text);
+
+  if (fullrun) {
+    sf::Text time_txt;
+    MakeTime(t, 640, 226, 72, sf::Color::White, time_txt);
+    const sf::FloatRect text_bounds = time_txt.getLocalBounds();
+    time_txt.setOrigin(text_bounds.width / 2, text_bounds.height / 2);
+    window.draw(time_txt);
+  }
 }
 
 void Overlays::DrawLevels(sf::RenderWindow& window) {
@@ -248,6 +256,12 @@ void Overlays::DrawLevels(sf::RenderWindow& window) {
       window.draw(text);
     }
   }
+}
+
+void Overlays::DrawSumTime(sf::RenderWindow& window, int t) {
+  sf::Text text;
+  MakeTime(t, 10, 680, 32, sf::Color::White, text);
+  window.draw(text);
 }
 
 void Overlays::MakeText(const char* str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono) {

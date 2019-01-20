@@ -52,6 +52,7 @@ static void ModPi(float& a, float b) {
 Scene::Scene(sf::Music* m1, sf::Music* m2) :
   intro_needs_snap(true),
   play_single(false),
+  is_fullrun(false),
   exposure(1.0f),
   cam_mat(Eigen::Matrix4f::Identity()),
   cam_look_x(0.0f),
@@ -65,6 +66,7 @@ Scene::Scene(sf::Music* m1, sf::Music* m2) :
   marble_mat(Eigen::Matrix3f::Identity()),
   flag_pos(0.0f, 0.0f, 0.0f),
   timer(0),
+  sum_time(0),
   music_1(m1),
   music_2(m2),
   cur_level(0) {
@@ -152,8 +154,10 @@ bool Scene::IsHighScore() const {
 }
 
 void Scene::StartNewGame() {
+  sum_time = 0;
   play_single = false;
   cur_level = high_scores.GetStartLevel();
+  is_fullrun = high_scores.HasCompleted(num_levels - 1);
   HideObjects();
   SetMode(ORBIT);
 }
@@ -177,6 +181,7 @@ void Scene::StartNextLevel() {
 
 void Scene::StartSingle(int level) {
   play_single = true;
+  is_fullrun = false;
   cur_level = level;
   HideObjects();
   SetMode(ORBIT);
@@ -351,6 +356,7 @@ void Scene::UpdateOrbit() {
   float a = std::min(float(timer) / float(frame_transition), 1.0f);
   a *= a/(2*a*(a - 1) + 1);
   timer += 1;
+  sum_time += 1;
 
   //Get marble location and rotational parameters
   const float orbit_dist = all_levels[cur_level].orbit_dist;
@@ -402,6 +408,7 @@ void Scene::UpdateDeOrbit() {
   float b = std::min(float(std::max(timer - frame_orbit, 0)) / float(frame_deorbit - frame_orbit), 1.0f);
   b *= b/(2*b*(b - 1) + 1);
   timer += 1;
+  sum_time += 1;
 
   //Get marble location and rotational parameters
   const float orbit_dist = all_levels[cur_level].orbit_dist;
@@ -477,6 +484,7 @@ void Scene::UpdateNormal(float dx, float dy, float dz) {
 
   //Update timer
   timer += 1;
+  sum_time += 1;
 }
 
 void Scene::UpdateGoal() {
@@ -484,6 +492,9 @@ void Scene::UpdateGoal() {
   const float t = timer * 0.01f;
   float a = std::min(t / 75.0f, 1.0f);
   timer += 1;
+  if (cur_level < num_levels - 1) {
+    sum_time += 1;
+  }
 
   //Get marble location and rotational parameters
   const float flag_dist = marble_rad * 6.5f;

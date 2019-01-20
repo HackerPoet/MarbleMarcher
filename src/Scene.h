@@ -45,9 +45,11 @@ public:
   CamMode GetMode() const { return cam_mode; }
   int GetLevel() const { return cur_level; }
   int GetCountdownTime() const;
+  int GetSumTime() const { return sum_time; }
   sf::Vector3f GetGoalDirection() const;
   bool IsSinglePlay() const { return play_single; }
   bool IsHighScore() const;
+  bool IsFullRun() const { return is_fullrun; }
 
   sf::Music& GetCurMusic() const;
   void StopAllMusic();
@@ -79,6 +81,7 @@ protected:
 
 private:
   int             cur_level;
+  bool            is_fullrun;
   bool            intro_needs_snap;
   bool            play_single;
 
@@ -106,6 +109,7 @@ private:
 
   int             timer;
   int             final_time;
+  int             sum_time;
   float           exposure;
 
   sf::Sound sound_goal;

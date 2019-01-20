@@ -459,10 +459,13 @@ int main(int argc, char *argv[]) {
         overlays.DrawArrow(window, scene.GetGoalDirection());
       }
       overlays.DrawTimer(window, scene.GetCountdownTime(), scene.IsHighScore());
+      if (scene.IsFullRun()) {
+        overlays.DrawSumTime(window, scene.GetSumTime());
+      }
     } else if (game_mode == PAUSED) {
       overlays.DrawPaused(window);
     } else if (game_mode == CREDITS) {
-      overlays.DrawCredits(window);
+      overlays.DrawCredits(window, scene.IsFullRun(), scene.GetSumTime());
     }
     overlays.DrawFPS(window, int(smooth_fps + 0.5f));
 
