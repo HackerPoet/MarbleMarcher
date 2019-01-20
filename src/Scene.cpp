@@ -224,7 +224,7 @@ void Scene::UpdateCamera(float dx, float dy, float dz, bool speedup) {
     }
   } else if (cam_mode == DEORBIT) {
     for (int i = 0; i < iters; i++) {
-      UpdateDeOrbit();
+      UpdateDeOrbit(dx, dy, dz);
       if (cam_mode != DEORBIT) {
         break;
       }
@@ -418,7 +418,7 @@ void Scene::UpdateOrbit() {
   }
 }
 
-void Scene::UpdateDeOrbit() {
+void Scene::UpdateDeOrbit(float dx, float dy, float dz) {
   //Update the timer
   const float t = timer * orbit_speed;
   float b = std::min(float(std::max(timer - frame_orbit, 0)) / float(frame_deorbit - frame_orbit), 1.0f);
@@ -426,45 +426,51 @@ void Scene::UpdateDeOrbit() {
   timer += 1;
   sum_time += 1;
 
-  //Get marble location and rotational parameters
-  const float orbit_dist = all_levels[cur_level].orbit_dist;
-  const Eigen::Vector3f orbit_pt(0.0f, orbit_dist, 0.0f);
-  const Eigen::Vector3f perp_vec(std::sin(t), 0.0f, std::cos(t));
-  const Eigen::Vector3f orbit_cam_pos = orbit_pt + perp_vec * (orbit_dist * 2.5f);
-  cam_pos = cam_pos*orbit_smooth + orbit_cam_pos*(1 - orbit_smooth);
+  if (timer > frame_deorbit + 1) {
+    UpdateCameraOnly(dx, dy, dz);
+  } else {
+    //Get marble location and rotational parameters
+    const float orbit_dist = all_levels[cur_level].orbit_dist;
+    const Eigen::Vector3f orbit_pt(0.0f, orbit_dist, 0.0f);
+    const Eigen::Vector3f perp_vec(std::sin(t), 0.0f, std::cos(t));
+    const Eigen::Vector3f orbit_cam_pos = orbit_pt + perp_vec * (orbit_dist * 2.5f);
+    cam_pos = cam_pos*orbit_smooth + orbit_cam_pos*(1 - orbit_smooth);
 
-  //Solve for the look direction
-  const float start_look_x = all_levels[cur_level].start_look_x;
-  cam_look_x = std::atan2(cam_pos.x(), cam_pos.z());
-  ModPi(cam_look_x, start_look_x);
+    //Solve for the look direction
+    const float start_look_x = all_levels[cur_level].start_look_x;
+    cam_look_x = std::atan2(cam_pos.x(), cam_pos.z());
+    ModPi(cam_look_x, start_look_x);
 
-  //Solve for the look direction
-  cam_look_x_smooth = cam_look_x*(1 - b) + start_look_x*b;
+    //Solve for the look direction
+    cam_look_x_smooth = cam_look_x*(1 - b) + start_look_x*b;
 
-  //Update look smoothing
-  cam_look_y = -0.3f;
-  cam_look_y_smooth = cam_look_y_smooth*orbit_smooth + cam_look_y*(1 - orbit_smooth);
+    //Update look smoothing
+    cam_look_y = -0.3f;
+    cam_look_y_smooth = cam_look_y_smooth*orbit_smooth + cam_look_y*(1 - orbit_smooth);
 
-  //Update the camera rotation matrix
-  MakeCameraRotation();
+    //Update the camera rotation matrix
+    MakeCameraRotation();
 
-  //Update the camera position
-  Eigen::Vector3f marble_cam_pos = marble_pos + cam_mat.block<3, 3>(0, 0) * Eigen::Vector3f(0.0f, 0.0f, marble_rad * cam_dist_smooth);
-  marble_cam_pos += Eigen::Vector3f(0.0f, marble_rad * cam_dist_smooth * 0.1f, 0.0f);
-  cam_pos_smooth = cam_pos*(1 - b) + marble_cam_pos*b;
-  cam_mat.block<3, 1>(0, 3) = cam_pos_smooth;
+    //Update the camera position
+    Eigen::Vector3f marble_cam_pos = marble_pos + cam_mat.block<3, 3>(0, 0) * Eigen::Vector3f(0.0f, 0.0f, marble_rad * cam_dist_smooth);
+    marble_cam_pos += Eigen::Vector3f(0.0f, marble_rad * cam_dist_smooth * 0.1f, 0.0f);
+    cam_pos_smooth = cam_pos*(1 - b) + marble_cam_pos*b;
+    cam_mat.block<3, 1>(0, 3) = cam_pos_smooth;
+
+    //Required for a smooth transition later on
+    cam_look_x = cam_look_x_smooth;
+    cam_look_y = cam_look_y_smooth;
+  }
 
   //When done deorbiting, transition to play
   if (timer > frame_countdown) {
     cam_mode = MARBLE;
-    cam_look_x = cam_look_x_smooth;
-    cam_look_y = cam_look_y_smooth;
     cam_pos = cam_pos_smooth;
     timer = 0;
   }
 }
 
-void Scene::UpdateNormal(float dx, float dy, float dz) {
+void Scene::UpdateCameraOnly(float dx, float dy, float dz) {
   //Update camera zoom
   cam_dist *= std::pow(2.0f, -dz);
   cam_dist = std::min(std::max(cam_dist, 5.0f), 30.0f);
@@ -473,9 +479,9 @@ void Scene::UpdateNormal(float dx, float dy, float dz) {
   //Update look direction
   cam_look_x += dx;
   cam_look_y += dy;
-  cam_look_y = std::min(std::max(cam_look_y, -pi/2), pi/2);
-  while (cam_look_x > pi) { cam_look_x -= 2*pi; }
-  while (cam_look_x < -pi) { cam_look_x += 2*pi; }
+  cam_look_y = std::min(std::max(cam_look_y, -pi / 2), pi / 2);
+  while (cam_look_x > pi) { cam_look_x -= 2 * pi; }
+  while (cam_look_x < -pi) { cam_look_x += 2 * pi; }
 
   //Update look smoothing
   ModPi(cam_look_x_smooth, cam_look_x);
@@ -497,6 +503,11 @@ void Scene::UpdateNormal(float dx, float dy, float dz) {
   cam_pos += marble_mat.col(1) * (marble_rad * cam_dist_smooth * 0.1f);
   cam_pos_smooth = cam_pos;
   cam_mat.block<3, 1>(0, 3) = cam_pos_smooth;
+}
+
+void Scene::UpdateNormal(float dx, float dy, float dz) {
+  //Update camera
+  UpdateCameraOnly(dx, dy, dz);
 
   //Update timer
   timer += 1;
