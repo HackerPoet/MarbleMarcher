@@ -1,0 +1,83 @@
+language: cpp
+
+os:
+  - linux
+  - osx
+
+addons:
+  apt:
+    packages:
+    - libxrandr-dev
+    - libudev-dev
+    - libfreetype6-dev
+    - libopenal-dev
+    - libvorbis-dev
+    - libflac-dev
+    - libblas-dev
+  homebrew:
+    packages:
+    - flac
+    - libvorbis
+    - libogg
+    - freetype
+    - cmake
+    - openal-soft
+    - libsndfile
+    - jpeg
+    - glew
+
+compiler:
+  - clang
+  - gcc
+
+before_script:
+  - mkdir ${TRAVIS_BUILD_DIR}/deps && cd ${TRAVIS_BUILD_DIR}/deps
+  # Eigen v3.3.7
+  - wget http://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz
+  - tar xvzf 3.3.7.tar.gz
+  - cd eigen-eigen-323c052e1731/
+  - mkdir build && cd build
+  - cmake -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/usr ..
+  # - cmake -LA ..
+  - make install
+  - cd ${TRAVIS_BUILD_DIR}/deps
+  # SFML v2.5.1
+  - wget https://www.sfml-dev.org/files/SFML-2.5.1-sources.zip
+  - unzip SFML-2.5.1-sources.zip
+  - cd SFML-2.5.1
+  - mkdir build && cd build
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ] ; then 
+      cmake -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/usr -DSFML_INSTALL_XCODE_TEMPLATES=FALSE -DSFML_BUILD_FRAMEWORKS=FALSE -DBUILD_SHARED_LIBS=TRUE -DSFML_MISC_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/usr/share/SFML -DSFML_DEPENDENCIES_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/usr .. ;
+    fi
+  - if [ "${TRAVIS_OS_NAME}" == "linux" ] ; then
+      cmake -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/usr .. ;
+    fi
+  # - cmake -LA ..
+  - make install
+
+script:
+  - mkdir -p ${TRAVIS_BUILD_DIR}/build && cd ${TRAVIS_BUILD_DIR}/build
+  - cmake -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/usr -DCMAKE_CXX_FLAGS="-I${TRAVIS_BUILD_DIR}/usr/include -I${TRAVIS_BUILD_DIR}/usr/include/eigen3" .. && cmake -LA ..
+  - make
+
+before_deploy:
+  - cd ${TRAVIS_BUILD_DIR} && cp ${TRAVIS_BUILD_DIR}/build/MarbleMarcher .
+  - if [ -n "${TRAVIS_TAG}" ] ; then
+      tar cvzf MarbleMarcher-$(uname)-${TRAVIS_TAG}.tar.gz MarbleMarcher LICENSE README.md assets/ usr/lib/ ;
+    else
+      tar cvzf MarbleMarcher-$(uname)-${TRAVIS_COMMIT}.tar.gz MarbleMarcher LICENSE README.md assets/ usr/lib/ ;
+    fi
+
+deploy:
+  provider: releases
+  # Replace this key with a similarly credentialed one for your acct
+  api_key:
+    secure: NQ+AL976qJ0FGrH3QAYoMzCMog8X/RvBwXm3MYM+vGOjKyo5wGkc3TSt7AZ/na2jOCYui376l2nuGg/D/5fRqFT0T3sJYQSM1hyzut8kXuG0O3vzThHZoAvWnEtAosocw0tUBDPvpNeXIYcyleslgMVkQfuCOb7jO4YoJ0ddRGoGqLkPJ/eFe1BXDsGdYBxHbEHoPAN20uinXCSYIxzYq+vtPynlw67wWJwzKnykojmtReyt+JnIvLOat+l8OG6qWoLh5BPspB782O5vgNujfhaknWie/w8fkt4HMKIg93P9iOqqbAwqi0tTewLH/o5TlNKobkHhEFG1jHjvWdth1AQDe9OEJWWLf0NQ/qWWOOiOR3g0h/fYYDgkFNJaGa7MammVSgwv5AmOGa8O3ej2EkP9hHIDn62N64h6zGNa3pehdxmmlkyUNQ6nIkk4Mjh1YTUDGAW/sNizmuo0SqFSGodWq1Z8pa5PmTNcVi6IJmaFxORub/diOMsQbWRE6WU48JirimmIZL9rttyWMOTwcOr/+FQKvikfQqTzjTIvkbr9jDXRBQsLF/Vu7ipcXCeNrEuM0Ej2QLfiLxth1ovs/HiLNgUr4iykPhN0odHBN25JqhO/TcIMRxSsn/1AEuZ2mWvhPOUOguumN48nasBsE77iFyVzOlb/59cUdff2r/g=
+  file_glob: true
+  file: MarbleMarcher-*.tar.gz
+  overwrite: true
+  skip_cleanup: true
+  on:
+# # Turn on `all_branches` for testing purposes only
+#    all_branches: true
+    tags: true
