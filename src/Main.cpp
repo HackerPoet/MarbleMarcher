@@ -58,6 +58,7 @@ enum GameMode {
 static sf::Vector2i mouse_pos;
 static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
 static bool lock_mouse = false;
+static bool mouse_clicked = false;
 static GameMode game_mode = MAIN_MENU;
 
 float GetVol() {
@@ -272,6 +273,7 @@ int main(int argc, char *argv[]) {
       } else if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == sf::Mouse::Left) {
           mouse_pos = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
+          mouse_clicked = true;
           if (game_mode == MAIN_MENU) {
             const Overlays::Texts selected = overlays.GetOption(Overlays::PLAY, Overlays::EXIT);
             if (selected == Overlays::PLAY) {
@@ -355,7 +357,10 @@ int main(int argc, char *argv[]) {
           }
         }
       } else if (event.type == sf::Event::MouseButtonReleased) {
-        mouse_pos = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
+        if (event.mouseButton.button == sf::Mouse::Left) {
+          mouse_pos = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
+          mouse_clicked = false;
+        }
       } else if (event.type == sf::Event::MouseMoved) {
         mouse_pos = sf::Vector2i(event.mouseMove.x, event.mouseMove.y);
       } else if (event.type == sf::Event::MouseWheelScrolled) {
@@ -407,7 +412,7 @@ int main(int argc, char *argv[]) {
 
       //Apply forces to marble and camera
       scene.UpdateMarble(force_lr, force_ud);
-      scene.UpdateCamera(cam_lr, cam_ud, cam_z);
+      scene.UpdateCamera(cam_lr, cam_ud, cam_z, mouse_clicked);
     } else if (game_mode == PAUSED) {
       overlays.UpdatePaused((float)mouse_pos.x, (float)mouse_pos.y);
     }

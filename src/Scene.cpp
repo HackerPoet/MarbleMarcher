@@ -208,20 +208,36 @@ void Scene::ResetLevel() {
   }
 }
 
-void Scene::UpdateCamera(float dx, float dy, float dz) {
+void Scene::UpdateCamera(float dx, float dy, float dz, bool speedup) {
   //Camera update depends on current mode
+  const int iters = speedup ? 5 : 1;
   if (cam_mode == INTRO) {
     UpdateIntro(false);
   } else if (cam_mode == SCREEN_SAVER) {
     UpdateIntro(true);
   } else if (cam_mode == ORBIT) {
-    UpdateOrbit();
+    for (int i = 0; i < iters; i++) {
+      UpdateOrbit();
+      if (cam_mode != ORBIT) {
+        break;
+      }
+    }
   } else if (cam_mode == DEORBIT) {
-    UpdateDeOrbit();
+    for (int i = 0; i < iters; i++) {
+      UpdateDeOrbit();
+      if (cam_mode != DEORBIT) {
+        break;
+      }
+    }
   } else if (cam_mode == MARBLE) {
     UpdateNormal(dx, dy, dz);
   } else if (cam_mode == GOAL || cam_mode == FINAL) {
-    UpdateGoal();
+    for (int i = 0; i < iters; i++) {
+      UpdateGoal();
+      if (cam_mode != GOAL) {
+        break;
+      }
+    }
   }
 }
 
