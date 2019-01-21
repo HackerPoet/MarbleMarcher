@@ -139,12 +139,6 @@ void Overlays::DrawControls(sf::RenderWindow& window) {
 
 void Overlays::DrawTimer(sf::RenderWindow& window, int t, bool is_high_score) {
   sf::Text text;
-/*  Eigen::Vector3f marble_vel = Scene::GetVelocity();
-  float x = marble_vel.x()*1000., y = marble_vel.y()*1000., z = marble_vel.z()*1000.;
-  char buf[128];
-  snprintf(buf, sizeof(buf), "vel: % .3fmU, % .3fmU, % .3fmU (%.3fmU)\n", x,y,z, std::sqrt(x*x+y*y+z*z));
-  MakeText(buf, 0, 0, 40, sf::Color::White, text);
-*/
 
   if (t < 0) {
     return;
@@ -257,6 +251,19 @@ void Overlays::DrawLevels(sf::RenderWindow& window) {
       window.draw(text);
     }
   }
+}
+
+void Overlays::DrawSceneInfo(sf::RenderWindow& window, Scene scene) {
+  sf::Text text;
+  static float vel_prev = 0.0;
+  Eigen::Vector3f marble_vel = scene.GetVelocity();
+  float x = marble_vel.x()*1000., y = marble_vel.y()*1000., z = marble_vel.z()*1000.;
+  char buf[128];
+  float vel = std::sqrt(x*x+z*z);
+  snprintf(buf, sizeof(buf), "vel: % .3fmU, % .3fmU, % .3fmU (%.3fmU)\ndelta: % .2fmmU/fr\ncam: % .3f", x,y,z, vel, (vel - vel_prev)*1000., scene.GetCamLookX());
+  vel_prev = vel;
+  MakeText(buf, 0, 0, 20, sf::Color::White, text, true);
+  window.draw(text);
 }
 
 void Overlays::MakeText(const char* str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono) {

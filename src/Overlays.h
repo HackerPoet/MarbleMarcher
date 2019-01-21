@@ -18,6 +18,8 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 
+#include "Scene.h"
+
 extern int mouse_setting;
 extern bool music_on;
 
@@ -68,6 +70,7 @@ public:
   void DrawArrow(sf::RenderWindow& window, const sf::Vector3f& v3);
   void DrawCredits(sf::RenderWindow& window);
   void DrawLevels(sf::RenderWindow& window);
+  void DrawSceneInfo(sf::RenderWindow& window, Scene scene);
 
 protected:
   void MakeText(const char* str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono=false);

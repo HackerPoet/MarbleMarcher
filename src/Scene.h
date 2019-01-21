@@ -43,6 +43,7 @@ public:
 
   const Eigen::Vector3f& GetMarble() const { return marble_pos; };
   float GetCamLook() const { return cam_look_x_smooth; }
+  float GetCamLookX() const { return cam_look_x; }
   CamMode GetMode() const { return cam_mode; }
   int GetLevel() const { return cur_level; }
   int GetCountdownTime() const;

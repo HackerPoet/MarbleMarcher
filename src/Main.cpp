@@ -95,6 +95,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR lpCmdLine, int nCmdShow) {
 int main(int argc, char *argv[]) {
 #endif
 
+  bool slowdown = false;
   //!! Record/playback mode
   bool recording = argv[1][0] == 'r';
   int record_frame = 0;
@@ -300,6 +301,8 @@ int main(int argc, char *argv[]) {
         } else if (keycode == sf::Keyboard::P) {
             inputs.resize(record_frame);
             recording = true;
+        } else if (keycode == sf::Keyboard::O) {
+            slowdown ^= 1;
         }
         all_keys[keycode] = true;
       } else if (event.type == sf::Event::KeyReleased) {
@@ -532,6 +535,7 @@ int main(int argc, char *argv[]) {
       overlays.DrawCredits(window);
     }
     overlays.DrawFPS(window, int(smooth_fps + 0.5f));
+    overlays.DrawSceneInfo(window, scene);
 
     if (!skip_frame) {
       //Finally display to the screen
@@ -542,7 +546,7 @@ int main(int argc, char *argv[]) {
       if (s > 0.0f) {
         smooth_fps = smooth_fps*0.9f + std::min(1.0f / s, 60.0f)*0.1f;
       }
-      float ftime = !all_keys[sf::Keyboard::Tab] && scene.GetMode() == Scene::MARBLE ? 200.0f : 16.66667f;
+      float ftime = slowdown && !all_keys[sf::Keyboard::Tab] && scene.GetMode() == Scene::MARBLE ? 200.0f : 16.66667f;
       const int time_diff_ms = int(ftime - s*1000.0f);
       if (time_diff_ms > 0) {
         sf::sleep(sf::milliseconds(time_diff_ms));
