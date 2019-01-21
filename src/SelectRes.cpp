@@ -24,7 +24,8 @@ const Resolution all_resolutions[num_resolutions] = {
   Resolution(1280, 720, "GTX 980 or similar:"),
   Resolution(1600, 900, "GTX 1080 or similar:"),
   Resolution(1920, 1080, "GTX 1080 Ti or similar:"),
-  Resolution(2560, 1440, "RTX 2080 Ti or higher:")
+  Resolution(2560, 1440, "RTX 2080 Ti or higher:"),
+  Resolution(3840, 2160, "Use at your own risk:")
 };
 
 SelectRes::SelectRes(const sf::Font* _font) : font(_font), is_fullscreen(false) {
