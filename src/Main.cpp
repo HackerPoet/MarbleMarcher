@@ -42,6 +42,7 @@
 static const float mouse_sensitivity = 0.005f;
 static const float wheel_sensitivity = 0.2f;
 static const float music_vol = 75.0f;
+static const float target_fps = 60.0f;
 
 //Game modes
 enum GameMode {
@@ -219,8 +220,8 @@ int main(int argc, char *argv[]) {
 
   //Main loop
   sf::Clock clock;
-  float smooth_fps = 60.0f;
-  int lag_ms = 0;
+  float smooth_fps = target_fps;
+  float lag_ms = 0.0f;
   while (window.isOpen()) {
     sf::Event event;
     float mouse_wheel = 0.0f;
@@ -418,9 +419,9 @@ int main(int argc, char *argv[]) {
     }
 
     bool skip_frame = false;
-    if (lag_ms >= 16) {
+    if (lag_ms >= 1000.0f / target_fps) {
       //If there is too much lag, just do another frame of physics and skip the draw
-      lag_ms -= 16;
+      lag_ms -= 1000.0f / target_fps;
       skip_frame = true;
     } else {
       //Update the shader values
@@ -481,14 +482,14 @@ int main(int argc, char *argv[]) {
       //If V-Sync is running higher than desired fps, slow down!
       const float s = clock.restart().asSeconds();
       if (s > 0.0f) {
-        smooth_fps = smooth_fps*0.9f + std::min(1.0f / s, 60.0f)*0.1f;
+        smooth_fps = smooth_fps*0.9f + std::min(1.0f / s, target_fps)*0.1f;
       }
-      const int time_diff_ms = int(16.66667f - s*1000.0f);
+      const float time_diff_ms = 1000.0f * (1.0f / target_fps - s);
       if (time_diff_ms > 0) {
-        sf::sleep(sf::milliseconds(time_diff_ms));
-        lag_ms = std::max(lag_ms - time_diff_ms, 0);
+        sf::sleep(sf::seconds(time_diff_ms / 1000.0f));
+        lag_ms = std::max(lag_ms - time_diff_ms, 0.0f);
       } else if (time_diff_ms < 0) {
-        lag_ms += std::max(-time_diff_ms, 0);
+        lag_ms += std::max(-time_diff_ms, 0.0f);
       }
     }
   }
