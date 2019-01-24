@@ -70,7 +70,7 @@ void Overlays::UpdateMenu(float mouse_x, float mouse_y) {
 
   bool hasCompletedAll = true;
   for (int i = 0; i < num_levels; ++i) {
-    if (!high_scores.Has(i)) {
+    if (!high_scores.HasCompleted(i)) {
       hasCompletedAll = false;
       break;
     }
