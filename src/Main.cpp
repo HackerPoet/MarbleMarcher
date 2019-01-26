@@ -57,7 +57,6 @@ enum GameMode {
 //Global variables
 static sf::Vector2i mouse_pos;
 static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
-static bool lock_mouse = false;
 static bool mouse_clicked = false;
 static GameMode game_mode = MAIN_MENU;
 
