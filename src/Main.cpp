@@ -235,6 +235,10 @@ int main(int argc, char *argv[]) {
       if (event.type == sf::Event::Closed) {
         window.close();
         break;
+      } else if (event.type == sf::Event::LostFocus) {
+        if (game_mode == PLAYING) {
+          PauseGame(window, scene);
+        }
       } else if (event.type == sf::Event::KeyPressed) {
         const sf::Keyboard::Key keycode = event.key.code;
         if (event.key.code < 0 || event.key.code >= sf::Keyboard::KeyCount) { continue; }
