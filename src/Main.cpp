@@ -79,7 +79,7 @@ void LockMouse(sf::RenderWindow& window) {
 void UnlockMouse(sf::RenderWindow& window) {
   window.setMouseCursorVisible(true);
 }
-int dirExists(const char *path) {
+int DirExists(const char *path) {
   struct stat info;
   if (stat(path, &info) != 0) {
     return 0;
@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
   const std::string save_dir = std::string(std::getenv("HOME")) + "/.MarbleMarcher";
 #endif
   
-  if (!dirExists(save_dir.c_str())) {
+  if (!DirExists(save_dir.c_str())) {
 #if defined(_WIN32)
     bool success = CreateDirectory(save_dir.c_str(), NULL) != 0 || GetLastError() == ERROR_ALREADY_EXISTS;
 #else
