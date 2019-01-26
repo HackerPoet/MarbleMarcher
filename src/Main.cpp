@@ -79,6 +79,14 @@ void LockMouse(sf::RenderWindow& window) {
 void UnlockMouse(sf::RenderWindow& window) {
   window.setMouseCursorVisible(true);
 }
+
+void PauseGame(sf::RenderWindow& window, Scene& scene) {
+  game_mode = PAUSED;
+  scene.GetCurMusic().setVolume(GetVol());
+  UnlockMouse(window);
+  scene.SetExposure(0.5f);
+}
+
 int DirExists(const char *path) {
   struct stat info;
   if (stat(path, &info) != 0) {
@@ -254,10 +262,7 @@ int main(int argc, char *argv[]) {
             scene.SetExposure(1.0f);
             LockMouse(window);
           } else if (game_mode == PLAYING) {
-            game_mode = PAUSED;
-            scene.GetCurMusic().setVolume(GetVol());
-            UnlockMouse(window);
-            scene.SetExposure(0.5f);
+            PauseGame(window, scene);
           }
         } else if (keycode == sf::Keyboard::R) {
           if (game_mode == PLAYING) {
