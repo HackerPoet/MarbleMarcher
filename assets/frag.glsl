@@ -225,7 +225,6 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 	float d = d_s_td_m.x;
 	float s = d_s_td_m.y;
 	float td = d_s_td_m.z;
-	float m = d_s_td_m.w;
 
 	//Determine the color for this pixel
 	vec4 col = vec4(0.0);
