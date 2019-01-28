@@ -22,7 +22,7 @@ const Level all_levels[num_levels] = {
     1.8f, -0.12f, 0.5f,                              //Scale, Angle1, Angle2
     Eigen::Vector3f(-2.12f, -2.75f, 0.49f),          //Offset
     Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
-    0.035f,                                          //Marble Radius    
+    0.035f,                                          //Marble Radius
     -2.0f,                                           //Start Look Direction
     3.3f,                                            //Orbit Distance
     Eigen::Vector3f(-2.95862f, 2.68825f, -1.11868f), //Marble Position
@@ -36,7 +36,7 @@ const Level all_levels[num_levels] = {
     1.9073f, -9.83f, -1.16f,                         //Scale, Angle1, Angle2
     Eigen::Vector3f(-3.508f, -3.593f, 3.295f),       //Offset
     Eigen::Vector3f(-0.34f, 0.12f, -0.08f),          //Color
-    0.04f,                                           //Marble Radius    
+    0.04f,                                           //Marble Radius
     -2.365f,                                         //Start Look Direction
     5.8f,                                            //Orbit Distance
     Eigen::Vector3f(-3.40191f, 4.14347f, -3.48312f), //Marble Position
@@ -50,7 +50,7 @@ const Level all_levels[num_levels] = {
     2.02f, -1.57f, 1.62f,                            //Scale, Angle1, Angle2
     Eigen::Vector3f(-3.31f, 6.19f, 1.53f),           //Offset
     Eigen::Vector3f(0.12f, -0.09f, -0.09f),          //Color
-    0.009f,                                          //Marble Radius          
+    0.009f,                                          //Marble Radius
     1.570796f,                                       //Start Look Direction
     7.0f,                                            //Orbit Distance
     Eigen::Vector3f(3.18387f, 5.99466f, 0.0f),       //Marble Position
@@ -64,7 +64,7 @@ const Level all_levels[num_levels] = {
     1.65f, 0.37f, 5.26f,                             //Scale, Angle1, Angle2
     Eigen::Vector3f(-1.41f, -0.22f, -0.77f),         //Offset
     Eigen::Vector3f(0.14f, -1.71f, 0.31f),           //Color
-    0.01f,                                           //Marble Radius    
+    0.01f,                                           //Marble Radius
     3.14159f,                                        //Start Look Direction
     3.1f,                                            //Orbit Distance
     Eigen::Vector3f(0.0f, 2.26418f, 0.0f),           //Marble Position
@@ -78,7 +78,7 @@ const Level all_levels[num_levels] = {
     1.77f, -0.22f, 5.62f,                            //Scale, Angle1, Angle2
     Eigen::Vector3f(-2.08f, -1.42f, -1.93f),         //Offset
     Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
-    0.02f,                                           //Marble Radius    
+    0.02f,                                           //Marble Radius
     0.545116f,                                       //Start Look Direction
     3.3f,                                            //Orbit Distance
     Eigen::Vector3f(1.98046f, 2.56955f, 2.08186f),   //Marble Position
@@ -93,7 +93,7 @@ const Level all_levels[num_levels] = {
     1.66f, 1.52f, 0.19f,                             //Scale, Angle1, Angle2
     Eigen::Vector3f(-3.83f, -1.94f, -1.09f),         //Offset
     Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
-    0.02f,                                           //Marble Radius    
+    0.02f,                                           //Marble Radius
     0.0f,                                            //Start Look Direction
     3.1f,                                            //Orbit Distance
     Eigen::Vector3f(0.68147f, 2.80038f, 2.52778f),   //Marble Position
@@ -107,7 +107,7 @@ const Level all_levels[num_levels] = {
     1.58f, -1.45f, 3.95f,                            //Scale, Angle1, Angle2
     Eigen::Vector3f(-1.55f, -0.13f, -2.52f),         //Offset
     Eigen::Vector3f(-1.17f, -0.4f, -1.0f),           //Color
-    0.02f,                                           //Marble Radius    
+    0.02f,                                           //Marble Radius
     0.0f,                                            //Start Look Direction
     4.3f,                                            //Orbit Distance
     Eigen::Vector3f(0.0f, 3.36453f, 2.28284f),       //Marble Position
@@ -121,7 +121,7 @@ const Level all_levels[num_levels] = {
     1.87f, -3.12f, 0.02f,                            //Scale, Angle1, Angle2
     Eigen::Vector3f(-3.57f, 0.129f, 2.95f),          //Offset
     Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
-    0.02f,                                           //Marble Radius    
+    0.02f,                                           //Marble Radius
     3.14159f,                                        //Start Look Direction
     4.2f,                                            //Orbit Distance
     Eigen::Vector3f(0.0f, 3.66236f, -3.30036f),      //Marble Position
@@ -136,7 +136,7 @@ const Level all_levels[num_levels] = {
     1.81f, -4.84f, -2.99f,                           //Scale, Angle1, Angle2
     Eigen::Vector3f(-2.905f, 0.765f, -4.165f),       //Offset
     Eigen::Vector3f(0.16f, 0.38f, 0.15f),            //Color
-    0.022f,                                          //Marble Radius    
+    0.022f,                                          //Marble Radius
     -1.570796f,                                      //Start Look Direction
     4.5f,                                            //Orbit Distance
     Eigen::Vector3f(-4.63064f, 3.6365f, 0.0f),       //Marble Position
@@ -150,7 +150,7 @@ const Level all_levels[num_levels] = {
     1.93f, 1.34637f, 1.58f,                          //Scale, Angle1, Angle2
     Eigen::Vector3f(-2.31f, 1.123f, 1.56f),          //Offset
     Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
-    0.02f,                                           //Marble Radius    
+    0.02f,                                           //Marble Radius
     -2.39681f,                                       //Start Look Direction
     2.7f,                                            //Orbit Distance
     Eigen::Vector3f(-1.71412f, 1.84836f, -1.70884f), //Marble Position
@@ -165,7 +165,7 @@ const Level all_levels[num_levels] = {
     1.88f, 1.52f, 4.91f,                             //Scale, Angle1, Angle2
     Eigen::Vector3f(-4.54f, -1.26f, 0.1f),           //Offset
     Eigen::Vector3f(-1.0f, 0.3f, -0.43f),            //Color
-    0.03f,                                           //Marble Radius    
+    0.03f,                                           //Marble Radius
     -1.570796f,                                      //Start Look Direction
     5.7f,                                            //Orbit Distance
     Eigen::Vector3f(-2.8896f, 3.76526f, 0.0f),       //Marble Position
@@ -179,7 +179,7 @@ const Level all_levels[num_levels] = {
     1.6f, 3.77f, 3.93f,                              //Scale, Angle1, Angle2
     Eigen::Vector3f(-2.0f, -0.41f, -1.43f),          //Offset
     Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
-    0.02f,                                           //Marble Radius    
+    0.02f,                                           //Marble Radius
     -1.570796f,                                      //Start Look Direction
     3.5f,                                            //Orbit Distance
     Eigen::Vector3f(-2.30432f, 0.0444069f, 2.31072f),//Marble Position
@@ -194,7 +194,7 @@ const Level all_levels[num_levels] = {
     2.08f, -4.79f, 3.16f,                            //Scale, Angle1, Angle2
     Eigen::Vector3f(-7.43f, 5.96f, -6.23f),          //Offset
     Eigen::Vector3f(0.16f, 0.38f, 0.15f),            //Color
-    0.023f,                                          //Marble Radius    
+    0.023f,                                          //Marble Radius
     1.570796f,                                       //Start Look Direction
     7.6f,                                            //Orbit Distance
     Eigen::Vector3f(6.06325f, 6.32712f, 0.0f),       //Marble Position
@@ -208,7 +208,7 @@ const Level all_levels[num_levels] = {
     2.0773f, -9.66f, -1.34f,                         //Scale, Angle1, Angle2
     Eigen::Vector3f(-1.238f, -1.533f, 1.085f),       //Offset
     Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
-    0.01f,                                           //Marble Radius    
+    0.01f,                                           //Marble Radius
     1.4f,                                            //Start Look Direction
     3.0f,                                            //Orbit Distance
     Eigen::Vector3f(1.03543f, 1.06432f, 1.22698f),   //Marble Position
@@ -222,7 +222,7 @@ const Level all_levels[num_levels] = {
     1.78f, -0.1f, 3.28f,                             //Scale, Angle1, Angle2
     Eigen::Vector3f(-1.47f, 1.7f, -0.4f),            //Offset
     Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
-    0.02f,                                           //Marble Radius    
+    0.02f,                                           //Marble Radius
     3.14159f,                                        //Start Look Direction
     2.9f,                                            //Orbit Distance
     Eigen::Vector3f(0.0f, 2.1431f, 0.0f),            //Marble Position
