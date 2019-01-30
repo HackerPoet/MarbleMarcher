@@ -218,6 +218,11 @@ int main(int argc, char *argv[]) {
   shader.setUniform("iResolution", window_res);
   scene.Write(shader);
 
+  //Create screen rectangle
+  sf::RectangleShape rect;
+  rect.setSize(window_res);
+  rect.setPosition(0, 0);
+
   //Create the menus
   Overlays overlays(&font, &font_mono);
   overlays.SetScale(float(screen_size.width) / 1280.0f);
@@ -437,9 +442,6 @@ int main(int argc, char *argv[]) {
       //Setup full-screen shader
       sf::RenderStates states = sf::RenderStates::Default;
       states.shader = &shader;
-      sf::RectangleShape rect;
-      rect.setSize(window_res);
-      rect.setPosition(0, 0);
 
       //Draw the fractal
       if (fullscreen) {
