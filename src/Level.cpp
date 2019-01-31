@@ -231,6 +231,125 @@ const Level all_levels[num_levels] = {
     true,                                            //Is Planet
     "Planet Crusher",                                //Description
     0.0f, 0.08f, 0.0f),                              //Animation
+
+  Level(
+    2.0773f, -9.66f, -1.34f,                         //Scale, Angle1, Angle2
+    Eigen::Vector3f(-1.238f, -1.533f, 1.085f),       //Offset
+    Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
+    0.005f,                                          //Marble Radius
+    0.78539816339f,                                  //Start Look Direction
+    2.0f,                                            //Orbit Distance
+    Eigen::Vector3f(1.04172f, 1.41944f, 1.09742f),   //Marble Position
+    Eigen::Vector3f(-1.04172f, 1.414f, -1.09742f),   //Flag Position
+    -2.0f,                                           //Death Barrier
+    false,                                           //Is Planet
+    "Top Of The Citadel"),                           //Description
+
+  Level(
+    1.8093f, -3.165f, -3.2094777f,                 //Scale, Angle1, Angle2
+    Eigen::Vector3f(-1.0939f, -0.43495f, -3.1113f),//Offset
+    Eigen::Vector3f(-0.61f, -0.92f, 0.33f),        //Color
+    0.005f,                                        //Marble Radius
+    0.0f,                                          //Start Look Direction
+    5.0f,                                          //Orbit Distance
+    Eigen::Vector3f(0.0f, -0.483245f, 2.16278f),   //Marble Position
+    Eigen::Vector3f(0.0f, -0.489f, -2.16278f),     //Flag Position
+    -5.0f,                                         //Death Barrier
+    false,                                         //Is Planet
+    "Building Bridges",                            //Description
+    0.0f, 0.0f, 0.06f),                            //Animation
+
+  Level(
+    1.95f, 1.570796f, 0.0f,                          //Scale, Angle1, Angle2
+    Eigen::Vector3f(-6.75f, -3.0f, 0.0f),            //Offset
+    Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
+    0.022f,                                          //Marble Radius
+    0.0f,                                            //Start Look Direction
+    6.3f,                                            //Orbit Distance
+    Eigen::Vector3f(0.0f, 3.96637f, 4.54647f),       //Marble Position
+    Eigen::Vector3f(0.0f, 0.396f, -2.38815f),        //Flag Position
+    -5.0f,                                           //Death Barrier
+    false,                                           //Is Planet
+    "Pylon Palace"),                                 //Description
+
+  Level(
+    1.91f, 0.06f, -0.76f,                            //Scale, Angle1, Angle2
+    Eigen::Vector3f(-3.44f, -0.69f, -1.14f),         //Offset
+    Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
+    0.012f,                                          //Marble Radius
+    3.14159f,                                        //Start Look Direction
+    5.0f,                                            //Orbit Distance
+    Eigen::Vector3f(0.0f, 3.78299f, 0.0f),           //Marble Position
+    Eigen::Vector3f(0.0f, -3.77f, 0.0f),             //Flag Position
+    -999.0f,                                         //Death Barrier
+    true,                                            //Is Planet
+    "The Crown Jewels",                              //Description
+    0.0f, 0.05f, 0.0f),                              //Animation
+
+  Level(
+    1.8986f, -0.4166f, 0.00683f,                   //Scale, Angle1, Angle2
+    Eigen::Vector3f(-2.5130f, -5.4067f, -2.51f),   //Offset
+    Eigen::Vector3f(0.42f, 0.38f, 0.19f),          //Color
+    0.01f,                                         //Marble Radius
+    -1.570796f,                                    //Start Look Direction
+    5.0f,                                          //Orbit Distance
+    Eigen::Vector3f(1.19695f, 3.19773f, 2.8491f),  //Marble Position
+    Eigen::Vector3f(1.168f, 3.195f, -2.8491f),     //Flag Position
+    -5.0f,                                         //Death Barrier
+    false,                                         //Is Planet
+    "Expressways"),                                //Description
+
+  Level(
+    2.03413f, 1.688f, -1.57798f,                     //Scale, Angle1, Angle2
+    Eigen::Vector3f(-4.803822f, -4.1f, -1.39063f),   //Offset
+    Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
+    0.005f,                                          //Marble Radius
+    1.570796f,                                       //Start Look Direction
+    7.0f,                                            //Orbit Distance
+    Eigen::Vector3f(3.77655f, 4.7211f, 0.0f),        //Marble Position
+    Eigen::Vector3f(-3.77655f, 4.716f, 0.0f),        //Flag Position
+    -5.0f,                                           //Death Barrier
+    false,                                           //Is Planet
+    "Bunny Hops"),                                   //Description
+
+  Level(
+    1.6516888f, 0.026083898f, -0.7996324f,           //Scale, Angle1, Angle2
+    Eigen::Vector3f(-3.85863f, -5.13741f, -0.918303f),//Offset
+    Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
+    0.016f,                                          //Marble Radius
+    0.0f,                                            //Start Look Direction
+    7.0f,                                            //Orbit Distance
+    Eigen::Vector3f(0.0f, 5.91936f, 4.3357f),        //Marble Position
+    Eigen::Vector3f(0.0f, -1.01f, -3.94f),           //Flag Position
+    -6.5f,                                           //Death Barrier
+    false,                                           //Is Planet
+    "Asteroid Field"),                               //Description
+
+  Level(
+    1.77746f, 4.62318f, 0.0707307f,                  //Scale, Angle1, Angle2
+    Eigen::Vector3f(-4.6867f, -0.84376f, 1.98158f),  //Offset
+    Eigen::Vector3f(-0.35f, 1.5f, 0.48f),            //Color
+    0.016f,                                          //Marble Radius
+    1.570796f,                                       //Start Look Direction
+    7.0f,                                            //Orbit Distance
+    Eigen::Vector3f(3.03669f, 4.3497f, 0.0f),        //Marble Position
+    Eigen::Vector3f(-3.03669f, 4.331f, 0.0f),        //Flag Position
+    -5.0f,                                           //Death Barrier
+    false,                                           //Is Planet
+    "Lily Pads"),                                    //Description
+
+  Level(
+    2.13f, -1.77f, -1.62f,                           //Scale, Angle1, Angle2
+    Eigen::Vector3f(-4.99f, -3.05f, -4.48f),         //Offset
+    Eigen::Vector3f(0.42f, 0.38f, 0.19f),            //Color
+    0.01f,                                           //Marble Radius
+    3.14159f,                                        //Start Look Direction
+    6.2f,                                            //Orbit Distance
+    Eigen::Vector3f(0.479104f,  2.18768f, -4.29408f),//Marble Position
+    Eigen::Vector3f(0.479104f,  2.177f, 4.29408f),   //Flag Position
+    -4.0f,                                           //Death Barrier
+    false,                                           //Is Planet
+    "Fatal Fissures"),                               //Description
 };
 
 Level::Level(float s, float a1, float a2,

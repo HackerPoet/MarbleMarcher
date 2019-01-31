@@ -300,6 +300,7 @@ int main(int argc, char *argv[]) {
               game_mode = CONTROLS;
             } else if (selected == Overlays::LEVELS) {
               game_mode = LEVELS;
+              overlays.GetLevelPage() = 0;
               scene.SetExposure(0.5f);
             } else if (selected == Overlays::SCREEN_SAVER) {
               game_mode = SCREEN_SAVER;
@@ -318,12 +319,17 @@ int main(int argc, char *argv[]) {
             if (selected == Overlays::BACK2) {
               game_mode = MAIN_MENU;
               scene.SetExposure(1.0f);
+            } else if (selected == Overlays::PREV) {
+              overlays.GetLevelPage() -= 1;
+            } else if (selected == Overlays::NEXT) {
+              overlays.GetLevelPage() += 1;
             } else if (selected >= Overlays::L0 && selected <= Overlays::L14) {
-              if (high_scores.HasUnlocked(selected - Overlays::L0)) {
+              const int level = selected - Overlays::L0 + overlays.GetLevelPage() * Overlays::LEVELS_PER_PAGE;
+              if (high_scores.HasUnlocked(level)) {
                 game_mode = PLAYING;
                 menu_music.stop();
                 scene.SetExposure(1.0f);
-                scene.StartSingle(selected - Overlays::L0);
+                scene.StartSingle(level);
                 scene.GetCurMusic().setVolume(GetVol());
                 scene.GetCurMusic().play();
                 LockMouse(window);

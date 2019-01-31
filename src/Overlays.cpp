@@ -20,6 +20,7 @@
 #include "Scores.h"
 
 static const float pi = 3.14159265359f;
+static const int num_level_pages = 1 + (num_levels - 1) / Overlays::LEVELS_PER_PAGE;
 int mouse_setting = 0;
 bool music_on = true;
 
@@ -27,6 +28,7 @@ Overlays::Overlays(const sf::Font* _font, const sf::Font* _font_mono) :
   font(_font),
   font_mono(_font_mono),
   draw_scale(1.0f),
+  level_page(0),
   top_level(true) {
   memset(all_hover, 0, sizeof(all_hover));
   buff_hover.loadFromFile(menu_hover_wav);
@@ -85,15 +87,32 @@ void Overlays::UpdateControls(float mouse_x, float mouse_y) {
 
 void Overlays::UpdateLevels(float mouse_x, float mouse_y) {
   //Update text boxes
-  for (int i = 0; i < num_levels; ++i) {
-    const float y = 80.0f + float(i/3) * 120.0f;
-    const float x = 240.0f + float(i%3) * 400.0f;
-    const char* txt = high_scores.HasUnlocked(i) ? all_levels[i].txt : "???";
-    MakeText(txt, x, y, 32, sf::Color::White, all_text[i + L0]);
-    const sf::FloatRect text_bounds = all_text[i + L0].getLocalBounds();
-    all_text[i + L0].setOrigin(text_bounds.width / 2, text_bounds.height / 2);
+  const int page_start = level_page * LEVELS_PER_PAGE;
+  const int page_end = page_start + LEVELS_PER_PAGE;
+  for (int i = page_start; i < page_end; ++i) {
+    const int j = i % LEVELS_PER_PAGE;
+    if (i < num_levels) {
+      const float y = 80.0f + float(j / 3) * 120.0f;
+      const float x = 240.0f + float(j % 3) * 400.0f;
+      const char* txt = high_scores.HasUnlocked(i) ? all_levels[i].txt : "???";
+      MakeText(txt, x, y, 32, sf::Color::White, all_text[j + L0]);
+      const sf::FloatRect text_bounds = all_text[j + L0].getLocalBounds();
+      all_text[j + L0].setOrigin(text_bounds.width / 2, text_bounds.height / 2);
+    } else {
+      all_text[j + L0] = sf::Text();
+    }
+  }
+  if (level_page > 0) {
+    MakeText("<", 540, 652, 48, sf::Color::White, all_text[PREV]);
+  } else {
+    all_text[PREV] = sf::Text();
   }
   MakeText("Back", 590, 660, 40, sf::Color::White, all_text[BACK2]);
+  if (level_page < num_level_pages - 1) {
+    MakeText(">", 732, 652, 48, sf::Color::White, all_text[NEXT]);
+  } else {
+    all_text[NEXT] = sf::Text();
+  }
 
   //Check if mouse intersects anything
   UpdateHover(L0, BACK2, mouse_x, mouse_y);
@@ -247,11 +266,14 @@ void Overlays::DrawLevels(sf::RenderWindow& window) {
     window.draw(all_text[i]);
   }
   //Draw the times
-  for (int i = 0; i < num_levels; ++i) {
-    if (high_scores.HasCompleted(i)) {
+  const int page_start = level_page * LEVELS_PER_PAGE;
+  const int page_end = page_start + LEVELS_PER_PAGE;
+  for (int i = page_start; i < page_end; ++i) {
+    if (i < num_levels && high_scores.HasCompleted(i)) {
       sf::Text text;
-      const float y = 98.0f + float(i / 3) * 120.0f;
-      const float x = 148.0f + float(i % 3) * 400.0f;
+      const int j = i % LEVELS_PER_PAGE;
+      const float y = 98.0f + float(j / 3) * 120.0f;
+      const float x = 148.0f + float(j % 3) * 400.0f;
       MakeTime(high_scores.Get(i), x, y, 48, sf::Color(64, 255, 64), text);
       window.draw(text);
     }

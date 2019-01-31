@@ -43,9 +43,12 @@ public:
     L0, L1, L2, L3, L4,
     L5, L6, L7, L8, L9,
     L10, L11, L12, L13, L14,
+    NEXT,
+    PREV,
     BACK2,
     NUM_TEXTS
   };
+  static const int LEVELS_PER_PAGE = 15;
 
   Overlays(const sf::Font* _font, const sf::Font* _font_mono);
 
@@ -53,6 +56,7 @@ public:
   void SetScale(float scale) { draw_scale = scale; }
 
   Texts GetOption(Texts from, Texts to);
+  int& GetLevelPage() { return level_page; }
 
   void UpdateMenu(float mouse_x, float mouse_y);
   void UpdateControls(float mouse_x, float mouse_y);
@@ -93,6 +97,7 @@ private:
 
   float draw_scale;
   bool top_level;
+  int level_page;
 
   const sf::Font* font;
   const sf::Font* font_mono;
