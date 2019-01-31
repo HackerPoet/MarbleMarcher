@@ -286,6 +286,12 @@ void Overlays::DrawSumTime(sf::RenderWindow& window, int t) {
   window.draw(text);
 }
 
+void Overlays::DrawCheatsEnabled(sf::RenderWindow& window) {
+  sf::Text text;
+  MakeText("Cheats Enabled", 10, 680, 32, sf::Color::White, text);
+  window.draw(text);
+}
+
 void Overlays::MakeText(const char* str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono) {
   text.setString(str);
   text.setFont(mono ? *font_mono : *font);

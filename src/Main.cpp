@@ -58,6 +58,7 @@ enum GameMode {
 static sf::Vector2i mouse_pos;
 static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
 static bool mouse_clicked = false;
+static bool show_cheats = false;
 static GameMode game_mode = MAIN_MENU;
 
 float GetVol() {
@@ -277,6 +278,11 @@ int main(int argc, char *argv[]) {
           if (game_mode == PLAYING) {
             scene.ResetLevel();
           }
+        } else if (keycode == sf::Keyboard::Tilde) {
+          if (game_mode == PLAYING && high_scores.HasCompleted(num_levels - 1)) {
+            show_cheats = !show_cheats;
+            scene.EnbaleCheats();
+          }
         }
         all_keys[keycode] = true;
       } else if (event.type == sf::Event::KeyReleased) {
@@ -479,12 +485,20 @@ int main(int argc, char *argv[]) {
       } else if (scene.GetMode() == Scene::MARBLE) {
         overlays.DrawArrow(window, scene.GetGoalDirection());
       }
-      overlays.DrawTimer(window, scene.GetCountdownTime(), scene.IsHighScore());
-      if (scene.IsFullRun()) {
+      if (!scene.HasCheats() || scene.GetCountdownTime() < 4 * 60) {
+        overlays.DrawTimer(window, scene.GetCountdownTime(), scene.IsHighScore());
+      }
+      if (!scene.HasCheats() && scene.IsFullRun()) {
         overlays.DrawSumTime(window, scene.GetSumTime());
+      }
+      if (scene.HasCheats()) {
+        overlays.DrawCheatsEnabled(window);
       }
     } else if (game_mode == PAUSED) {
       overlays.DrawPaused(window);
+      if (scene.HasCheats()) {
+        overlays.DrawCheatsEnabled(window);
+      }
     } else if (game_mode == CREDITS) {
       overlays.DrawCredits(window, scene.IsFullRun(), scene.GetSumTime());
     }
