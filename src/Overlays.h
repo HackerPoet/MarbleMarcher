@@ -65,7 +65,7 @@ public:
 
   void DrawMenu(sf::RenderWindow& window);
   void DrawControls(sf::RenderWindow& window);
-  void DrawTimer(sf::RenderWindow& window, int t, bool finished);
+  void DrawTimer(sf::RenderWindow& window, int t, bool is_high_score);
   void DrawLevelDesc(sf::RenderWindow& window, int level);
   void DrawFPS(sf::RenderWindow& window, int fps);
   void DrawPaused(sf::RenderWindow& window);
