@@ -72,6 +72,8 @@ public:
   bool MarbleCollision(float& delta_v);
 
 protected:
+  void SetLevel(int level);
+
   void UpdateIntro(bool ssaver);
   void UpdateOrbit();
   void UpdateDeOrbit(float dx, float dy, float dz);
@@ -82,6 +84,7 @@ protected:
 
 private:
   int             cur_level;
+  Level           level_copy;
   bool            is_fullrun;
   bool            intro_needs_snap;
   bool            play_single;

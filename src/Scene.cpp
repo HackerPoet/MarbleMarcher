@@ -86,11 +86,11 @@ Scene::Scene(sf::Music* m1, sf::Music* m2) :
 }
 
 void Scene::LoadLevel(int level) {
-  cur_level = level;
-  marble_pos = all_levels[level].start_pos;
-  marble_rad = all_levels[level].marble_rad;
-  flag_pos = all_levels[level].end_pos;
-  cam_look_x = all_levels[level].start_look_x;
+  SetLevel(level);
+  marble_pos = level_copy.start_pos;
+  marble_rad = level_copy.marble_rad;
+  flag_pos = level_copy.end_pos;
+  cam_look_x = level_copy.start_look_x;
 }
 
 void Scene::SetMarble(float x, float y, float z, float r) {
@@ -101,6 +101,11 @@ void Scene::SetMarble(float x, float y, float z, float r) {
 
 void Scene::SetFlag(float x, float y, float z) {
   flag_pos = Eigen::Vector3f(x, y, z);
+}
+
+void Scene::SetLevel(int level) {
+  cur_level = level;
+  level_copy = all_levels[level];
 }
 
 void Scene::SetMode(CamMode mode) {
@@ -156,7 +161,7 @@ bool Scene::IsHighScore() const {
 void Scene::StartNewGame() {
   sum_time = 0;
   play_single = false;
-  cur_level = high_scores.GetStartLevel();
+  SetLevel(high_scores.GetStartLevel());
   is_fullrun = high_scores.HasCompleted(num_levels - 1);
   HideObjects();
   SetMode(ORBIT);
@@ -169,7 +174,7 @@ void Scene::StartNextLevel() {
   } else if (cur_level + 1 >= num_levels) {
     cam_mode = FINAL;
   } else {
-    cur_level += 1;
+    SetLevel(cur_level + 1);
     HideObjects();
     SetMode(ORBIT);
     if (cur_level == mus_switch_lev) {
@@ -182,7 +187,7 @@ void Scene::StartNextLevel() {
 void Scene::StartSingle(int level) {
   play_single = true;
   is_fullrun = false;
-  cur_level = level;
+  SetLevel(level);
   HideObjects();
   SetMode(ORBIT);
 }
@@ -191,14 +196,14 @@ void Scene::ResetLevel() {
   if (cam_mode == MARBLE || play_single) {
     SetMode(DEORBIT);
     timer = frame_deorbit;
-    frac_params = all_levels[cur_level].params;
+    frac_params = level_copy.params;
     frac_params_smooth = frac_params;
-    marble_pos = all_levels[cur_level].start_pos;
+    marble_pos = level_copy.start_pos;
     marble_vel.setZero();
-    marble_rad = all_levels[cur_level].marble_rad;
+    marble_rad = level_copy.marble_rad;
     marble_mat.setIdentity();
-    flag_pos = all_levels[cur_level].end_pos;
-    cam_look_x = all_levels[cur_level].start_look_x;
+    flag_pos = level_copy.end_pos;
+    cam_look_x = level_copy.start_look_x;
     cam_look_x_smooth = cam_look_x;
     cam_pos = cam_pos_smooth;
     cam_dist = default_zoom;
@@ -260,7 +265,7 @@ void Scene::UpdateMarble(float dx, float dy) {
   float max_delta_v = 0.0f;
   for (int i = 0; i < num_phys_steps; ++i) {
     const float force = marble_rad * gravity / num_phys_steps;
-    if (all_levels[cur_level].planet) {
+    if (level_copy.planet) {
       marble_vel -= marble_pos.normalized() * force;
     } else {
       marble_vel.y() -= force;
@@ -290,14 +295,14 @@ void Scene::UpdateMarble(float dx, float dy) {
   marble_vel *= (onGround ? ground_friction : air_friction);
 
   //Update animated fractals
-  frac_params[1] = all_levels[cur_level].params[1] + all_levels[cur_level].anim_1 * std::sin(timer * 0.015f);
-  frac_params[2] = all_levels[cur_level].params[2] + all_levels[cur_level].anim_2 * std::sin(timer * 0.015f);
-  frac_params[4] = all_levels[cur_level].params[4] + all_levels[cur_level].anim_3 * std::sin(timer * 0.015f);
+  frac_params[1] = level_copy.params[1] + level_copy.anim_1 * std::sin(timer * 0.015f);
+  frac_params[2] = level_copy.params[2] + level_copy.anim_2 * std::sin(timer * 0.015f);
+  frac_params[4] = level_copy.params[4] + level_copy.anim_3 * std::sin(timer * 0.015f);
   frac_params_smooth = frac_params;
 
   //Check if marble has hit flag post
   if (cam_mode != GOAL) {
-    const bool flag_y_match = all_levels[cur_level].planet ?
+    const bool flag_y_match = level_copy.planet ?
       marble_pos.y() <= flag_pos.y() && marble_pos.y() >= flag_pos.y() - 7*marble_rad :
       marble_pos.y() >= flag_pos.y() && marble_pos.y() <= flag_pos.y() + 7*marble_rad;
     if (flag_y_match) {
@@ -313,7 +318,7 @@ void Scene::UpdateMarble(float dx, float dy) {
   }
 
   //Check if marble passed the death barrier
-  if (marble_pos.y() < all_levels[cur_level].kill_y) {
+  if (marble_pos.y() < level_copy.kill_y) {
     ResetLevel();
   }
 }
@@ -375,7 +380,7 @@ void Scene::UpdateOrbit() {
   sum_time += 1;
 
   //Get marble location and rotational parameters
-  const float orbit_dist = all_levels[cur_level].orbit_dist;
+  const float orbit_dist = level_copy.orbit_dist;
   const Eigen::Vector3f orbit_pt(0.0f, orbit_dist, 0.0f);
   const Eigen::Vector3f perp_vec(std::sin(t), 0.0f, std::cos(t));
   cam_pos = orbit_pt + perp_vec * (orbit_dist * 2.5f);
@@ -396,20 +401,20 @@ void Scene::UpdateOrbit() {
   cam_mat.block<3, 1>(0, 3) = cam_pos_smooth;
 
   //Update fractal parameters
-  ModPi(frac_params[1], all_levels[cur_level].params[1]);
-  ModPi(frac_params[2], all_levels[cur_level].params[2]);
-  frac_params_smooth = frac_params * (1.0f - a) + all_levels[cur_level].params * a;
+  ModPi(frac_params[1], level_copy.params[1]);
+  ModPi(frac_params[2], level_copy.params[2]);
+  frac_params_smooth = frac_params * (1.0f - a) + level_copy.params * a;
 
   //When done transitioning display the marble and flag
   if (timer >= frame_transition) {
-    marble_pos = all_levels[cur_level].start_pos;
-    marble_rad = all_levels[cur_level].marble_rad;
-    flag_pos = all_levels[cur_level].end_pos;
+    marble_pos = level_copy.start_pos;
+    marble_rad = level_copy.marble_rad;
+    flag_pos = level_copy.end_pos;
   }
 
   //When done transitioning, setup level
   if (timer >= frame_orbit) {
-    frac_params = all_levels[cur_level].params;
+    frac_params = level_copy.params;
     cam_look_x = cam_look_x_smooth;
     cam_pos = cam_pos_smooth;
     cam_dist = default_zoom;
@@ -430,14 +435,14 @@ void Scene::UpdateDeOrbit(float dx, float dy, float dz) {
     UpdateCameraOnly(dx, dy, dz);
   } else {
     //Get marble location and rotational parameters
-    const float orbit_dist = all_levels[cur_level].orbit_dist;
+    const float orbit_dist = level_copy.orbit_dist;
     const Eigen::Vector3f orbit_pt(0.0f, orbit_dist, 0.0f);
     const Eigen::Vector3f perp_vec(std::sin(t), 0.0f, std::cos(t));
     const Eigen::Vector3f orbit_cam_pos = orbit_pt + perp_vec * (orbit_dist * 2.5f);
     cam_pos = cam_pos*orbit_smooth + orbit_cam_pos*(1 - orbit_smooth);
 
     //Solve for the look direction
-    const float start_look_x = all_levels[cur_level].start_look_x;
+    const float start_look_x = level_copy.start_look_x;
     cam_look_x = std::atan2(cam_pos.x(), cam_pos.z());
     ModPi(cam_look_x, start_look_x);
 
@@ -489,7 +494,7 @@ void Scene::UpdateCameraOnly(float dx, float dy, float dz) {
   cam_look_y_smooth = cam_look_y_smooth*look_smooth + cam_look_y*(1 - look_smooth);
 
   //Setup rotation matrix for planets
-  if (all_levels[cur_level].planet) {
+  if (level_copy.planet) {
     marble_mat.col(1) = marble_pos.normalized();
     marble_mat.col(2) = -marble_mat.col(1).cross(marble_mat.col(0)).normalized();
     marble_mat.col(0) = -marble_mat.col(2).cross(marble_mat.col(1)).normalized();
@@ -581,7 +586,7 @@ void Scene::Write(sf::Shader& shader) const {
   shader.setUniform("iMarblePos", sf::Glsl::Vec3(marble_pos.x(), marble_pos.y(), marble_pos.z()));
   shader.setUniform("iMarbleRad", marble_rad);
 
-  shader.setUniform("iFlagScale", all_levels[cur_level].planet ? -marble_rad : marble_rad);
+  shader.setUniform("iFlagScale", level_copy.planet ? -marble_rad : marble_rad);
   shader.setUniform("iFlagPos", sf::Glsl::Vec3(flag_pos.x(), flag_pos.y(), flag_pos.z()));
 
   shader.setUniform("iFracScale", frac_params_smooth[0]);
