@@ -53,6 +53,7 @@ Scene::Scene(sf::Music* m1, sf::Music* m2) :
   intro_needs_snap(true),
   play_single(false),
   is_fullrun(false),
+  enable_cheats(false),
   exposure(1.0f),
   cam_mat(Eigen::Matrix4f::Identity()),
   cam_look_x(0.0f),
@@ -161,6 +162,7 @@ bool Scene::IsHighScore() const {
 void Scene::StartNewGame() {
   sum_time = 0;
   play_single = false;
+  enable_cheats = false;
   SetLevel(high_scores.GetStartLevel());
   is_fullrun = high_scores.HasCompleted(num_levels - 1);
   HideObjects();
@@ -187,6 +189,7 @@ void Scene::StartNextLevel() {
 void Scene::StartSingle(int level) {
   play_single = true;
   is_fullrun = false;
+  enable_cheats = false;
   SetLevel(level);
   HideObjects();
   SetMode(ORBIT);
@@ -310,7 +313,9 @@ void Scene::UpdateMarble(float dx, float dy) {
       const float fz = marble_pos.z() - flag_pos.z();
       if (fx*fx + fz*fz < 6 * marble_rad*marble_rad) {
         final_time = timer;
-        high_scores.Update(cur_level, final_time);
+        if (!enable_cheats) {
+          high_scores.Update(cur_level, final_time);
+        }
         SetMode(GOAL);
         sound_goal.play();
       }

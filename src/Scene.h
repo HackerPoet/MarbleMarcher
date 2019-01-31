@@ -39,6 +39,7 @@ public:
   void SetFlag(float x, float y, float z);
   void SetMode(CamMode mode);
   void SetExposure(float e) { exposure = e; }
+  void EnbaleCheats() { enable_cheats = true; }
 
   const Eigen::Vector3f& GetMarble() const { return marble_pos; };
   float GetCamLook() const { return cam_look_x_smooth; }
@@ -50,6 +51,7 @@ public:
   bool IsSinglePlay() const { return play_single; }
   bool IsHighScore() const;
   bool IsFullRun() const { return is_fullrun; }
+  bool HasCheats() const { return enable_cheats; }
 
   sf::Music& GetCurMusic() const;
   void StopAllMusic();
@@ -129,4 +131,6 @@ private:
 
   sf::Music* music_1;
   sf::Music* music_2;
+
+  bool            enable_cheats;
 };
