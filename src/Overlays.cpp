@@ -314,14 +314,14 @@ void Overlays::DrawCheats(sf::RenderWindow& window) {
   sf::Text text;
   const char* txt =
     "[ C ] Color change\n"
-    "[ F ] Free camera toggle\n"
+    "[ F ] Free camera\n"
     "[ G ] Gravity strength\n"
     "[ H ] Hyperspeed toggle\n"
     "[ I ] Ignore goal\n"
-    "[ M ] Motion toggle\n"
+    "[ M ] Motion disable\n"
     "[ P ] Planet toggle\n"
-    "[ Z ] Zoom to scale toggle\n";
-  MakeText(txt, 460, 160, 32, sf::Color::White, text);
+    "[ Z ] Zoom to scale\n";
+  MakeText(txt, 460, 160, 32, sf::Color::White, text, true);
   window.draw(text);
 }
 
