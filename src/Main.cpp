@@ -283,6 +283,22 @@ int main(int argc, char *argv[]) {
             show_cheats = !show_cheats;
             scene.EnbaleCheats();
           }
+        } else if (keycode == sf::Keyboard::C) {
+          scene.Cheat_ColorChange();
+        } else if (keycode == sf::Keyboard::F) {
+          scene.Cheat_FreeCamera();
+        } else if (keycode == sf::Keyboard::G) {
+          scene.Cheat_Gravity();
+        } else if (keycode == sf::Keyboard::H) {
+          scene.Cheat_HyperSpeed();
+        } else if (keycode == sf::Keyboard::I) {
+          scene.Cheat_IgnoreGoal();
+        } else if (keycode == sf::Keyboard::M) {
+          scene.Cheat_Motion();
+        } else if (keycode == sf::Keyboard::P) {
+          scene.Cheat_Planet();
+        } else if (keycode == sf::Keyboard::Z) {
+          scene.Cheat_Zoom();
         }
         all_keys[keycode] = true;
       } else if (event.type == sf::Event::KeyReleased) {
@@ -482,17 +498,20 @@ int main(int argc, char *argv[]) {
     } else if (game_mode == PLAYING) {
       if (scene.GetMode() == Scene::ORBIT && scene.GetMarble().x() < 998.0f) {
         overlays.DrawLevelDesc(window, scene.GetLevel());
-      } else if (scene.GetMode() == Scene::MARBLE) {
+      } else if (scene.GetMode() == Scene::MARBLE && !scene.IsFreeCamera()) {
         overlays.DrawArrow(window, scene.GetGoalDirection());
       }
       if (!scene.HasCheats() || scene.GetCountdownTime() < 4 * 60) {
         overlays.DrawTimer(window, scene.GetCountdownTime(), scene.IsHighScore());
       }
-      if (!scene.HasCheats() && scene.IsFullRun()) {
+      if (!scene.HasCheats() && scene.IsFullRun() && !scene.IsFreeCamera()) {
         overlays.DrawSumTime(window, scene.GetSumTime());
       }
-      if (scene.HasCheats()) {
+      if (scene.HasCheats() && !scene.IsFreeCamera()) {
         overlays.DrawCheatsEnabled(window);
+      }
+      if (show_cheats) {
+        overlays.DrawCheats(window);
       }
     } else if (game_mode == PAUSED) {
       overlays.DrawPaused(window);
@@ -502,7 +521,9 @@ int main(int argc, char *argv[]) {
     } else if (game_mode == CREDITS) {
       overlays.DrawCredits(window, scene.IsFullRun(), scene.GetSumTime());
     }
-    overlays.DrawFPS(window, int(smooth_fps + 0.5f));
+    if (!scene.IsFreeCamera()) {
+      overlays.DrawFPS(window, int(smooth_fps + 0.5f));
+    }
 
     if (!skip_frame) {
       //Finally display to the screen

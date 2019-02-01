@@ -292,6 +292,21 @@ void Overlays::DrawCheatsEnabled(sf::RenderWindow& window) {
   window.draw(text);
 }
 
+void Overlays::DrawCheats(sf::RenderWindow& window) {
+  sf::Text text;
+  const char* txt =
+    "[ C ] Color change\n"
+    "[ F ] Free camera toggle\n"
+    "[ G ] Gravity strength\n"
+    "[ H ] Hyperspeed toggle\n"
+    "[ I ] Ignore goal\n"
+    "[ M ] Motion toggle\n"
+    "[ P ] Planet toggle\n"
+    "[ Z ] Zoom to scale toggle\n";
+  MakeText(txt, 460, 160, 32, sf::Color::White, text);
+  window.draw(text);
+}
+
 void Overlays::MakeText(const char* str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono) {
   text.setString(str);
   text.setFont(mono ? *font_mono : *font);

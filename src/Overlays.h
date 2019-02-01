@@ -74,6 +74,7 @@ public:
   void DrawLevels(sf::RenderWindow& window);
   void DrawSumTime(sf::RenderWindow& window, int t);
   void DrawCheatsEnabled(sf::RenderWindow& window);
+  void DrawCheats(sf::RenderWindow& window);
 
 protected:
   void MakeText(const char* str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono=false);

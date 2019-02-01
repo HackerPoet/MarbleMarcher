@@ -50,7 +50,8 @@ public:
   sf::Vector3f GetGoalDirection() const;
   bool IsSinglePlay() const { return play_single; }
   bool IsHighScore() const;
-  bool IsFullRun() const { return is_fullrun; }
+  bool IsFullRun() const { return is_fullrun && !enable_cheats; }
+  bool IsFreeCamera() const { return free_camera; }
   bool HasCheats() const { return enable_cheats; }
 
   sf::Music& GetCurMusic() const;
@@ -60,6 +61,7 @@ public:
   void StartNextLevel();
   void StartSingle(int level);
   void ResetLevel();
+  void ResetCheats();
 
   void UpdateMarble(float dx=0.0f, float dy=0.0f);
   void UpdateCamera(float dx=0.0f, float dy=0.0f, float dz=0.0f, bool speedup=false);
@@ -72,6 +74,15 @@ public:
   float DE(const Eigen::Vector3f& pt) const;
   Eigen::Vector3f NP(const Eigen::Vector3f& pt) const;
   bool MarbleCollision(float& delta_v);
+
+  void Cheat_ColorChange();
+  void Cheat_FreeCamera();
+  void Cheat_Gravity();
+  void Cheat_HyperSpeed();
+  void Cheat_IgnoreGoal();
+  void Cheat_Motion();
+  void Cheat_Planet();
+  void Cheat_Zoom();
 
 protected:
   void SetLevel(int level);
@@ -133,4 +144,10 @@ private:
   sf::Music* music_2;
 
   bool            enable_cheats;
+  bool            free_camera;
+  int             gravity_type;
+  bool            ignore_goal;
+  bool            hyper_speed;
+  bool            disable_motion;
+  bool            zoom_to_scale;
 };
