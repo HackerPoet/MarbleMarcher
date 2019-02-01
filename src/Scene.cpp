@@ -291,7 +291,7 @@ void Scene::UpdateMarble(float dx, float dy) {
     float max_delta_v = 0.0f;
     for (int i = 0; i < num_phys_steps; ++i) {
       float force = marble_rad * gravity / num_phys_steps;
-      if (gravity_type == 1) { force *= 0.25f; } else if (gravity_type == 2) { force = 0.0f; } else if (gravity_type == 3) { force *= 4.0f; }
+      if (gravity_type == 1) { force *= 0.25f; } else if (gravity_type == 2) { force *= 4.0f; }
       if (level_copy.planet) {
         marble_vel -= marble_pos.normalized() * force;
       } else {
@@ -814,7 +814,7 @@ void Scene::Cheat_FreeCamera() {
 }
 void Scene::Cheat_Gravity() {
   if (!enable_cheats) { return; }
-  gravity_type = (gravity_type + 1) % 4;
+  gravity_type = (gravity_type + 1) % 3;
 }
 void Scene::Cheat_HyperSpeed() {
   if (!enable_cheats) { return; }
