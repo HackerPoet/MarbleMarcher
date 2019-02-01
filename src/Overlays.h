@@ -71,6 +71,7 @@ public:
   void DrawPaused(sf::RenderWindow& window);
   void DrawArrow(sf::RenderWindow& window, const sf::Vector3f& v3);
   void DrawCredits(sf::RenderWindow& window, bool fullrun, int t);
+  void DrawMidPoint(sf::RenderWindow& window, bool fullrun, int t);
   void DrawLevels(sf::RenderWindow& window);
   void DrawSumTime(sf::RenderWindow& window, int t);
   void DrawCheatsEnabled(sf::RenderWindow& window);

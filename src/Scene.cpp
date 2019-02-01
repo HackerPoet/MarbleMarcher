@@ -40,6 +40,7 @@ static const int fractal_iters = 16;
 static const float gravity = 0.005f;
 static const float ground_ratio = 1.15f;
 static const int mus_switches[num_level_music] = {9, 15, 21, 24};
+static const int num_levels_midpoint = 15;
 
 static void ModPi(float& a, float b) {
   if (a - b > pi) {
@@ -179,6 +180,8 @@ void Scene::StartNextLevel() {
   if (play_single) {
     cam_mode = MARBLE;
     ResetLevel();
+  } else if (cur_level + 1 == num_levels_midpoint && cam_mode != MIDPOINT) {
+    cam_mode = MIDPOINT;
   } else if (cur_level + 1 >= num_levels) {
     cam_mode = FINAL;
   } else {
@@ -257,7 +260,7 @@ void Scene::UpdateCamera(float dx, float dy, float dz, bool speedup) {
     }
   } else if (cam_mode == MARBLE) {
     UpdateNormal(dx, dy, dz);
-  } else if (cam_mode == GOAL || cam_mode == FINAL) {
+  } else if (cam_mode == GOAL || cam_mode == FINAL || cam_mode == MIDPOINT) {
     for (int i = 0; i < iters; i++) {
       UpdateGoal();
       if (cam_mode != GOAL) {
@@ -566,7 +569,7 @@ void Scene::UpdateGoal() {
   const float t = timer * 0.01f;
   float a = std::min(t / 75.0f, 1.0f);
   timer += 1;
-  if (cur_level < num_levels - 1) {
+  if (cur_level != num_levels_midpoint - 1 && cur_level != num_levels - 1) {
     sum_time += 1;
   }
 
@@ -597,7 +600,7 @@ void Scene::UpdateGoal() {
     marble_vel *= 0.95f;
   }
 
-  if (timer > 300 && cam_mode != FINAL) {
+  if (timer > 300 && cam_mode != FINAL && cam_mode != MIDPOINT) {
     StartNextLevel();
   }
 }

@@ -51,7 +51,8 @@ enum GameMode {
   SCREEN_SAVER,
   CONTROLS,
   LEVELS,
-  CREDITS
+  CREDITS,
+  MIDPOINT
 };
 
 //Global variables
@@ -259,6 +260,11 @@ int main(int argc, char *argv[]) {
           credits_music.stop();
           menu_music.setVolume(GetVol());
           menu_music.play();
+        } else if (game_mode == MIDPOINT) {
+          game_mode = PLAYING;
+          scene.SetExposure(1.0f);
+          credits_music.stop();
+          scene.StartNextLevel();
         } else if (keycode == sf::Keyboard::Escape) {
           if (game_mode == MAIN_MENU) {
             window.close();
@@ -419,6 +425,11 @@ int main(int argc, char *argv[]) {
       scene.StopAllMusic();
       scene.SetExposure(0.5f);
       credits_music.play();
+    } else if (scene.GetMode() == Scene::MIDPOINT && game_mode != MIDPOINT) {
+      game_mode = MIDPOINT;
+      scene.StopAllMusic();
+      scene.SetExposure(0.5f);
+      credits_music.play();
     }
 
     //Main game update
@@ -433,7 +444,7 @@ int main(int argc, char *argv[]) {
       overlays.UpdateLevels((float)mouse_pos.x, (float)mouse_pos.y);
     } else if (game_mode == SCREEN_SAVER) {
       scene.UpdateCamera();
-    } else if (game_mode == PLAYING || game_mode == CREDITS) {
+    } else if (game_mode == PLAYING || game_mode == CREDITS || game_mode == MIDPOINT) {
       //Collect keyboard input
       const float force_lr =
         (all_keys[sf::Keyboard::Left] || all_keys[sf::Keyboard::A] ? -1.0f : 0.0f) +
@@ -524,6 +535,8 @@ int main(int argc, char *argv[]) {
       }
     } else if (game_mode == CREDITS) {
       overlays.DrawCredits(window, scene.IsFullRun(), scene.GetSumTime());
+    } else if (game_mode == MIDPOINT) {
+      overlays.DrawMidPoint(window, scene.IsFullRun(), scene.GetSumTime());
     }
     if (!scene.IsFreeCamera()) {
       overlays.DrawFPS(window, int(smooth_fps + 0.5f));

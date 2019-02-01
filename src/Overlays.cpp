@@ -240,14 +240,32 @@ void Overlays::DrawArrow(sf::RenderWindow& window, const sf::Vector3f& v3) {
 
 void Overlays::DrawCredits(sf::RenderWindow& window, bool fullrun, int t) {
   const char* txt =
-    "Congratulations, you beat all the levels!\n\n\n\n"
-    "I hope it was as fun to play this demo as\n"
-    "it was to make it. For more information about\n"
-    "this game and other projects, check out my\n"
-    "YouTube channel \"CodeParade\".\n\n"
+    "  Congratulations, you beat all the levels!\n\n\n\n"
+    "As a reward, cheats have been unlocked!\n"
+    "Activate them with the ~ key during gameplay.\n\n"
     "Thanks for playing!";
   sf::Text text;
-  MakeText(txt, 50, 100, 44, sf::Color::White, text);
+  MakeText(txt, 100, 100, 44, sf::Color::White, text);
+  text.setLineSpacing(1.3f);
+  window.draw(text);
+
+  if (fullrun) {
+    sf::Text time_txt;
+    MakeTime(t, 640, 226, 72, sf::Color::White, time_txt);
+    const sf::FloatRect text_bounds = time_txt.getLocalBounds();
+    time_txt.setOrigin(text_bounds.width / 2, text_bounds.height / 2);
+    window.draw(time_txt);
+  }
+}
+
+void Overlays::DrawMidPoint(sf::RenderWindow& window, bool fullrun, int t) {
+  const char* txt =
+    "            You've done well so far.\n\n\n\n"
+    "      But this is only the beginning.\n"
+    "If you need a quick break, take it now.\n"
+    "The challenge levels are coming up...";
+  sf::Text text;
+  MakeText(txt, 205, 100, 44, sf::Color::White, text);
   text.setLineSpacing(1.3f);
   window.draw(text);
 

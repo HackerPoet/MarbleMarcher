@@ -30,6 +30,7 @@ public:
     MARBLE,
     GOAL,
     FINAL,
+    MIDPOINT
   };
 
   Scene(sf::Music* level_music);
