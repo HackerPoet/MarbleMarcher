@@ -63,7 +63,7 @@ static bool show_cheats = false;
 static GameMode game_mode = MAIN_MENU;
 
 float GetVol() {
-  if (!music_on) {
+  if (game_settings.mute) {
     return 0.0f;
   } else if (game_mode == PAUSED) {
     return music_vol / 4;
@@ -170,9 +170,11 @@ int main(int argc, char *argv[]) {
     }
   }
   const std::string save_file = save_dir + "/scores.bin";
+  const std::string settings_file = save_dir + "/settings.bin";
 
   //Load scores if available
   high_scores.Load(save_file);
+  game_settings.Load(settings_file);
 
   //Have user select the resolution
   SelectRes select_res(&font_mono);
@@ -394,12 +396,12 @@ int main(int argc, char *argv[]) {
               menu_music.setVolume(GetVol());
               menu_music.play();
             } else if (selected == Overlays::MUSIC) {
-              music_on = !music_on;
+              game_settings.mute = !game_settings.mute;
               for (int i = 0; i < num_level_music; ++i) {
                 level_music[i].setVolume(GetVol());
               }
             } else if (selected == Overlays::MOUSE) {
-              mouse_setting = (mouse_setting + 1) % 3;
+              game_settings.mouse_sensitivity = (game_settings.mouse_sensitivity + 1) % 3;
             }
           }
         } else if (event.mouseButton.button == sf::Mouse::Right) {
@@ -457,9 +459,9 @@ int main(int argc, char *argv[]) {
       const sf::Vector2i mouse_delta = mouse_pos - screen_center;
       sf::Mouse::setPosition(screen_center, window);
       float ms = mouse_sensitivity;
-      if (mouse_setting == 1) {
+      if (game_settings.mouse_sensitivity == 1) {
         ms *= 0.5f;
-      } else if (mouse_setting == 2) {
+      } else if (game_settings.mouse_sensitivity == 2) {
         ms *= 0.25f;
       }
       const float cam_lr = float(-mouse_delta.x) * ms;
@@ -566,6 +568,7 @@ int main(int argc, char *argv[]) {
   scene.StopAllMusic();
   credits_music.stop();
   high_scores.Save(save_file);
+  game_settings.Save(settings_file);
 
 #ifdef _DEBUG
   system("pause");

@@ -15,11 +15,11 @@
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "Settings.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 
-extern int mouse_setting;
-extern bool music_on;
+extern Settings game_settings;
 
 class Overlays {
 public:

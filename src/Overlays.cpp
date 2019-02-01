@@ -21,8 +21,7 @@
 
 static const float pi = 3.14159265359f;
 static const int num_level_pages = 1 + (num_levels - 1) / Overlays::LEVELS_PER_PAGE;
-int mouse_setting = 0;
-bool music_on = true;
+Settings game_settings;
 
 Overlays::Overlays(const sf::Font* _font, const sf::Font* _font_mono) :
   font(_font),
@@ -126,14 +125,14 @@ void Overlays::UpdatePaused(float mouse_x, float mouse_y) {
   MakeText("Quit", 845, 356, 40, sf::Color::White, all_text[QUIT]);
 
   //Update music setting
-  const char* music_txt = (music_on ? "Music:  On" : "Music:  Off");
+  const char* music_txt = (game_settings.mute ? "Music:  Off" : "Music:  On");
   MakeText(music_txt, 410, 500, 40, sf::Color::White, all_text[MUSIC]);
 
   //Update mouse sensitivity setting
   const char* mouse_txt = "Mouse Sensitivity:  High";
-  if (mouse_setting == 1) {
+  if (game_settings.mouse_sensitivity == 1) {
     mouse_txt = "Mouse Sensitivity:  Medium";
-  } else if (mouse_setting == 2) {
+  } else if (game_settings.mouse_sensitivity == 2) {
     mouse_txt = "Mouse Sensitivity:  Low";
   }
   MakeText(mouse_txt, 410, 550, 40, sf::Color::White, all_text[MOUSE]);
