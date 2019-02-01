@@ -289,7 +289,7 @@ int main(int argc, char *argv[]) {
           if (game_mode == PLAYING) {
             scene.ResetLevel();
           }
-        } else if (keycode == sf::Keyboard::Tilde) {
+        } else if (keycode == sf::Keyboard::F1) {
           if (game_mode == PLAYING && high_scores.HasCompleted(num_levels - 1)) {
             show_cheats = !show_cheats;
             scene.EnbaleCheats();
