@@ -32,7 +32,7 @@ public:
     FINAL,
   };
 
-  Scene(sf::Music* m1, sf::Music* m2);
+  Scene(sf::Music* level_music);
 
   void LoadLevel(int level);
   void SetMarble(float x, float y, float z, float r);
@@ -140,8 +140,7 @@ private:
   sf::Sound sound_shatter;
   sf::SoundBuffer buff_shatter;
 
-  sf::Music* music_1;
-  sf::Music* music_2;
+  sf::Music* music;
 
   bool            enable_cheats;
   bool            free_camera;

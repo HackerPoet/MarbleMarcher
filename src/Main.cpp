@@ -137,12 +137,15 @@ int main(int argc, char *argv[]) {
   sf::Music menu_music;
   menu_music.openFromFile(menu_ogg);
   menu_music.setLoop(true);
-  sf::Music level1_music;
-  level1_music.openFromFile(level1_ogg);
-  level1_music.setLoop(true);
-  sf::Music level2_music;
-  level2_music.openFromFile(level2_ogg);
-  level2_music.setLoop(true);
+  sf::Music level_music[num_level_music];
+  level_music[0].openFromFile(level1_ogg);
+  level_music[0].setLoop(true);
+  level_music[1].openFromFile(level2_ogg);
+  level_music[1].setLoop(true);
+  level_music[2].openFromFile(level3_ogg);
+  level_music[2].setLoop(true);
+  level_music[3].openFromFile(level4_ogg);
+  level_music[3].setLoop(true);
   sf::Music credits_music;
   credits_music.openFromFile(credits_ogg);
   credits_music.setLoop(true);
@@ -214,7 +217,7 @@ int main(int argc, char *argv[]) {
   }
 
   //Create the fractal scene
-  Scene scene(&level1_music, &level2_music);
+  Scene scene(level_music);
   const sf::Glsl::Vec2 window_res((float)resolution->width, (float)resolution->height);
   shader.setUniform("iResolution", window_res);
   scene.Write(shader);
@@ -386,8 +389,9 @@ int main(int argc, char *argv[]) {
               menu_music.play();
             } else if (selected == Overlays::MUSIC) {
               music_on = !music_on;
-              level1_music.setVolume(GetVol());
-              level2_music.setVolume(GetVol());
+              for (int i = 0; i < num_level_music; ++i) {
+                level_music[i].setVolume(GetVol());
+              }
             } else if (selected == Overlays::MOUSE) {
               mouse_setting = (mouse_setting + 1) % 3;
             }
@@ -546,8 +550,7 @@ int main(int argc, char *argv[]) {
 
   //Stop all music
   menu_music.stop();
-  level1_music.stop();
-  level2_music.stop();
+  scene.StopAllMusic();
   credits_music.stop();
   high_scores.Save(save_file);
 

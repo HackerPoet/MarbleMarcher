@@ -39,7 +39,7 @@ static const float default_zoom = 15.0f;
 static const int fractal_iters = 16;
 static const float gravity = 0.005f;
 static const float ground_ratio = 1.15f;
-static const int mus_switch_lev = 9;
+static const int mus_switches[num_level_music] = {9, 15, 21, 24};
 
 static void ModPi(float& a, float b) {
   if (a - b > pi) {
@@ -49,7 +49,7 @@ static void ModPi(float& a, float b) {
   }
 }
 
-Scene::Scene(sf::Music* m1, sf::Music* m2) :
+Scene::Scene(sf::Music* level_music) :
   intro_needs_snap(true),
   play_single(false),
   is_fullrun(false),
@@ -67,9 +67,9 @@ Scene::Scene(sf::Music* m1, sf::Music* m2) :
   flag_pos(0.0f, 0.0f, 0.0f),
   timer(0),
   sum_time(0),
-  music_1(m1),
-  music_2(m2),
-  cur_level(0) {
+  music(level_music),
+  cur_level(0)
+{
   ResetCheats();
   frac_params.setOnes();
   frac_params_smooth.setOnes();
@@ -143,12 +143,18 @@ sf::Vector3f Scene::GetGoalDirection() const {
 }
 
 sf::Music& Scene::GetCurMusic() const {
-  return *(cur_level < mus_switch_lev ? music_1 : music_2);
+  for (int i = 0; i < num_level_music; ++i) {
+    if (cur_level < mus_switches[i]) {
+      return music[i];
+    }
+  }
+  return music[0];
 }
 
 void Scene::StopAllMusic() {
-  music_1->stop();
-  music_2->stop();
+  for (int i = 0; i < num_level_music; ++i) {
+    music[i].stop();
+  }
 }
 
 bool Scene::IsHighScore() const {
@@ -179,9 +185,11 @@ void Scene::StartNextLevel() {
     SetLevel(cur_level + 1);
     HideObjects();
     SetMode(ORBIT);
-    if (cur_level == mus_switch_lev) {
-      music_1->stop();
-      music_2->play();
+    for (int i = 0; i < num_level_music; ++i) {
+      if (cur_level == mus_switches[i]) {
+        StopAllMusic();
+        GetCurMusic().play();
+      }
     }
   }
 }
