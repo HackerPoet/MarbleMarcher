@@ -14,7 +14,7 @@ Video Explanation: https://youtu.be/9U0XVdvQwAI
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 * [SFML 2.5.0](https://www.sfml-dev.org)
-
+### MacOS
 On macOS these can be conveniently installed using [Homebrew](https://brew.sh):
 
 `brew install eigen sfml`
@@ -24,8 +24,13 @@ On macOS these can be conveniently installed using [Homebrew](https://brew.sh):
 Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
 
 `vcpkg install eigen3 sfml`
+### Arch Linux
+`sudo pacman -S eigen sfml git cmake make`
+
+
 
 ## Building
+### MacOS
 * `mkdir build && cd build`
 * `cmake ..`
     * If you use `vcpkg`, add the flag `-DCMAKE_TOOLCHAIN_FILE=[path/to/vcpkg]/scripts/buildsystems/vcpkg.cmake`
@@ -35,6 +40,16 @@ Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
 Alternatively, one can use the platform-dependent build system, for example `Make`:
 
 * `make -C build`
+### Arch Linux
+* `cd ~`
+* `git clone https://github.com/HackerPoet/MarbleMarcher.git`
+* `cd MarbleMarcher`
+* `mkdir build && cd build`
+* `cmake ..`
+* `cd ..`
+* `cmake --build build`
+* `cp build/MarbleMarcher ./`
+
 
 ## Launching
 * Make sure that the current working directory contains the `assets` folder
