@@ -1,6 +1,7 @@
 # Marble Marcher Community Edition
 
-[![Build Status](https://travis-ci.org/jgoldfar/MarbleMarcher.svg?branch=master)](https://travis-ci.org/jgoldfar/MarbleMarcher)
+This is the community edition of Marble Marcher, created by HackerPoet. https://github.com/HackerPoet
+All credit goes to him for the original game.
 
 ## Original Summary
 *Marble Marcher is a video game demo that uses a fractal physics engine and fully procedural rendering to produce beautiful and unique gameplay unlike anything you've seen before.*
