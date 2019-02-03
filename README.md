@@ -1,8 +1,25 @@
-# Marble Marcher Community Edition
+# Marble Marcher: Community Edition
 
-This is the community edition of Marble Marcher, created by HackerPoet. https://github.com/HackerPoet
+This is the community edition of Marble Marcher, created by [HackerPoet](https://github.com/HackerPoet).
 
 All credit goes to him for the original game.
+
+## Goals
+Because version 1.1.0 is most likely going to be the last official version of Marble Marcher, we (as a community) have opted to create a community edition of the game. Here are our proposed changes:
+
+- ### Fixes
+  - make sure game runs at the same speed everywhere
+  - mouse/camera speed is too fast while skipping cutscenes
+  - figure out why so many people get `Failed to compile vertex shader`
+- ### User Experience Improvements
+  - pre-built Mac and Linux versions 
+  - confirmation, exit buttons in end screens
+  - change "controls" menu to "settings" and have audio, controls, sensitivity and fullscreen options there, also allow custom input bindings
+- ### New Features
+  - recording/replay functionality
+  - custom map support
+  - custom marble designs
+  - cheat: no drag
 
 ## Original Summary
 *Marble Marcher is a video game demo that uses a fractal physics engine and fully procedural rendering to produce beautiful and unique gameplay unlike anything you've seen before.*
