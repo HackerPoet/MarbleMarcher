@@ -3,14 +3,14 @@
 [![Build Status](https://travis-ci.org/jgoldfar/MarbleMarcher.svg?branch=master)](https://travis-ci.org/jgoldfar/MarbleMarcher)
 
 ## Original Summary
-*Marble Marcher is a video game demo that uses a fractal physics engine and fully procedural rendering to produce beautiful and unique gameplay unlike anything you've seen before.
+*Marble Marcher is a video game demo that uses a fractal physics engine and fully procedural rendering to produce beautiful and unique gameplay unlike anything you've seen before.*
 
-*The goal of the game is to reach the flag as quickly as possible.  But be careful not to
-*fall off the level or get crushed by the fractal!  There are 24 levels to unlock.
+*The goal of the game is to reach the flag as quickly as possible.  But be careful not to*
+*fall off the level or get crushed by the fractal!  There are 24 levels to unlock.*
 
-*Download Link: https://codeparade.itch.io/marblemarcher
+*Download Link: https://codeparade.itch.io/marblemarcher*
 
-*Video Explanation: https://youtu.be/9U0XVdvQwAI
+*Video Explanation: https://youtu.be/9U0XVdvQwAI*
 
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
