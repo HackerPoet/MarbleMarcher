@@ -12,14 +12,18 @@ Because version 1.1.0 is most likely going to be the last official version of Ma
   - mouse/camera speed is too fast while skipping cutscenes
   - figure out why so many people get `Failed to compile vertex shader`
 - ### User Experience Improvements
-  - pre-built Mac and Linux versions 
+  - pre-built versions for the common operating systems and make them available as github releases
   - confirmation, exit buttons in end screens
   - change "controls" menu to "settings" and have audio, controls, sensitivity and fullscreen options there, also allow custom input bindings
+  - make the fractal recoloring from cheats persistent
+  - more efficient anti-aliasing modes bindings
 - ### New Features
   - recording/replay functionality
   - custom map support
   - custom marble designs
   - cheat: no drag
+  - anaglyph/stereoscopic mode
+
 
 ## Original Summary
 *Marble Marcher is a video game demo that uses a fractal physics engine and fully procedural rendering to produce beautiful and unique gameplay unlike anything you've seen before.*
