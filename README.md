@@ -66,7 +66,7 @@ Alternatively, one can use the platform-dependent build system, for example `Mak
 * `make -C build`
 ### Arch Linux
 * `cd ~`
-* `git clone https://github.com/WAUthethrid/Marble-Marcher-Community-Edition.git`
+* `git clone https://github.com/WAUthethird/Marble-Marcher-Community-Edition.git`
 * `cd Marble-Marcher-Community-Edition`
 * `mkdir build && cd build`
 * `cmake ..`
