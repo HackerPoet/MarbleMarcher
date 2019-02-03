@@ -1,6 +1,7 @@
 # Marble Marcher Community Edition
 
 This is the community edition of Marble Marcher, created by HackerPoet. https://github.com/HackerPoet
+
 All credit goes to him for the original game.
 
 ## Original Summary
