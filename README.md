@@ -37,6 +37,9 @@ Because version 1.1.0 is most likely going to be the last official version of Ma
 
 *Video Explanation: https://youtu.be/9U0XVdvQwAI*
 
+## Current Version
+Numerous fixes have been appied, along with adding easier MacOS compilation.
+
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 * [SFML 2.5.0](https://www.sfml-dev.org)
