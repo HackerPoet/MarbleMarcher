@@ -23,6 +23,7 @@ Because version 1.1.0 is most likely going to be the last official version of Ma
   - custom marble designs
   - cheat: no drag
   - anaglyph/stereoscopic mode
+  - native controller support
   - an in-game fractal editor using sliders
 
 
