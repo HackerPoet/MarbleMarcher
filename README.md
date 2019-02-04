@@ -16,16 +16,17 @@ Because version 1.1.0 is most likely going to be the last official version of Ma
   - confirmation, exit buttons in end screens
   - change "controls" menu to "settings" and have audio, controls, sensitivity and fullscreen options there, also allow custom input bindings
   - make the fractal recoloring from cheats persistent
-  - more efficient anti-aliasing modes bindings
+  - more efficient anti-aliasing modes
+  - toggle to always activate fast cutscenes
 - ### New Features
   - recording/replay functionality
   - custom map support
   - custom marble designs
   - cheat: no drag
   - anaglyph/stereoscopic mode
-  - native controller support
+  - screenshot mode (temporarily higher resolution and AA)
+  - native controller support (+deadzone)
   - an in-game fractal editor using sliders
-
 
 ## Original Summary
 *Marble Marcher is a video game demo that uses a fractal physics engine and fully procedural rendering to produce beautiful and unique gameplay unlike anything you've seen before.*
