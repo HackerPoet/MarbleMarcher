@@ -26,7 +26,7 @@ Because version 1.1.0 is most likely going to be the last official version of Ma
   - anaglyph/stereoscopic mode
   - screenshot mode (temporarily higher resolution and AA)
   - native controller support (+deadzone)
-  - an in-game fractal editor using sliders
+  - an in-game fractal editor, using sliders
 
 ## Original Summary
 *Marble Marcher is a video game demo that uses a fractal physics engine and fully procedural rendering to produce beautiful and unique gameplay unlike anything you've seen before.*
