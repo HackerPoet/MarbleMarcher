@@ -4,6 +4,16 @@ This is the community edition of Marble Marcher, created mainly by the members o
 
 All credit goes to [HackerPoet](https://github.com/HackerPoet) for the original game.
 
+## Original Summary
+*Marble Marcher is a video game demo that uses a fractal physics engine and fully procedural rendering to produce beautiful and unique gameplay unlike anything you've seen before.*
+
+*The goal of the game is to reach the flag as quickly as possible.  But be careful not to*
+*fall off the level or get crushed by the fractal!  There are 24 levels to unlock.*
+
+*Download Link: https://codeparade.itch.io/marblemarcher*
+
+*Video Explanation: https://youtu.be/9U0XVdvQwAI*
+
 ## Goals
 Because version 1.1.0 is most likely going to be the last official version of Marble Marcher, we (as a community) have opted to create a community edition of the game. Here are our proposed changes:
 
@@ -28,16 +38,6 @@ Because version 1.1.0 is most likely going to be the last official version of Ma
   - screenshot mode (temporarily higher resolution and AA)
   - native controller support (+deadzone)
   - in-game fractal editor, using sliders
-
-## Original Summary
-*Marble Marcher is a video game demo that uses a fractal physics engine and fully procedural rendering to produce beautiful and unique gameplay unlike anything you've seen before.*
-
-*The goal of the game is to reach the flag as quickly as possible.  But be careful not to*
-*fall off the level or get crushed by the fractal!  There are 24 levels to unlock.*
-
-*Download Link: https://codeparade.itch.io/marblemarcher*
-
-*Video Explanation: https://youtu.be/9U0XVdvQwAI*
 
 ## Current Version
 Numerous fixes have been appied, along with adding easier MacOS compilation.
