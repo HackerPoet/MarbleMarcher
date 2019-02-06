@@ -103,6 +103,9 @@ void Scene::SetMarble(float x, float y, float z, float r) {
   marble_pos = Eigen::Vector3f(x, y, z);
   marble_vel.setZero();
 }
+void Scene::SetMarbleScale(float r) {
+  marble_rad = r;
+}
 
 void Scene::SetFlag(float x, float y, float z) {
   flag_pos = Eigen::Vector3f(x, y, z);

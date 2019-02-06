@@ -331,7 +331,7 @@ void Overlays::DrawSceneInfo(sf::RenderWindow& window, Scene scene) {
   float x = marble_vel.x()*1000., y = marble_vel.y()*1000., z = marble_vel.z()*1000.;
   char buf[128];
   float vel = std::sqrt(x*x+z*z);
-  snprintf(buf, sizeof(buf), "vel: % .3fmU, % .3fmU, % .3fmU (%.3fmU)\ndelta: % .2fmmU/fr\ncam: % .3f", x,y,z, vel, (vel - vel_prev)*1000., scene.GetCamLookX());
+  snprintf(buf, sizeof(buf), "vel: % .3fmU, % .3fmU, % .3fmU (%.3fmU)\ndelta: % .2fmmU/fr\ncam: % .3f\nDE: % .3fmDU%s", x,y,z, (double)vel, (double)(vel - vel_prev)*1000., (double)scene.GetCamLookX(), (double)scene.DE(scene.GetMarble())*1000., scene.DE(scene.GetMarble()) < scene.GetMarbleScale() * 1.15 ? " (on ground)" : "");
   vel_prev = vel;
   MakeText(buf, 0, 0, 20, sf::Color::White, text, true);
   window.draw(text);

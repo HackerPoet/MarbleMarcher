@@ -37,6 +37,7 @@ public:
 
   void LoadLevel(int level);
   void SetMarble(float x, float y, float z, float r);
+  void SetMarbleScale(float r);
   void SetFlag(float x, float y, float z);
   void SetMode(CamMode mode);
   void SetExposure(float e) { exposure = e; }
@@ -46,6 +47,8 @@ public:
   const Eigen::Vector3f& GetMarble() const { return marble_pos; };
   float GetCamLook() const { return cam_look_x_smooth; }
   float GetCamLookX() const { return cam_look_x; }
+  float GetMarbleScale() const { return marble_rad; }
+  const Eigen::Vector3f& GetFlagPos() const { return flag_pos; }
   CamMode GetMode() const { return cam_mode; }
   int GetLevel() const { return cur_level; }
   int GetCountdownTime() const;

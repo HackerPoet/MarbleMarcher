@@ -471,7 +471,10 @@ int main(int argc, char *argv[]) {
       const float cam_lr = float(-mouse_delta.x) * ms;
       const float cam_ud = float(-mouse_delta.y) * ms;
       const float cam_z = mouse_wheel * wheel_sensitivity;
-
+      
+      const float mf_dist = (scene.GetMarble() - scene.GetFlagPos()).norm();
+      const float scale = (mf_dist / 7.1f) * 0.02f;
+      scene.SetMarbleScale(scale);
       //Apply forces to marble and camera
       scene.UpdateMarble(force_lr, force_ud);
       scene.UpdateCamera(cam_lr, cam_ud, cam_z, mouse_clicked);
