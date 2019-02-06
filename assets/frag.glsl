@@ -210,15 +210,15 @@ vec4 calcGrad(vec4 p, float dx)
 	    k.xxxx*DE(p + k.xxxz*dx)) / vec4(4*dx,4*dx,4*dx,4);
 }
 
-//find the average color of the fractal in a radius dx
-vec4 smoothColor(vec4 p, float dx)
+//find the average color of the fractal in a radius dx in plane s1-s2
+vec4 smoothColor(vec4 p, vec3 s1, vec3 s2, float dx)
 {
-	const vec3 k = vec3(1,-1,0);
-    return (COL(p + k.xyyz*dx) + 
-			COL(p + k.yyxz*dx) + 
-			COL(p + k.yxyz*dx) + 
-			COL(p + k.xxxz*dx))/4;
+    return (COL(p + vec4(s1,0)*dx) + 
+			COL(p - vec4(s1,0)*dx) + 
+			COL(p + vec4(s2,0)*dx) + 
+			COL(p - vec4(s2,0)*dx))/4;
 }
+
 
 vec4 ray_march(inout vec4 p, vec4 ray, float sharpness) {
 	//March the ray
@@ -269,7 +269,12 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 		
 		//Get coloring
 		#if ENABLE_FILTERING
-			vec4 orig_col = clamp(smoothColor(p, min_dist*0.5), 0.0, 1.0);
+			//sample direction 1, the cross product between the ray and the surface normal, should be parallel to the surface
+			vec3 s1 = normalize(cross(ray.xyz,n));
+			//sample direction 2, the cross product between s1 and the surface normal
+			vec3 s2 = cross(s1,n);
+			//get filtered color
+			vec4 orig_col = clamp(smoothColor(p, s1, s2, min_dist*0.5), 0.0, 1.0);
 		#else 
 			vec4 orig_col = clamp(COL(p), 0.0, 1.0);
 		#endif
