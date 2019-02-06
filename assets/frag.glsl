@@ -252,6 +252,8 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 		
 		//find closest surface point, without this we get weird coloring artifacts
 		p.xyz -= n*d;
+		
+		vec3 reflected = ray.xyz - 2.0*dot(ray.xyz, n) * n;
 
 		//Get coloring
 		vec4 orig_col = clamp(COL(p), 0.0, 1.0);
