@@ -224,6 +224,7 @@ vec4 ray_march(inout vec4 p, vec4 ray, float sharpness) {
 		float min_dist = min(FOVperPixel*td, MIN_DIST);
 		if (abs(d) < min_dist ) {
    		        s += 0.14*d / min_dist ;
+			break;
 		} else if (td > MAX_DIST) {
 			break;
 		}
