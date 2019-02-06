@@ -246,7 +246,8 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 	//Determine the color for this pixel
 	vec4 col = vec4(0.0);
 	
-	if (d < td*FOVperPixel) {
+	float min_dist = max(FOVperPixel*td, MIN_DIST);
+	if (d < min_dist) {
 		//Get the surface normal
 		vec4 grad = calcGrad(p,td*FOVperPixel*0.2);
 		vec3 n = normalize(grad.xyz);
