@@ -221,9 +221,9 @@ vec4 ray_march(inout vec4 p, vec4 ray, float sharpness) {
 	float min_d = 1.0;
 	for (; s < MAX_MARCHES; s += 1.0) {
 		//if the distance from the surface is less than the distance per pixel we stop
-		if (abs(d) < FOVperPixel*td) {
-			s += 0.14*d / FOVperPixel*td;
-			break;
+		float min_dist = min(FOVperPixel*td, MIN_DIST);
+		if (abs(d) < min_dist ) {
+   		        s += 0.14*d / min_dist ;
 		} else if (td > MAX_DIST) {
 			break;
 		}
