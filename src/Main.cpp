@@ -1,16 +1,16 @@
 /* This file is part of the Marble Marcher (https://github.com/HackerPoet/MarbleMarcher).
 * Copyright(C) 2018 CodeParade
-* 
+*
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 2 of the License, or
 * (at your option) any later version.
-* 
+*
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
-* 
+*
 * You should have received a copy of the GNU General Public License
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
@@ -105,6 +105,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR lpCmdLine, int nCmdShow) {
 #else
 int main(int argc, char *argv[]) {
 #endif
+
+  bool debug_screen = false;
+
   //Make sure shader is supported
   if (!sf::Shader::isAvailable()) {
     ERROR_MSG("Graphics card does not support shaders");
@@ -158,7 +161,7 @@ int main(int argc, char *argv[]) {
 #else
   const std::string save_dir = std::string(std::getenv("HOME")) + "/.MarbleMarcher";
 #endif
-  
+
   if (!DirExists(save_dir.c_str())) {
 #if defined(_WIN32)
     bool success = CreateDirectory(save_dir.c_str(), NULL) != 0 || GetLastError() == ERROR_ALREADY_EXISTS;
@@ -311,6 +314,8 @@ int main(int argc, char *argv[]) {
           scene.Cheat_Planet();
         } else if (keycode == sf::Keyboard::Z) {
           scene.Cheat_Zoom();
+        } else if (keycode == sf::Keyboard::O) {
+            debug_screen ^= 1;
         }
         all_keys[keycode] = true;
       } else if (event.type == sf::Event::KeyReleased) {
@@ -456,8 +461,6 @@ int main(int argc, char *argv[]) {
         (all_keys[sf::Keyboard::Down] || all_keys[sf::Keyboard::S] ? -1.0f : 0.0f) +
         (all_keys[sf::Keyboard::Up] || all_keys[sf::Keyboard::W] ? 1.0f : 0.0f);
 
-      //Collect mouse input
-      const sf::Vector2i mouse_delta = mouse_pos - screen_center;
       sf::Mouse::setPosition(screen_center, window);
       float ms = mouse_sensitivity;
       if (game_settings.mouse_sensitivity == 1) {
@@ -543,6 +546,10 @@ int main(int argc, char *argv[]) {
     }
     if (!scene.IsFreeCamera()) {
       overlays.DrawFPS(window, int(smooth_fps + 0.5f));
+    }
+    if (debug_screen) {
+      overlays.DrawFPS(window, int(smooth_fps + 0.5f));
+      overlays.DrawSceneInfo(window, scene);
     }
 
     if (!skip_frame) {

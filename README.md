@@ -103,3 +103,6 @@ You'll just need to run MarbleMarcher with the correct `LD_LIBRARY_PATH`:
 ```shell
 LD_LIBRARY_PATH=`pwd`/usr/lib ./MarbleMarcher
 ```
+
+### Debug Screen
+Press `o` to toggle the debug screen.

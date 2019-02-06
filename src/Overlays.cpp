@@ -1,16 +1,16 @@
 /* This file is part of the Marble Marcher (https://github.com/HackerPoet/MarbleMarcher).
 * Copyright(C) 2018 CodeParade
-* 
+*
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 2 of the License, or
 * (at your option) any later version.
-* 
+*
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
-* 
+*
 * You should have received a copy of the GNU General Public License
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
@@ -18,6 +18,8 @@
 #include "Level.h"
 #include "Res.h"
 #include "Scores.h"
+#include "Scene.h"
+
 
 static const float pi = 3.14159265359f;
 static const int num_level_pages = 1 + (num_levels - 1) / Overlays::LEVELS_PER_PAGE;
@@ -155,6 +157,7 @@ void Overlays::DrawControls(sf::RenderWindow& window) {
 
 void Overlays::DrawTimer(sf::RenderWindow& window, int t, bool is_high_score) {
   sf::Text text;
+
   if (t < 0) {
     return;
   } else if (t < 3*60) {
@@ -321,6 +324,16 @@ void Overlays::DrawCheats(sf::RenderWindow& window) {
     "[ P ] Planet toggle\n"
     "[ Z ] Zoom to scale\n";
   MakeText(txt, 460, 160, 32, sf::Color::White, text, true);
+void Overlays::DrawSceneInfo(sf::RenderWindow& window, Scene scene) {
+  sf::Text text;
+  static float vel_prev = 0.0;
+  Eigen::Vector3f marble_vel = scene.GetVelocity();
+  float x = marble_vel.x()*1000., y = marble_vel.y()*1000., z = marble_vel.z()*1000.;
+  char buf[128];
+  float vel = std::sqrt(x*x+z*z);
+  snprintf(buf, sizeof(buf), "vel: % .3fmU, % .3fmU, % .3fmU (%.3fmU)\ndelta: % .2fmmU/fr\ncam: % .3f", x,y,z, vel, (vel - vel_prev)*1000., scene.GetCamLookX());
+  vel_prev = vel;
+  MakeText(buf, 0, 0, 20, sf::Color::White, text, true);
   window.draw(text);
 }
 
