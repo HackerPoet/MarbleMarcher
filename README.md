@@ -29,6 +29,8 @@ Because version 1.1.0 is most likely going to be the last official version of Ma
   - more efficient anti-aliasing modes
   - toggle to always activate fast cutscenes
   - debug mode
+  - better autosplitter integration
+  - improve text rendering
 - ### New Features
   - recording/replay functionality
   - custom map support
