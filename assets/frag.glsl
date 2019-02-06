@@ -132,7 +132,7 @@ float de_capsule(vec4 p, float h, float r) {
 //   Main DEs
 //##########################################
 float de_fractal(vec4 p) {
-  for (int i = 0; i < 16; ++i) {
+  for (int i = 0; i < FRACTAL_ITER; ++i) {
     p.xyz = abs(p.xyz);
     rotZ(p, iFracAng1);
     mengerFold(p);
@@ -144,7 +144,7 @@ float de_fractal(vec4 p) {
 }
 vec4 col_fractal(vec4 p) {
   vec3 orbit = vec3(0.0);
-  for (int i = 0; i < 16; ++i) {
+  for (int i = 0; i < FRACTAL_ITER; ++i) {
     p.xyz = abs(p.xyz);
     rotZ(p, iFracAng1);
     mengerFold(p);
