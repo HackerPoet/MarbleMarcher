@@ -201,12 +201,12 @@ vec4 col_scene(vec4 p) {
 
 //A faster formula to find the gradient/normal direction of the DE(the w component is the average DE)
 //credit to http://www.iquilezles.org/www/articles/normalsSDF/normalsSDF.htm
-vec3 calcGrad(vec4 p, float dx) {
+vec3 calcNormal(vec4 p, float dx) {
 	const vec3 k = vec3(1,-1,0);
-	return (k.xyy*DE(p + k.xyyz*dx) +
-		k.yyx*DE(p + k.yyxz*dx) +
-		k.yxy*DE(p + k.yxyz*dx) +
-		k.xxx*DE(p + k.xxxz*dx)) / vec3(4*dx,4*dx,4*dx);
+	return normalize(k.xyy*DE(p + k.xyyz*dx) +
+					 k.yyx*DE(p + k.yyxz*dx) +
+					 k.yxy*DE(p + k.yxyz*dx) +
+					 k.xxx*DE(p + k.xxxz*dx));
 }
 
 //find the average color of the fractal in a radius dx in plane s1-s2
@@ -261,7 +261,7 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 	float min_dist = max(FOVperPixel*td, MIN_DIST);
 	if (d < min_dist) {
 		//Get the surface normal
-		vec3 n = normalize(calcGrad(p,min_dist*0.5));
+		vec3 n = calcNormal(p, min_dist*0.5);
 		
 		//find closest surface point, without this we get weird coloring artifacts
 		p.xyz -= n*d;
