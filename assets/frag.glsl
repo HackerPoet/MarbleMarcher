@@ -221,7 +221,12 @@ vec4 ray_march(inout vec4 p, vec4 ray, float sharpness) {
 	//March the ray
 	float d = DE(p);
 	if (d < 0.0 && sharpness == 1.0) {
-		vec3 v = iMarblePos.xyz - iMat[3].xyz;
+		vec3 v;
+		if (abs(iMarblePos.x) >= 999.0f) {
+			v = (-20.0 * iMarbleRad) * iMat[2].xyz;
+		} else {
+			v = iMarblePos.xyz - iMat[3].xyz;
+		}
 		d = dot(v, v) / dot(v, ray.xyz) - iMarbleRad;
 	}
 	float s = 0.0;
