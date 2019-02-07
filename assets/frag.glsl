@@ -333,16 +333,16 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 }
 
 void main() {
+	//Calculate the view angle per pixel, with a minimum quality level
+	FOVperPixel = 1.0 / max(iResolution.x, 900.0);
+
 	vec3 col = vec3(0.0);
 	for (int i = 0; i < ANTIALIASING_SAMPLES; ++i) {
 		for (int j = 0; j < ANTIALIASING_SAMPLES; ++j) {
 			//Get normalized screen coordinate
 			vec2 delta = vec2(i, j) / ANTIALIASING_SAMPLES;
 			vec2 screen_pos = (gl_FragCoord.xy + delta) / iResolution.xy;
-			
-			//Calculate the view angle per pixel
-			FOVperPixel = 1*90*PI/(180*iResolution.x);
-			
+
 			vec2 uv = 2*screen_pos - 1;
 			uv.x *= iResolution.x / iResolution.y;
 
