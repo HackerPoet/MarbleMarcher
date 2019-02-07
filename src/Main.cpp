@@ -310,7 +310,13 @@ int main(int argc, char *argv[]) {
         } else if (keycode == sf::Keyboard::P) {
           scene.Cheat_Planet();
         } else if (keycode == sf::Keyboard::Z) {
-          scene.Cheat_Zoom();
+          if (scene.GetParamMod() == -1) {
+            scene.Cheat_Zoom();
+          } else {
+            scene.Cheat_Param(-1);
+          }
+        } if (keycode >= sf::Keyboard::Num0 && keycode <= sf::Keyboard::Num9) {
+          scene.Cheat_Param(int(keycode) - int(sf::Keyboard::Num1));
         }
         all_keys[keycode] = true;
       } else if (event.type == sf::Event::KeyReleased) {

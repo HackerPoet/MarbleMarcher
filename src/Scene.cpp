@@ -231,6 +231,7 @@ void Scene::ResetCheats() {
   enable_cheats = false;
   free_camera = false;
   gravity_type = 0;
+  param_mod = -1;
   ignore_goal = false;
   hyper_speed = false;
   disable_motion = false;
@@ -514,7 +515,10 @@ void Scene::UpdateDeOrbit(float dx, float dy, float dz) {
 
 void Scene::UpdateCameraOnly(float dx, float dy, float dz) {
   //Update camera zoom
-  if (zoom_to_scale) {
+  if (param_mod >= 0) {
+    const float new_param = level_copy.params[param_mod] + dz*0.01f;
+    level_copy.params[param_mod] = frac_params_smooth[param_mod] = frac_params[param_mod] = new_param;
+  } else if (zoom_to_scale) {
     level_copy.marble_rad *= std::pow(2.0f, -dz);
     level_copy.marble_rad = std::min(std::max(level_copy.marble_rad, 0.0006f), 0.6f);
     marble_rad = marble_rad*zoom_smooth + level_copy.marble_rad*(1 - zoom_smooth);
@@ -838,4 +842,8 @@ void Scene::Cheat_Planet() {
 void Scene::Cheat_Zoom() {
   if (!enable_cheats) { return; }
   zoom_to_scale = !zoom_to_scale;
+}
+void Scene::Cheat_Param(int param) {
+  if (!enable_cheats) { return; }
+  param_mod = param;
 }

@@ -319,7 +319,8 @@ void Overlays::DrawCheats(sf::RenderWindow& window) {
     "[ I ] Ignore goal\n"
     "[ M ] Motion disable\n"
     "[ P ] Planet toggle\n"
-    "[ Z ] Zoom to scale\n";
+    "[ Z ] Zoom to scale\n"
+    "[1-9] Scroll fractal parameter\n";
   MakeText(txt, 460, 160, 32, sf::Color::White, text, true);
   window.draw(text);
 }
