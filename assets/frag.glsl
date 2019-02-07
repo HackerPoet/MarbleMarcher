@@ -41,7 +41,7 @@
 #define SUN_SIZE 0.004
 #define VIGNETTE_STRENGTH 0.5
 #define FRACTAL_ITER 16
-#define ENABLE_FILTERING 1
+#define ENABLE_FILTERING 0
 
 uniform mat4 iMat;
 uniform vec2 iResolution;
