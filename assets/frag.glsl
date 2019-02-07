@@ -23,8 +23,10 @@
 #define DE de_scene
 #define DIFFUSE_ENABLED 0
 #define DIFFUSE_ENHANCED_ENABLED 1
+#define ENABLE_FILTERING 0
 #define FOCAL_DIST 1.73205080757
 #define FOG_ENABLED 0
+#define FRACTAL_ITER 16
 #define LIGHT_COLOR vec3(1.0,0.95,0.8)
 #define LIGHT_DIRECTION vec3(-0.36, 0.8, 0.48)
 #define MAX_DIST 30.0
@@ -40,8 +42,6 @@
 #define SUN_SHARPNESS 2.0
 #define SUN_SIZE 0.004
 #define VIGNETTE_STRENGTH 0.5
-#define FRACTAL_ITER 16
-#define ENABLE_FILTERING 0
 
 uniform mat4 iMat;
 uniform vec2 iResolution;
@@ -356,32 +356,32 @@ void main() {
 			//Reflect light if needed
 			float vignette = 1.0 - VIGNETTE_STRENGTH * length(screen_pos - 0.5);
 			vec3 r = ray.xyz;
-		vec4 col_r = scene(p, ray, vignette);
+			vec4 col_r = scene(p, ray, vignette);
 
-		//Check if this is the glass marble
-		if (col_r.w > 0.5) {
-			//Calculate refraction
-			vec3 n = normalize(iMarblePos - p.xyz);
-			vec3 q = refraction(r, n, 1.0 / 1.5);
-			vec3 p2 = p.xyz + (dot(q, n) * 2.0 * iMarbleRad) * q;
-			n = normalize(p2 - iMarblePos);
-			q = (dot(q, r) * 2.0) * q - r;
-			vec4 p_temp = vec4(p2 + n * (MIN_DIST * 10), 1.0);
-			vec4 r_temp = vec4(q, 0.0);
-			vec3 refr = scene(p_temp, r_temp, 0.8).xyz;
+			//Check if this is the glass marble
+			if (col_r.w > 0.5) {
+				//Calculate refraction
+				vec3 n = normalize(iMarblePos - p.xyz);
+				vec3 q = refraction(r, n, 1.0 / 1.5);
+				vec3 p2 = p.xyz + (dot(q, n) * 2.0 * iMarbleRad) * q;
+				n = normalize(p2 - iMarblePos);
+				q = (dot(q, r) * 2.0) * q - r;
+				vec4 p_temp = vec4(p2 + n * (MIN_DIST * 10), 1.0);
+				vec4 r_temp = vec4(q, 0.0);
+				vec3 refr = scene(p_temp, r_temp, 0.8).xyz;
 
-			//Calculate refraction
-			n = normalize(p.xyz - iMarblePos);
-			q = r - n*(2*dot(r,n));
-			p_temp = vec4(p.xyz + n * (MIN_DIST * 10), 1.0);
-			r_temp = vec4(q, 0.0);
-			vec3 refl = scene(p_temp, r_temp, 0.8).xyz;
+				//Calculate refraction
+				n = normalize(p.xyz - iMarblePos);
+				q = r - n*(2*dot(r,n));
+				p_temp = vec4(p.xyz + n * (MIN_DIST * 10), 1.0);
+				r_temp = vec4(q, 0.0);
+				vec3 refl = scene(p_temp, r_temp, 0.8).xyz;
 
-			//Combine for final marble color
-			col += refr * 0.6f + refl * 0.4f + col_r.xyz;
-		} else {
-			col += col_r.xyz;
-		}
+				//Combine for final marble color
+				col += refr * 0.6f + refl * 0.4f + col_r.xyz;
+			} else {
+				col += col_r.xyz;
+			}
 		}
 	}
 
