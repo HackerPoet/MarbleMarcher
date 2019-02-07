@@ -461,6 +461,8 @@ int main(int argc, char *argv[]) {
         (all_keys[sf::Keyboard::Down] || all_keys[sf::Keyboard::S] ? -1.0f : 0.0f) +
         (all_keys[sf::Keyboard::Up] || all_keys[sf::Keyboard::W] ? 1.0f : 0.0f);
 
+        //Collect mouse input
+      const sf::Vector2i mouse_delta = mouse_pos - screen_center;
       sf::Mouse::setPosition(screen_center, window);
       float ms = mouse_sensitivity;
       if (game_settings.mouse_sensitivity == 1) {
@@ -471,7 +473,7 @@ int main(int argc, char *argv[]) {
       const float cam_lr = float(-mouse_delta.x) * ms;
       const float cam_ud = float(-mouse_delta.y) * ms;
       const float cam_z = mouse_wheel * wheel_sensitivity;
-      
+
       const float mf_dist = (scene.GetMarble() - scene.GetFlagPos()).norm();
       const float scale = (mf_dist / 7.1f) * 0.02f;
       scene.SetMarbleScale(scale);

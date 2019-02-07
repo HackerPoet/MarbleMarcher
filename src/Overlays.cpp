@@ -324,6 +324,7 @@ void Overlays::DrawCheats(sf::RenderWindow& window) {
     "[ P ] Planet toggle\n"
     "[ Z ] Zoom to scale\n";
   MakeText(txt, 460, 160, 32, sf::Color::White, text, true);
+}
 void Overlays::DrawSceneInfo(sf::RenderWindow& window, Scene scene) {
   sf::Text text;
   static float vel_prev = 0.0;
