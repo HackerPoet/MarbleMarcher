@@ -261,14 +261,12 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 		//find closest surface point, without this we get weird coloring artifacts
 		p.xyz -= n*d;
 
-		vec3 reflected = ray.xyz - 2.0*dot(ray.xyz, n) * n;
-		
 		//Get coloring
 		#if ENABLE_FILTERING
 			//sample direction 1, the cross product between the ray and the surface normal, should be parallel to the surface
-			vec3 s1 = normalize(cross(ray.xyz,n));
+			vec3 s1 = normalize(cross(ray.xyz, n));
 			//sample direction 2, the cross product between s1 and the surface normal
-			vec3 s2 = cross(s1,n);
+			vec3 s2 = cross(s1, n);
 			//get filtered color
 			vec4 orig_col = clamp(smoothColor(p, s1, s2, min_dist*0.5), 0.0, 1.0);
 		#else
@@ -287,6 +285,7 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 
 		//Get specular
 		#if SPECULAR_HIGHLIGHT > 0
+			vec3 reflected = ray.xyz - 2.0*dot(ray.xyz, n) * n;
 			float specular = max(dot(reflected, LIGHT_DIRECTION), 0.0);
 			specular = pow(specular, SPECULAR_HIGHLIGHT);
 			col.xyz += specular * LIGHT_COLOR * (k * SPECULAR_MULT);
