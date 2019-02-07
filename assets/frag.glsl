@@ -1,16 +1,16 @@
 /* This file is part of the Marble Marcher (https://github.com/HackerPoet/MarbleMarcher).
 * Copyright(C) 2018 CodeParade
-* 
+*
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 2 of the License, or
 * (at your option) any later version.
-* 
+*
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
-* 
+*
 * You should have received a copy of the GNU General Public License
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
@@ -61,8 +61,8 @@ uniform float iExposure;
 float FOVperPixel;
 
 vec3 refraction(vec3 rd, vec3 n, float p) {
-  float dot_nd = dot(rd, n);
-  return p * (rd - dot_nd * n) + sqrt(1.0 - (p * p) * (1.0 - dot_nd * dot_nd)) * n;
+	float dot_nd = dot(rd, n);
+	return p * (rd - dot_nd * n) + sqrt(1.0 - (p * p) * (1.0 - dot_nd * dot_nd)) * n;
 }
 
 //##########################################
@@ -121,40 +121,40 @@ float de_box(vec4 p, vec3 s) {
 }
 float de_tetrahedron(vec4 p, float r) {
 	float md = max(max(-p.x - p.y - p.z, p.x + p.y - p.z),
-				   max(-p.x + p.y + p.z, p.x - p.y + p.z));
+				max(-p.x + p.y + p.z, p.x - p.y + p.z));
 	return (md - r) / (p.w * sqrt(3.0));
 }
 float de_capsule(vec4 p, float h, float r) {
-  p.y -= clamp(p.y, -h, h);
-  return (length(p.xyz) - r) / p.w;
+	p.y -= clamp(p.y, -h, h);
+	return (length(p.xyz) - r) / p.w;
 }
 
 //##########################################
 //   Main DEs
 //##########################################
 float de_fractal(vec4 p) {
-  for (int i = 0; i < FRACTAL_ITER; ++i) {
-    p.xyz = abs(p.xyz);
-    rotZ(p, iFracAng1);
-    mengerFold(p);
-    rotX(p, iFracAng2);
-    p *= iFracScale;
-    p.xyz += iFracShift;
-  }
-  return de_box(p, vec3(6.0));
+	for (int i = 0; i < FRACTAL_ITER; ++i) {
+		p.xyz = abs(p.xyz);
+		rotZ(p, iFracAng1);
+		mengerFold(p);
+		rotX(p, iFracAng2);
+		p *= iFracScale;
+		p.xyz += iFracShift;
+	}
+	return de_box(p, vec3(6.0));
 }
 vec4 col_fractal(vec4 p) {
-  vec3 orbit = vec3(0.0);
-  for (int i = 0; i < FRACTAL_ITER; ++i) {
-    p.xyz = abs(p.xyz);
-    rotZ(p, iFracAng1);
-    mengerFold(p);
-    rotX(p, iFracAng2);
-    p *= iFracScale;
-    p.xyz += iFracShift;
-    orbit = max(orbit, p.xyz*iFracCol);
-  }
-  return vec4(orbit, de_box(p, vec3(6.0)));
+	vec3 orbit = vec3(0.0);
+	for (int i = 0; i < FRACTAL_ITER; ++i) {
+		p.xyz = abs(p.xyz);
+		rotZ(p, iFracAng1);
+		mengerFold(p);
+		rotX(p, iFracAng2);
+		p *= iFracScale;
+		p.xyz += iFracShift;
+		orbit = max(orbit, p.xyz*iFracCol);
+	}
+	return vec4(orbit, de_box(p, vec3(6.0)));
 }
 float de_marble(vec4 p) {
 	return de_sphere(p - vec4(iMarblePos, 0), iMarbleRad);
@@ -163,36 +163,36 @@ vec4 col_marble(vec4 p) {
 	return vec4(0, 0, 0, de_sphere(p - vec4(iMarblePos, 0), iMarbleRad));
 }
 float de_flag(vec4 p) {
-  vec3 f_pos = iFlagPos + vec3(1.5, 4, 0)*iFlagScale;
-  float d = de_box(p - vec4(f_pos, 0), vec3(1.5, 0.8, 0.08)*iMarbleRad);
-  d = min(d, de_capsule(p - vec4(iFlagPos + vec3(0, iFlagScale*2.4, 0), 0), iMarbleRad*2.4, iMarbleRad*0.18));
-  return d;
+	vec3 f_pos = iFlagPos + vec3(1.5, 4, 0)*iFlagScale;
+	float d = de_box(p - vec4(f_pos, 0), vec3(1.5, 0.8, 0.08)*iMarbleRad);
+	d = min(d, de_capsule(p - vec4(iFlagPos + vec3(0, iFlagScale*2.4, 0), 0), iMarbleRad*2.4, iMarbleRad*0.18));
+	return d;
 }
 vec4 col_flag(vec4 p) {
-  vec3 f_pos = iFlagPos + vec3(1.5, 4, 0)*iFlagScale;
-  float d1 = de_box(p - vec4(f_pos, 0), vec3(1.5, 0.8, 0.08)*iMarbleRad);
-  float d2 = de_capsule(p - vec4(iFlagPos + vec3(0, iFlagScale*2.4, 0), 0), iMarbleRad*2.4, iMarbleRad*0.18);
-  if (d1 < d2) {
-    return vec4(1.0, 0.2, 0.1, d1);
-  } else {
-    return vec4(0.9, 0.9, 0.1, d2);
-  }
+	vec3 f_pos = iFlagPos + vec3(1.5, 4, 0)*iFlagScale;
+	float d1 = de_box(p - vec4(f_pos, 0), vec3(1.5, 0.8, 0.08)*iMarbleRad);
+	float d2 = de_capsule(p - vec4(iFlagPos + vec3(0, iFlagScale*2.4, 0), 0), iMarbleRad*2.4, iMarbleRad*0.18);
+	if (d1 < d2) {
+		return vec4(1.0, 0.2, 0.1, d1);
+	} else {
+		return vec4(0.9, 0.9, 0.1, d2);
+	}
 }
 float de_scene(vec4 p) {
-  float d = de_fractal(p);
-  d = min(d, de_marble(p));
-  d = min(d, de_flag(p));
-  return d;
+	float d = de_fractal(p);
+	d = min(d, de_marble(p));
+	d = min(d, de_flag(p));
+	return d;
 }
 vec4 col_scene(vec4 p) {
-  vec4 col = col_fractal(p);
-  vec4 col_f = col_flag(p);
-  if (col_f.w < col.w) { col = col_f; }
-  vec4 col_m = col_marble(p);
-  if (col_m.w < col.w) {
-    return vec4(col_m.xyz, 1.0);
-  }
-  return vec4(col.xyz, 0.0);
+	vec4 col = col_fractal(p);
+	vec4 col_f = col_flag(p);
+	if (col_f.w < col.w) { col = col_f; }
+	vec4 col_m = col_marble(p);
+	if (col_m.w < col.w) {
+		return vec4(col_m.xyz, 1.0);
+	}
+	return vec4(col.xyz, 0.0);
 }
 
 //##########################################
@@ -201,24 +201,21 @@ vec4 col_scene(vec4 p) {
 
 //A faster formula to find the gradient/normal direction of the DE(the w component is the average DE)
 //credit to http://www.iquilezles.org/www/articles/normalsSDF/normalsSDF.htm
-vec4 calcGrad(vec4 p, float dx) 
-{
-    const vec3 k = vec3(1,-1,0);
-    return (k.xyyx*DE(p + k.xyyz*dx) + 
-	    k.yyxx*DE(p + k.yyxz*dx) + 
-	    k.yxyx*DE(p + k.yxyz*dx) + 
-	    k.xxxx*DE(p + k.xxxz*dx)) / vec4(4*dx,4*dx,4*dx,4);
+vec4 calcGrad(vec4 p, float dx) {
+	const vec3 k = vec3(1,-1,0);
+	return (k.xyyx*DE(p + k.xyyz*dx) +
+		k.yyxx*DE(p + k.yyxz*dx) +
+		k.yxyx*DE(p + k.yxyz*dx) +
+		k.xxxx*DE(p + k.xxxz*dx)) / vec4(4*dx,4*dx,4*dx,4);
 }
 
 //find the average color of the fractal in a radius dx in plane s1-s2
-vec4 smoothColor(vec4 p, vec3 s1, vec3 s2, float dx)
-{
-    return (COL(p + vec4(s1,0)*dx) + 
-			COL(p - vec4(s1,0)*dx) + 
-			COL(p + vec4(s2,0)*dx) + 
+vec4 smoothColor(vec4 p, vec3 s1, vec3 s2, float dx) {
+	return (COL(p + vec4(s1,0)*dx) +
+			COL(p - vec4(s1,0)*dx) +
+			COL(p + vec4(s2,0)*dx) +
 			COL(p - vec4(s2,0)*dx))/4;
 }
-
 
 vec4 ray_march(inout vec4 p, vec4 ray, float sharpness) {
 	//March the ray
@@ -275,10 +272,10 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			vec3 s2 = cross(s1,n);
 			//get filtered color
 			vec4 orig_col = clamp(smoothColor(p, s1, s2, min_dist*0.5), 0.0, 1.0);
-		#else 
+		#else
 			vec4 orig_col = clamp(COL(p), 0.0, 1.0);
 		#endif
-        col.w = orig_col.w;
+		col.w = orig_col.w;
 
 		//Get if this point is in shadow
 		float k = 1.0;
@@ -286,7 +283,7 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			vec4 light_pt = p;
 			light_pt.xyz += n * MIN_DIST * 100;
 			vec4 rm = ray_march(light_pt, vec4(LIGHT_DIRECTION, 0.0), SHADOW_SHARPNESS);
-      k = rm.w * min(rm.z, 1.0);
+			k = rm.w * min(rm.z, 1.0);
 		#endif
 
 		//Get specular
@@ -340,7 +337,7 @@ void main() {
 	for (int i = 0; i < ANTIALIASING_SAMPLES; ++i) {
 		for (int j = 0; j < ANTIALIASING_SAMPLES; ++j) {
 			//Get normalized screen coordinate
-      vec2 delta = vec2(i, j) / ANTIALIASING_SAMPLES;
+			vec2 delta = vec2(i, j) / ANTIALIASING_SAMPLES;
 			vec2 screen_pos = (gl_FragCoord.xy + delta) / iResolution.xy;
 			
 			//Calculate the view angle per pixel
@@ -351,40 +348,40 @@ void main() {
 
 			//Convert screen coordinate to 3d ray
 			vec4 ray = iMat * normalize(vec4(uv.x, uv.y, -FOCAL_DIST, 0.0));
-		  vec4 p = iMat[3];
+			vec4 p = iMat[3];
 
 			//Reflect light if needed
 			float vignette = 1.0 - VIGNETTE_STRENGTH * length(screen_pos - 0.5);
-      vec3 r = ray.xyz;
-      vec4 col_r = scene(p, ray, vignette);
+			vec3 r = ray.xyz;
+		vec4 col_r = scene(p, ray, vignette);
 
-      //Check if this is the glass marble
-      if (col_r.w > 0.5) {
-        //Calculate refraction
-        vec3 n = normalize(iMarblePos - p.xyz);
-        vec3 q = refraction(r, n, 1.0 / 1.5);
-        vec3 p2 = p.xyz + (dot(q, n) * 2.0 * iMarbleRad) * q;
-        n = normalize(p2 - iMarblePos);
-        q = (dot(q, r) * 2.0) * q - r;
-        vec4 p_temp = vec4(p2 + n * (MIN_DIST * 10), 1.0);
-        vec4 r_temp = vec4(q, 0.0);
-        vec3 refr = scene(p_temp, r_temp, 0.8).xyz;
+		//Check if this is the glass marble
+		if (col_r.w > 0.5) {
+			//Calculate refraction
+			vec3 n = normalize(iMarblePos - p.xyz);
+			vec3 q = refraction(r, n, 1.0 / 1.5);
+			vec3 p2 = p.xyz + (dot(q, n) * 2.0 * iMarbleRad) * q;
+			n = normalize(p2 - iMarblePos);
+			q = (dot(q, r) * 2.0) * q - r;
+			vec4 p_temp = vec4(p2 + n * (MIN_DIST * 10), 1.0);
+			vec4 r_temp = vec4(q, 0.0);
+			vec3 refr = scene(p_temp, r_temp, 0.8).xyz;
 
-        //Calculate refraction
-        n = normalize(p.xyz - iMarblePos);
-        q = r - n*(2*dot(r,n));
-        p_temp = vec4(p.xyz + n * (MIN_DIST * 10), 1.0);
-        r_temp = vec4(q, 0.0);
-        vec3 refl = scene(p_temp, r_temp, 0.8).xyz;
+			//Calculate refraction
+			n = normalize(p.xyz - iMarblePos);
+			q = r - n*(2*dot(r,n));
+			p_temp = vec4(p.xyz + n * (MIN_DIST * 10), 1.0);
+			r_temp = vec4(q, 0.0);
+			vec3 refl = scene(p_temp, r_temp, 0.8).xyz;
 
-        //Combine for final marble color
-        col += refr * 0.6f + refl * 0.4f + col_r.xyz;
-      } else {
-        col += col_r.xyz;
-      }
+			//Combine for final marble color
+			col += refr * 0.6f + refl * 0.4f + col_r.xyz;
+		} else {
+			col += col_r.xyz;
+		}
 		}
 	}
 
 	col *= iExposure / (ANTIALIASING_SAMPLES * ANTIALIASING_SAMPLES);
-  gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+	gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }
