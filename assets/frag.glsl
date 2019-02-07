@@ -40,6 +40,8 @@
 #define SUN_SHARPNESS 2.0
 #define SUN_SIZE 0.004
 #define VIGNETTE_STRENGTH 0.5
+#define FRACTAL_ITER 16
+#define ENABLE_FILTERING 1
 
 uniform mat4 iMat;
 uniform vec2 iResolution;
@@ -55,6 +57,8 @@ uniform float iMarbleRad;
 uniform float iFlagScale;
 uniform vec3 iFlagPos;
 uniform float iExposure;
+
+float FOVperPixel;
 
 vec3 refraction(vec3 rd, vec3 n, float p) {
   float dot_nd = dot(rd, n);
@@ -129,7 +133,7 @@ float de_capsule(vec4 p, float h, float r) {
 //   Main DEs
 //##########################################
 float de_fractal(vec4 p) {
-  for (int i = 0; i < 16; ++i) {
+  for (int i = 0; i < FRACTAL_ITER; ++i) {
     p.xyz = abs(p.xyz);
     rotZ(p, iFracAng1);
     mengerFold(p);
@@ -141,7 +145,7 @@ float de_fractal(vec4 p) {
 }
 vec4 col_fractal(vec4 p) {
   vec3 orbit = vec3(0.0);
-  for (int i = 0; i < 16; ++i) {
+  for (int i = 0; i < FRACTAL_ITER; ++i) {
     p.xyz = abs(p.xyz);
     rotZ(p, iFracAng1);
     mengerFold(p);
@@ -194,6 +198,28 @@ vec4 col_scene(vec4 p) {
 //##########################################
 //   Main code
 //##########################################
+
+//A faster formula to find the gradient/normal direction of the DE(the w component is the average DE)
+//credit to http://www.iquilezles.org/www/articles/normalsSDF/normalsSDF.htm
+vec4 calcGrad(vec4 p, float dx) 
+{
+    const vec3 k = vec3(1,-1,0);
+    return (k.xyyx*DE(p + k.xyyz*dx) + 
+	    k.yyxx*DE(p + k.yyxz*dx) + 
+	    k.yxyx*DE(p + k.yxyz*dx) + 
+	    k.xxxx*DE(p + k.xxxz*dx)) / vec4(4*dx,4*dx,4*dx,4);
+}
+
+//find the average color of the fractal in a radius dx in plane s1-s2
+vec4 smoothColor(vec4 p, vec3 s1, vec3 s2, float dx)
+{
+    return (COL(p + vec4(s1,0)*dx) + 
+			COL(p - vec4(s1,0)*dx) + 
+			COL(p + vec4(s2,0)*dx) + 
+			COL(p - vec4(s2,0)*dx))/4;
+}
+
+
 vec4 ray_march(inout vec4 p, vec4 ray, float sharpness) {
 	//March the ray
 	float d = DE(p);
@@ -205,8 +231,10 @@ vec4 ray_march(inout vec4 p, vec4 ray, float sharpness) {
 	float td = 0.0;
 	float min_d = 1.0;
 	for (; s < MAX_MARCHES; s += 1.0) {
-		if (d < MIN_DIST) {
-			s += d / MIN_DIST;
+		//if the distance from the surface is less than the distance per pixel we stop
+		float min_dist = max(FOVperPixel*td, MIN_DIST);
+		if (d < min_dist) {
+			s += 0.1*d /min_dist;
 			break;
 		} else if (td > MAX_DIST) {
 			break;
@@ -228,18 +256,29 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 
 	//Determine the color for this pixel
 	vec4 col = vec4(0.0);
-	if (d < MIN_DIST) {
+	float min_dist = max(FOVperPixel*td, MIN_DIST);
+	if (d < min_dist) {
 		//Get the surface normal
-		vec4 e = vec4(MIN_DIST, 0.0, 0.0, 0.0);
-		vec3 n = vec3(DE(p + e.xyyy) - DE(p - e.xyyy),
-					  DE(p + e.yxyy) - DE(p - e.yxyy),
-					  DE(p + e.yyxy) - DE(p - e.yyxy));
-		n /= length(n);
-		vec3 reflected = ray.xyz - 2.0*dot(ray.xyz, n) * n;
+		vec4 grad = calcGrad(p,min_dist*0.5);
+		vec3 n = normalize(grad.xyz);
+		
+		//find closest surface point, without this we get weird coloring artifacts
+		p.xyz -= n*d;
 
+		vec3 reflected = ray.xyz - 2.0*dot(ray.xyz, n) * n;
+		
 		//Get coloring
-		vec4 orig_col = clamp(COL(p), 0.0, 1.0);
-    col.w = orig_col.w;
+		#if ENABLE_FILTERING
+			//sample direction 1, the cross product between the ray and the surface normal, should be parallel to the surface
+			vec3 s1 = normalize(cross(ray.xyz,n));
+			//sample direction 2, the cross product between s1 and the surface normal
+			vec3 s2 = cross(s1,n);
+			//get filtered color
+			vec4 orig_col = clamp(smoothColor(p, s1, s2, min_dist*0.5), 0.0, 1.0);
+		#else 
+			vec4 orig_col = clamp(COL(p), 0.0, 1.0);
+		#endif
+        col.w = orig_col.w;
 
 		//Get if this point is in shadow
 		float k = 1.0;
@@ -303,6 +342,10 @@ void main() {
 			//Get normalized screen coordinate
       vec2 delta = vec2(i, j) / ANTIALIASING_SAMPLES;
 			vec2 screen_pos = (gl_FragCoord.xy + delta) / iResolution.xy;
+			
+			//Calculate the view angle per pixel
+			FOVperPixel = 1*90*PI/(180*iResolution.x);
+			
 			vec2 uv = 2*screen_pos - 1;
 			uv.x *= iResolution.x / iResolution.y;
 
