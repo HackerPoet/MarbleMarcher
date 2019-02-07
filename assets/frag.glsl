@@ -23,7 +23,7 @@
 #define DE de_scene
 #define DIFFUSE_ENABLED 0
 #define DIFFUSE_ENHANCED_ENABLED 1
-#define ENABLE_FILTERING 0
+#define FILTERING_ENABLE 0
 #define FOCAL_DIST 1.73205080757
 #define FOG_ENABLED 0
 #define FRACTAL_ITER 16
@@ -267,7 +267,7 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 		p.xyz -= n*d;
 
 		//Get coloring
-		#if ENABLE_FILTERING
+		#if FILTERING_ENABLE
 			//sample direction 1, the cross product between the ray and the surface normal, should be parallel to the surface
 			vec3 s1 = normalize(cross(ray.xyz, n));
 			//sample direction 2, the cross product between s1 and the surface normal
