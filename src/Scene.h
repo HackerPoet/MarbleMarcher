@@ -59,6 +59,7 @@ public:
   bool IsFullRun() const { return is_fullrun && !enable_cheats; }
   bool IsFreeCamera() const { return free_camera; }
   bool HasCheats() const { return enable_cheats; }
+  int GetParamMod() const { return param_mod; }
 
   sf::Music& GetCurMusic() const;
   void StopAllMusic();
@@ -89,6 +90,7 @@ public:
   void Cheat_Motion();
   void Cheat_Planet();
   void Cheat_Zoom();
+  void Cheat_Param(int param);
 
 protected:
   void SetLevel(int level);
@@ -151,6 +153,7 @@ private:
   bool            enable_cheats;
   bool            free_camera;
   int             gravity_type;
+  int             param_mod;
   bool            ignore_goal;
   bool            hyper_speed;
   bool            disable_motion;

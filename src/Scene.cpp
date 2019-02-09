@@ -31,6 +31,7 @@ static const float marble_bounce = 1.2f; //Range 1.0 to 2.0
 static const float orbit_smooth = 0.995f;
 static const float zoom_smooth = 0.85f;
 static const float look_smooth = 0.75f;
+static const float look_smooth_free_camera = 0.9f;
 static const int frame_transition = 400;
 static const int frame_orbit = 600;
 static const int frame_deorbit = 800;
@@ -237,6 +238,7 @@ void Scene::ResetCheats() {
   enable_cheats = false;
   free_camera = false;
   gravity_type = 0;
+  param_mod = -1;
   ignore_goal = false;
   hyper_speed = false;
   disable_motion = false;
@@ -520,7 +522,10 @@ void Scene::UpdateDeOrbit(float dx, float dy, float dz) {
 
 void Scene::UpdateCameraOnly(float dx, float dy, float dz) {
   //Update camera zoom
-  if (zoom_to_scale) {
+  if (param_mod >= 0) {
+    const float new_param = level_copy.params[param_mod] + dz*0.01f;
+    level_copy.params[param_mod] = frac_params_smooth[param_mod] = frac_params[param_mod] = new_param;
+  } else if (zoom_to_scale) {
     level_copy.marble_rad *= std::pow(2.0f, -dz);
     level_copy.marble_rad = std::min(std::max(level_copy.marble_rad, 0.0006f), 0.6f);
     marble_rad = marble_rad*zoom_smooth + level_copy.marble_rad*(1 - zoom_smooth);
@@ -538,9 +543,10 @@ void Scene::UpdateCameraOnly(float dx, float dy, float dz) {
   while (cam_look_x < -pi) { cam_look_x += 2 * pi; }
 
   //Update look smoothing
+  const float a = (free_camera ? look_smooth_free_camera : look_smooth);
   ModPi(cam_look_x_smooth, cam_look_x);
-  cam_look_x_smooth = cam_look_x_smooth*look_smooth + cam_look_x*(1 - look_smooth);
-  cam_look_y_smooth = cam_look_y_smooth*look_smooth + cam_look_y*(1 - look_smooth);
+  cam_look_x_smooth = cam_look_x_smooth*a + cam_look_x*(1 - a);
+  cam_look_y_smooth = cam_look_y_smooth*a + cam_look_y*(1 - a);
 
   //Setup rotation matrix for planets
   if (level_copy.planet) {
@@ -844,4 +850,8 @@ void Scene::Cheat_Planet() {
 void Scene::Cheat_Zoom() {
   if (!enable_cheats) { return; }
   zoom_to_scale = !zoom_to_scale;
+}
+void Scene::Cheat_Param(int param) {
+  if (!enable_cheats) { return; }
+  param_mod = param;
 }
