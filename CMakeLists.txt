@@ -9,10 +9,16 @@ find_package(SFML 2.5 COMPONENTS system window graphics audio REQUIRED)
 
 ## TARGETS
 
+set(MarbleMarcherDepTargets
+  sfml-system
+  sfml-window
+  sfml-graphics
+  sfml-audio
+)
+
 add_subdirectory(src)
 target_include_directories(MarbleMarcherSources PUBLIC
   ${EIGEN3_INCLUDE_DIR}
-  ${SFML_INCLUDE_DIR}
 )
 target_compile_definitions(MarbleMarcherSources PRIVATE SFML_STATIC)
 
@@ -25,8 +31,4 @@ endif()
 target_compile_definitions(MarbleMarcher PRIVATE SFML_STATIC)
 target_link_libraries(MarbleMarcher
   MarbleMarcherSources
-  sfml-system
-  sfml-window
-  sfml-graphics
-  sfml-audio
 )
