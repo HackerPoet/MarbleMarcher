@@ -64,7 +64,7 @@ void Overlays::UpdateMenu(float mouse_x, float mouse_y) {
   MakeText("Controls", 80, 370, 60, sf::Color::White, all_text[CONTROLS]);
   MakeText("Screen Saver", 80, 440, 60, sf::Color::White, all_text[SCREEN_SAVER]);
   MakeText("Exit", 80, 510, 60, sf::Color::White, all_text[EXIT]);
-  MakeText("\xA9""2019 CodeParade 1.1.1\nMusic by PettyTheft", 16, 652, 32, sf::Color::White, all_text[CREDITS], true);
+  MakeText("Community Edition 0.1.5, Base Version 1.1.1\nCopyright 2019 CodeParade, Music by PettyTheft", 16, 652, 32, sf::Color::White, all_text[CREDITS], true);
   all_text[TITLE].setLineSpacing(0.76f);
   all_text[CREDITS].setLineSpacing(0.9f);
 
