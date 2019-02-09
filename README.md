@@ -39,7 +39,7 @@ Because version 1.1.0 is most likely going to be the last official version of Ma
   - anaglyph/stereoscopic mode
   - screenshot mode (temporarily higher resolution and AA)
   - native controller support (+deadzone)
-  - in-game fractal editor, using sliders
+  - in-game fractal editor, using sliders (currently using mousewheel scroll and numbers)
 
 ## Current Version
 Numerous fixes have been appied, along with adding easier MacOS compilation.
