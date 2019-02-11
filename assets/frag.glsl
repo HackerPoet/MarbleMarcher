@@ -33,6 +33,9 @@
 #define MAX_MARCHES 1000
 #define MIN_DIST 1e-5
 #define PI 3.14159265358979
+#define PBR_ENABLED 1
+#define PBR_METALLIC 0.2
+#define PBR_ROUGHNESS 0.8
 #define SHADOWS_ENABLED 1
 #define SHADOW_DARKNESS 0.7
 #define SHADOW_SHARPNESS 10.0
@@ -249,6 +252,50 @@ vec4 ray_march(inout vec4 p, vec4 ray, float sharpness) {
 	return vec4(d, s, td, min_d);
 }
 
+
+///PBR functions 
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+}  
+
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a      = roughness*roughness;
+    float a2     = a*a;
+    float NdotH  = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
+	
+    float num   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+	
+    return num / denom;
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float num   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+	
+    return num / denom;
+}
+
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+	
+    return ggx1 * ggx2;
+}
+///END PBR functions
+
+
 vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 	//Trace the ray
 	vec4 d_s_td_m = ray_march(p, ray, 1.0f);
@@ -279,42 +326,98 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 		#endif
 		col.w = orig_col.w;
 
-		//Get if this point is in shadow
-		float k = 1.0;
-		#if SHADOWS_ENABLED
-			vec4 light_pt = p;
-			light_pt.xyz += n * MIN_DIST * 100;
-			vec4 rm = ray_march(light_pt, vec4(LIGHT_DIRECTION, 0.0), SHADOW_SHARPNESS);
-			k = rm.w * min(rm.z, 1.0);
-		#endif
+		#if PBR_ENABLED
+			vec3 albedo = orig_col.xyz;
+			float metallic = PBR_METALLIC;
+			float roughness = PBR_ROUGHNESS;
+		
+			//reflectance equation
+			vec3 Lo = vec3(0.0);
+			vec3 V = -RAY;
+			vec3 N = n;
+			
+			vec3 F0 = vec3(0.04); 
+			F0 = mix(F0, albedo, metallic);
+			float attenuation = 1;
+	
+			float Ambient1 = 1e10, Ambient0 = s;
+			
+			vec3 L = normalize(LIGHT_DIRECTION);
+			vec3 H = normalize(V + L);
+			
+			#if SHADOWS_ENABLED
+				vec4 light_pt = p;
+				light_pt.xyz += n * MIN_DIST * 100;
+				vec4 rm = ray_march(light_pt, vec4(LIGHT_DIRECTION, 0.0), SHADOW_SHARPNESS);
+				attenuation *= rm.w * min(rm.z, 1.0);
+				//ligth ambient occlusion
+				Ambient1 = rm.y;
+			#endif
+	
+			
+			float ao0 = (1.f/(3*AMBIENT_OCCLUSION_STRENGTH*(Ambient0) + 1));
+			float ao1 = (1.f/(3*AMBIENT_OCCLUSION_STRENGTH*(Ambient1) + 1));
+			
+			vec3 radiance = 3.8*LIGHT_COLOR * attenuation;        
+			
+			// cook-torrance brdf
+			float NDF = DistributionGGX(N, H, roughness);        
+			float G   = GeometrySmith(N, V, L, roughness);      
+			vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
+			
+			vec3 kS = F;
+			vec3 kD = vec3(1.0) - kS;
+			kD *= 1.0 - metallic;	  
+			
+			vec3 numerator    = NDF * G * F;
+			float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+			vec3 specular     = numerator / max(denominator, 0.001);  
+				
+			// add to outgoing radiance Lo
+			float NdotL = max(dot(N, L), 0.0);                
+			Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+	
+    
+			vec3 ambient = 1.3*AMBIENT_OCCLUSION_COLOR_DELTA*albedo*(BACKGROUND_COLOR * ao0 + (1-attenuation)*0.1*LIGHT_COLOR * ao1);
+			col.xyz = clamp(Lo+ambient,0,1);
+		#else
+			//Get if this point is in shadow
+			float k = 1.0;
+			#if SHADOWS_ENABLED
+				vec4 light_pt = p;
+				light_pt.xyz += n * MIN_DIST * 100;
+				vec4 rm = ray_march(light_pt, vec4(LIGHT_DIRECTION, 0.0), SHADOW_SHARPNESS);
+				k = rm.w * min(rm.z, 1.0);
+			#endif
 
-		//Get specular
-		#if SPECULAR_HIGHLIGHT > 0
-			vec3 reflected = ray.xyz - 2.0*dot(ray.xyz, n) * n;
-			float specular = max(dot(reflected, LIGHT_DIRECTION), 0.0);
-			specular = pow(specular, SPECULAR_HIGHLIGHT);
-			col.xyz += specular * LIGHT_COLOR * (k * SPECULAR_MULT);
-		#endif
+			//Get specular
+			#if SPECULAR_HIGHLIGHT > 0
+				vec3 reflected = ray.xyz - 2.0*dot(ray.xyz, n) * n;
+				float specular = max(dot(reflected, LIGHT_DIRECTION), 0.0);
+				specular = pow(specular, SPECULAR_HIGHLIGHT);
+				col.xyz += specular * LIGHT_COLOR * (k * SPECULAR_MULT);
+			#endif
 
-		//Get diffuse lighting
-		#if DIFFUSE_ENHANCED_ENABLED
-			k = min(k, SHADOW_DARKNESS * 0.5 * (dot(n, LIGHT_DIRECTION) - 1.0) + 1.0);
-		#elif DIFFUSE_ENABLED
-			k = min(k, dot(n, LIGHT_DIRECTION));
-		#endif
+			//Get diffuse lighting
+			#if DIFFUSE_ENHANCED_ENABLED
+				k = min(k, SHADOW_DARKNESS * 0.5 * (dot(n, LIGHT_DIRECTION) - 1.0) + 1.0);
+			#elif DIFFUSE_ENABLED
+				k = min(k, dot(n, LIGHT_DIRECTION));
+			#endif
 
-		//Don't make shadows entirely dark
-		k = max(k, 1.0 - SHADOW_DARKNESS);
-		col.xyz += orig_col.xyz * LIGHT_COLOR * k;
+			//Don't make shadows entirely dark
+			k = max(k, 1.0 - SHADOW_DARKNESS);
+			col.xyz += orig_col.xyz * LIGHT_COLOR * k;
 
-		//Add small amount of ambient occlusion
-		float a = 1.0 / (1.0 + s * AMBIENT_OCCLUSION_STRENGTH);
-		col.xyz += (1.0 - a) * AMBIENT_OCCLUSION_COLOR_DELTA;
+			//Add small amount of ambient occlusion
+			float a = 1.0 / (1.0 + s * AMBIENT_OCCLUSION_STRENGTH);
+			col.xyz += (1.0 - a) * AMBIENT_OCCLUSION_COLOR_DELTA;
 
-		//Add fog effects
-		#if FOG_ENABLED
-			a = td / MAX_DIST;
-			col.xyz = (1.0 - a) * col.xyz + a * BACKGROUND_COLOR;
+			//Add fog effects
+			#if FOG_ENABLED
+				a = td / MAX_DIST;
+				col.xyz = (1.0 - a) * col.xyz + a * BACKGROUND_COLOR;
+			#endif
 		#endif
 
 		//Return normal through ray
