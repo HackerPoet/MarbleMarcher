@@ -333,17 +333,15 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 		
 			//reflectance equation
 			vec3 Lo = vec3(0.0);
-			vec3 V = -RAY;
+			vec3 V = -ray.xyz;
 			vec3 N = n;
 			
 			vec3 F0 = vec3(0.04); 
 			F0 = mix(F0, albedo, metallic);
 			float attenuation = 1;
-	
-			float Ambient1 = 1e10, Ambient0 = s;
 			
-			vec3 L = normalize(LIGHT_DIRECTION);
-			vec3 H = normalize(V + L);
+			//ray marching iterations
+			float Ambient1 = 1e10, Ambient0 = s;
 			
 			#if SHADOWS_ENABLED
 				vec4 light_pt = p;
@@ -358,6 +356,9 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			float ao0 = (1.f/(3*AMBIENT_OCCLUSION_STRENGTH*(Ambient0) + 1));
 			float ao1 = (1.f/(3*AMBIENT_OCCLUSION_STRENGTH*(Ambient1) + 1));
 			
+			
+			vec3 L = normalize(LIGHT_DIRECTION);
+			vec3 H = normalize(V + L);
 			vec3 radiance = 3.8*LIGHT_COLOR * attenuation;        
 			
 			// cook-torrance brdf
@@ -377,8 +378,9 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			float NdotL = max(dot(N, L), 0.0);                
 			Lo += (kD * albedo / PI + specular) * radiance * NdotL;
 	
-    
+    			//sum of background AO and sun AO
 			vec3 ambient = 1.3*AMBIENT_OCCLUSION_COLOR_DELTA*albedo*(BACKGROUND_COLOR * ao0 + (1-attenuation)*0.1*LIGHT_COLOR * ao1);
+			
 			col.xyz = clamp(Lo+ambient,0,1);
 		#else
 			//Get if this point is in shadow
