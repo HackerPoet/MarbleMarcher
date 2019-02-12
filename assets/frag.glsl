@@ -332,21 +332,16 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			F0 = mix(F0, albedo, metallic);
 			float attenuation = 1;
 			
-			//ray marching iterations
-			float Ambient1 = 1e10, Ambient0 = s;
 			
 			#if SHADOWS_ENABLED
 				vec4 light_pt = p;
 				light_pt.xyz += n * MIN_DIST * 100;
 				vec4 rm = ray_march(light_pt, vec4(LIGHT_DIRECTION, 0.0), SHADOW_SHARPNESS);
 				attenuation *= rm.w * min(rm.z, 1.0);
-				//ligth ambient occlusion
-				Ambient1 = rm.y;
 			#endif
 	
 			
-			float ao0 = (1.f/(3*AMBIENT_OCCLUSION_STRENGTH*(Ambient0) + 1));
-			float ao1 = (1.f/(3*AMBIENT_OCCLUSION_STRENGTH*(Ambient1) + 1));
+			float ao0 = (1.f/(2.5*AMBIENT_OCCLUSION_STRENGTH*s + 1));
 			
 			
 			vec3 L = normalize(LIGHT_DIRECTION);
@@ -370,8 +365,8 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			float NdotL = max(dot(N, L), 0.0);                
 			Lo += (kD * albedo / PI + specular) * radiance * NdotL;
 	
-    			//sum of background AO and sun AO
-			vec3 ambient = 1.3*AMBIENT_OCCLUSION_COLOR_DELTA*albedo*(BACKGROUND_COLOR * ao0 + (1-attenuation)*0.1*LIGHT_COLOR * ao1);
+    			//background AO
+			vec3 ambient = 1.2*AMBIENT_OCCLUSION_COLOR_DELTA*albedo*(0.7*BACKGROUND_COLOR+0.3*LIGHT_COLOR) * ao0;
 			
 			col.xyz = clamp(Lo+ambient,0,1);
 		#else
