@@ -20,7 +20,7 @@
 #define ANTIALIASING_SAMPLES 1
 #define BACKGROUND_COLOR vec3(0.6,0.8,1.0)
 #define COL col_scene
-#define CAMERA_SIZE 0.02
+#define CAMERA_SIZE 0.035
 #define DE de_scene
 #define DIFFUSE_ENABLED 0
 #define DIFFUSE_ENHANCED_ENABLED 1
@@ -31,12 +31,12 @@
 #define LIGHT_COLOR vec3(1.0,0.95,0.8)
 #define LIGHT_DIRECTION vec3(-0.36, 0.8, 0.48)
 #define MAX_DIST 30.0
-#define MAX_MARCHES 1000
+#define MAX_MARCHES 256
 #define MIN_DIST 1e-5
 #define PI 3.14159265358979
 #define PBR_ENABLED 1
 #define PBR_METALLIC 0.5
-#define PBR_ROUGHNESS 0.38
+#define PBR_ROUGHNESS 0.4
 #define SHADOWS_ENABLED 1
 #define SHADOW_DARKNESS 0.7
 #define SHADOW_SHARPNESS 10.0
@@ -230,14 +230,17 @@ vec4 ray_march(inout vec4 p, vec4 ray, float sharpness) {
 	for (; s < MAX_MARCHES; s += 1.0) {
 		//if the distance from the surface is less than the distance per pixel we stop
 		float min_dist = max(FOVperPixel*td, MIN_DIST);
-		if (d < min_dist) {
-			s += d / min_dist;
-			break;
-		} else if (td > MAX_DIST) {
+		if(d < -min_dist || td > MAX_DIST)
+		{
 			break;
 		}
-		td += d;
-		p += ray * d;
+		else if (d < min_dist)
+		{
+			s += d / min_dist;
+			break;
+		} 
+		td += d+min_dist*0.1;
+		p += ray * (d+min_dist*0.1);
 		min_d = min(min_d, sharpness * d / td);
 		d = DE(p);
 	}
@@ -303,7 +306,7 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 		vec3 n = calcNormal(p, min_dist*0.5);
 		
 		//find closest surface point, without this we get weird coloring artifacts
-		p.xyz -= n*d;
+		if(s>0) p.xyz -= n*d;
 
 		//Get coloring
 		#if FILTERING_ENABLE
@@ -341,7 +344,7 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			#endif
 	
 			
-			float ao0 = (1.f/(2.5*AMBIENT_OCCLUSION_STRENGTH*s + 1));
+			float ao0 = 1.f/(2.5*AMBIENT_OCCLUSION_STRENGTH*s + 1);
 			
 			
 			vec3 L = normalize(LIGHT_DIRECTION);
@@ -366,7 +369,7 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			Lo += (kD * albedo / PI + specular) * radiance * NdotL;
 	
     			//background AO
-			vec3 ambient = 1.2*AMBIENT_OCCLUSION_COLOR_DELTA*albedo*(0.7*BACKGROUND_COLOR+0.3*LIGHT_COLOR) * ao0;
+			vec3 ambient = 1.4*AMBIENT_OCCLUSION_COLOR_DELTA * albedo * (0.7*BACKGROUND_COLOR+0.3*LIGHT_COLOR) * ao0;
 			
 			col.xyz = clamp(Lo+ambient,0,1);
 		#else
@@ -484,6 +487,7 @@ void main() {
 
 				//Combine for final marble color
 				col += kS*refl + kD*refr + col_r.xyz;
+				
 			} else {
 				col += col_r.xyz;
 			}
