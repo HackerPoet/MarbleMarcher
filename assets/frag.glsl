@@ -31,7 +31,7 @@
 #define LIGHT_COLOR vec3(1.0,0.95,0.8)
 #define LIGHT_DIRECTION vec3(-0.36, 0.8, 0.48)
 #define MAX_DIST 30.0
-#define MAX_MARCHES 256
+#define MAX_MARCHES 512
 #define MIN_DIST 1e-5
 #define PI 3.14159265358979
 #define PBR_ENABLED 1
