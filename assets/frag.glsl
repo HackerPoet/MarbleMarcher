@@ -462,13 +462,6 @@ void main() {
 				vec4 r_temp = vec4(q, 0.0);
 				vec3 refr = scene(p_temp, r_temp, 0.8).xyz;
 
-				//Calculate refraction
-				n = normalize(p.xyz - iMarblePos);
-				q = r - n*(2*dot(r,n));
-				p_temp = vec4(p.xyz + n * (MIN_DIST * 10), 1.0);
-				r_temp = vec4(q, 0.0);
-				vec3 refl = scene(p_temp, r_temp, 0.8).xyz;
-
 				//Calculate reflection
 				n = normalize(p.xyz - iMarblePos);
 				q = r - n*(2*dot(r,n));
