@@ -469,8 +469,28 @@ void main() {
 				r_temp = vec4(q, 0.0);
 				vec3 refl = scene(p_temp, r_temp, 0.8).xyz;
 
+				//Calculate reflection
+				n = normalize(p.xyz - iMarblePos);
+				q = r - n*(2*dot(r,n));
+				p_temp = vec4(p.xyz + n * (MIN_DIST * 10), 1.0);
+				r_temp = vec4(q, 0.0);
+				vec3 refl = scene(p_temp, r_temp, 0.8).xyz;
+				
+				//PBR reflections/refractions
+				vec3 V = -r;
+				vec3 N = n;
+				//glass
+				vec3 F0 = vec3(0.03); 
+				vec3 L = normalize(q.xyz);
+				vec3 H = normalize(V + L);
+				vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);  
+				
+				vec3 kS = F;
+				vec3 kD = vec3(1.0) - kS;
+				
+
 				//Combine for final marble color
-				col += refr * 0.6f + refl * 0.4f + col_r.xyz;
+				col += kS*refl + kD*refr + col_r.xyz;
 			} else {
 				col += col_r.xyz;
 			}
