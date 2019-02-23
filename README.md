@@ -15,14 +15,14 @@ All credit goes to [HackerPoet](https://github.com/HackerPoet) for the original 
 *Video Explanation: https://youtu.be/9U0XVdvQwAI*
 
 ## Goals
-Because version 1.1.0 is most likely going to be the last official version of Marble Marcher, we (as a community) have opted to create a community edition of the game. Here are our proposed changes:
+Because version 1.1.1 is most likely going to be the last official version of Marble Marcher, we (as a community) have opted to create a community edition of the game. Here are our proposed changes:
 
 - ### Fixes
   - make sure game runs at the same speed everywhere
   - mouse/camera speed is too fast while skipping cutscenes
   - figure out why so many people get `Failed to compile vertex shader`
 - ### User Experience Improvements
-  - pre-built versions for the common operating systems and make them available as github releases
+  - pre-built versions for the common operating systems and make them available as github releases (in progress)
   - confirmation, exit buttons in end screens
   - change "controls" menu to "settings" and have audio, controls, sensitivity and fullscreen options there, also allow custom input bindings
   - make the fractal recoloring from cheats persistent
@@ -36,23 +36,23 @@ Because version 1.1.0 is most likely going to be the last official version of Ma
   - custom map support
   - custom marble designs
   - cheat: no drag
-  - anaglyph/stereoscopic mode
+  - anaglyph/stereoscopic mode (easy to implement but how do we switch between them)
   - screenshot mode (temporarily higher resolution and AA)
   - native controller support (+deadzone)
   - in-game fractal editor, using sliders (currently using mousewheel scroll and numbers)
 
 ## Current Version
-Numerous fixes have been appied, along with adding easier MacOS compilation.
+Numerous fixes have been applied, along with adding easier MacOS compilation.
 
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 * [SFML 2.5.0](https://www.sfml-dev.org)
 ### MacOS
-On macOS these can be conveniently installed using [Homebrew](https://brew.sh):
+On macOS these can be conveniently installed using [HomeBrew](https://brew.sh):
 
 `brew install eigen sfml`
 
-The version of SFML required is 2.5.1 or newer. Homebrew does not have this version yet so it must be [downloaded manually](https://www.sfml-dev.org/download/sfml/2.5.1/) and installed using [these instructions](https://www.sfml-dev.org/tutorials/2.5/start-osx.php). You must install the Frameworks option not the dylib option or the build script may fail.
+The version of SFML required is 2.5.1 or newer. HomeBrew does not have this version yet so it must be [downloaded manually](https://www.sfml-dev.org/download/sfml/2.5.1/) and installed using [these instructions](https://www.sfml-dev.org/tutorials/2.5/start-osx.php). You must install the Frameworks option not the dylib option or the build script may fail.
 **It is very important that if you installed SFML with brew before realizing that you have to install it manually, that you remove the version of SFML that Brew installed using `brew remove sfml`.**
 
 Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
@@ -66,7 +66,7 @@ Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
 ## Building
 ### MacOS
 #### Build Script
-Simply run `./macOSBuild.sh`. This will generate the full Application bundle that can be used like any other application. It can even be used on systems without SFML as SFML is included in the bundle and the binary is relinked to these versions. Currently the scipt will only do the relinking part properly if you use SFML 2.5.1 specifically however it is planned to allow for any version. If you have another version, the script will still work, the app just won't work on a machine without SFML.
+Simply run `./macOSBuild.sh`. This will generate the full Application bundle that can be used like any other application. It can even be used on systems without SFML as SFML is included in the bundle and the binary is relinked to these versions. Currently the script will only do the relinking part properly if you use SFML 2.5.1 specifically however it is planned to allow for any version. If you have another version, the script will still work, the app just won't work on a machine without SFML.
 #### Manual
 * `mkdir build && cd build`
 * `cmake ..`
@@ -74,7 +74,7 @@ Simply run `./macOSBuild.sh`. This will generate the full Application bundle tha
 * `cd ..`
 * `cmake --build build`
 
-Note that this just builds a binary and not an Application bundle like you might be used to seeing. To run properly, you must move the binary (which, after building, is `build/MarbleMarcher`) to the same folder as the assets folder. It is not recomended to build the Application bundle manually so no instructions for that are provided however you may peek in `macOSBuild.sh` to see how it is done.
+Note that this just builds a binary and not an Application bundle like you might be used to seeing. To run properly, you must move the binary (which, after building, is `build/MarbleMarcher`) to the same folder as the assets folder. It is not recommended to build the Application bundle manually so no instructions for that are provided however you may peek in `macOSBuild.sh` to see how it is done.
 
 Alternatively, one can use the platform-dependent build system, for example `Make`:
 
@@ -89,6 +89,8 @@ Alternatively, one can use the platform-dependent build system, for example `Mak
 * `cmake --build build`
 * `cp build/MarbleMarcher ./`
 
+### Cross-Compile for Windows on macOS
+This requires you to install wget, mingw-w64, and git (which you probably already have) either with HomeBrew (recommended) or otherwise. Theoretically, you should be able to just run `winMacOSBuild.sh`. There are no manual instructions because due to issues I had to just compile the thing manually which is annoying and has too many steps.
 
 ## Launching
 If the macOS build script was used, simply launch the app as normal, otherwise:
