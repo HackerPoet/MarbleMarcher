@@ -14,7 +14,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
+#ifdef __MINGW32__
 #include "fixthings.c"
+#endif
 #include "Scene.h"
 #include "Level.h"
 #include "Overlays.h"

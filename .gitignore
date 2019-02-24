@@ -4,3 +4,5 @@ build
 src/resources.c*
 MarbleMarcher.app
 winBuild
+MarbleMarcher.exe
+MarbleMarcher
