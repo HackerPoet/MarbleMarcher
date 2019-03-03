@@ -10,17 +10,17 @@ unzip -u -o SFML-2.5.1-windows-gcc-7.3.0-mingw-64-bit.zip
 git clone https://github.com/SFML/SFML.git
 export CPATH=`pwd`/eigen-eigen-323c052e1731/:`pwd`/SFML-2.5.1/include:`pwd`/SFML/exttlibs/headers
 
-x86_64-w64-mingw32-g++ -Ofast -c Level.cpp -D SFML_STATIC &\
-x86_64-w64-mingw32-g++ -Ofast -c Level.h -D SFML_STATIC &\
-x86_64-w64-mingw32-g++ -Ofast -c Overlays.cpp -D SFML_STATIC &\
-x86_64-w64-mingw32-g++ -Ofast -c Overlays.h -D SFML_STATIC &\
-x86_64-w64-mingw32-g++ -Ofast -c Res.h -D SFML_STATIC &\
-x86_64-w64-mingw32-g++ -Ofast -c Scene.cpp -D SFML_STATIC &\
-x86_64-w64-mingw32-g++ -Ofast -c Scene.h -D SFML_STATIC &\
-x86_64-w64-mingw32-g++ -Ofast -c Scores.cpp -D SFML_STATIC &\
-x86_64-w64-mingw32-g++ -Ofast -c Scores.h -D SFML_STATIC &\
-x86_64-w64-mingw32-g++ -Ofast -c SelectRes.cpp -D SFML_STATIC &\
-x86_64-w64-mingw32-g++ -Ofast -c SelectRes.h -D SFML_STATIC &\
+x86_64-w64-mingw32-g++ -Ofast -c Level.cpp -D SFML_STATIC
+x86_64-w64-mingw32-g++ -Ofast -c Level.h -D SFML_STATIC
+x86_64-w64-mingw32-g++ -Ofast -c Overlays.cpp -D SFML_STATIC
+x86_64-w64-mingw32-g++ -Ofast -c Overlays.h -D SFML_STATIC
+x86_64-w64-mingw32-g++ -Ofast -c Res.h -D SFML_STATIC
+x86_64-w64-mingw32-g++ -Ofast -c Scene.cpp -D SFML_STATIC
+x86_64-w64-mingw32-g++ -Ofast -c Scene.h -D SFML_STATIC
+x86_64-w64-mingw32-g++ -Ofast -c Scores.cpp -D SFML_STATIC
+x86_64-w64-mingw32-g++ -Ofast -c Scores.h -D SFML_STATIC
+x86_64-w64-mingw32-g++ -Ofast -c SelectRes.cpp -D SFML_STATIC
+x86_64-w64-mingw32-g++ -Ofast -c SelectRes.h -D SFML_STATIC
 x86_64-w64-mingw32-g++ -Ofast -c Settings.h -D SFML_STATIC
 
 rm MarbleMarcherSources.a
