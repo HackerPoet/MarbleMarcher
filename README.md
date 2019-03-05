@@ -2,7 +2,7 @@
 
 This is the community edition of Marble Marcher, created mainly by the members of the [Marble Marcher Speedrunning Community on Discord](https://discord.gg/r3XrJxH).
 
-All credit goes to [HackerPoet](https://github.com/HackerPoet) for the original game.
+All credit goes to [HackerPoet](https://github.com/HackerPoet) for the [original game](https://github.com/HackerPoet/MarbleMarcher).
 
 ## Original Summary
 *Marble Marcher is a video game demo that uses a fractal physics engine and fully procedural rendering to produce beautiful and unique gameplay unlike anything you've seen before.*
