@@ -1,6 +1,6 @@
 # Marble Marcher: Community Edition
 
-This is the community edition of Marble Marcher, created mainly by the members of the [Marble Marcher Speedrunning Community on Discord](https://discord.gg/r3XrJxH).
+This is the community edition of Marble Marcher, created mainly by the members of the [Marble Marcher Speedrunning Community on Discord](https://discord.gg/r3XrJxH), in addition to the members of the [subreddit](https://www.reddit.com/r/marblemarcher) and anyone else who has contributed.
 
 All credit goes to [HackerPoet](https://github.com/HackerPoet) for the [original game](https://github.com/HackerPoet/MarbleMarcher).
 
