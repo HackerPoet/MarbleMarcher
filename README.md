@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/jgoldfar/MarbleMarcher.svg?branch=master)](https://travis-ci.org/jgoldfar/MarbleMarcher)
 
+## This branch is for tweaking the original source code with all kinds of stuff.
+
 Marble Marcher is a video game demo that uses a fractal physics engine and fully procedural rendering to produce beautiful and unique gameplay unlike anything you've seen before.
 
 The goal of the game is to reach the flag as quickly as possible.  But be careful not to
