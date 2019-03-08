@@ -417,8 +417,8 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 
 		//Add fog effects
 		#if FOG_ENABLED
-			a = td / MAX_DIST;
-			col.xyz = (1.0 - a) * col.xyz + a * BACKGROUND_COLOR;
+			float b = td / MAX_DIST;
+			col.xyz = (1.0 - b) * col.xyz + b * BACKGROUND_COLOR;
 		#endif
 			
 		//Return normal through ray
