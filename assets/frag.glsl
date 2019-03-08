@@ -335,12 +335,19 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			F0 = mix(F0, albedo, metallic);
 			float attenuation = 1;
 			
-			
 			#if SHADOWS_ENABLED
+			//saves 1 march
+			if(dot(n, LIGHT_DIRECTION)>0)
+			{
 				vec4 light_pt = p;
 				light_pt.xyz += n * MIN_DIST * 100;
 				vec4 rm = ray_march(light_pt, vec4(LIGHT_DIRECTION, 0.0), SHADOW_SHARPNESS);
 				attenuation *= rm.w * min(rm.z, 1.0);
+			} 
+			else
+			{
+				attenuation = 0;
+			}
 			#endif
 	
 			
@@ -372,6 +379,7 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			vec3 ambient = 1.4*AMBIENT_OCCLUSION_COLOR_DELTA * albedo * (0.7*BACKGROUND_COLOR+0.3*LIGHT_COLOR) * ao0;
 			
 			col.xyz = clamp(Lo+ambient,0,1);
+			
 		#else
 			//Get if this point is in shadow
 			float k = 1.0;
@@ -404,14 +412,15 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			//Add small amount of ambient occlusion
 			float a = 1.0 / (1.0 + s * AMBIENT_OCCLUSION_STRENGTH);
 			col.xyz += (1.0 - a) * AMBIENT_OCCLUSION_COLOR_DELTA;
-
-			//Add fog effects
-			#if FOG_ENABLED
-				a = td / MAX_DIST;
-				col.xyz = (1.0 - a) * col.xyz + a * BACKGROUND_COLOR;
-			#endif
+			
 		#endif
 
+		//Add fog effects
+		#if FOG_ENABLED
+			a = td / MAX_DIST;
+			col.xyz = (1.0 - a) * col.xyz + a * BACKGROUND_COLOR;
+		#endif
+			
 		//Return normal through ray
 		ray = vec4(n, 0.0);
 	} else {
