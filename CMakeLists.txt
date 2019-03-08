@@ -3,17 +3,25 @@ project(MarbleMarcher)
 set(CMAKE_CXX_STANDARD 11)
 
 ## DEPENDENCIES
+set(SFML_DIR C:/Libraries/SFML-2.5.1/lib/cmake/SFML)
+set(SFML_INCLUDE_DIR C:/Libraries/SFML-2.5.1/include)
+set(SDK_DIRECTORY "C:/Program Files (x86)/Microsoft SDKs")
+set(EIGEN3_INCLUDE_DIR C:/Libraries/eigen3/)
+set(SFML_STATIC_LIBRARIES TRUE)
 
-find_package(Eigen3 3.3 REQUIRED)
 find_package(SFML 2.5 COMPONENTS system window graphics audio REQUIRED)
 
 ## TARGETS
 
 add_subdirectory(src)
 target_include_directories(MarbleMarcherSources PUBLIC
+  src
   ${EIGEN3_INCLUDE_DIR}
   ${SFML_INCLUDE_DIR}
 )
+
+include_directories(${SDK_DIRECTORY}/Windows/v7.1/Include)
+
 target_compile_definitions(MarbleMarcherSources PRIVATE SFML_STATIC)
 
 if(WIN32)
@@ -22,6 +30,12 @@ if(WIN32)
 else()
   add_executable(MarbleMarcher src/Main.cpp)
 endif()
+
+add_custom_command(TARGET MarbleMarcher PRE_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/game_folder $<TARGET_FILE_DIR:MarbleMarcher>)
+
+
 target_compile_definitions(MarbleMarcher PRIVATE SFML_STATIC)
 target_link_libraries(MarbleMarcher
   MarbleMarcherSources
