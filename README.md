@@ -13,6 +13,14 @@ Download Link: https://codeparade.itch.io/marblemarcher
 
 Video Explanation: https://youtu.be/9U0XVdvQwAI
 
+## Instructions
+Press F4 to enable AntTweakBar
+
+The tweak bar can be used to easely modify the fractal parameters on the fly.
+
+![Example](https://raw.githubusercontent.com/MichaelMoroz/MarbleMarcher/sandbox/doc/AntTweakBar.PNG)
+
+
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 * [SFML 2.5.0](https://www.sfml-dev.org)
