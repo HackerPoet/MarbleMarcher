@@ -1,4 +1,4 @@
-# Marble Marcher
+# Marble Marcher Mod
 
 [![Build Status](https://travis-ci.org/jgoldfar/MarbleMarcher.svg?branch=master)](https://travis-ci.org/jgoldfar/MarbleMarcher)
 
