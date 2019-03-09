@@ -373,7 +373,7 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, FractalParams *
 	TwInit(TW_OPENGL, NULL);
 	TwWindowSize(Width, Height);
 
-	stats = TwNewBar("Statistics");
+	stats = TwNewBar("Statistics" );
 	TwDefine(" GLOBAL help='Marble Marcher mod by Michael Moroz' ");
 
 	// Change bar position
@@ -383,18 +383,20 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, FractalParams *
 	//TwAddVarRW(bar, "Camera speed", TW_TYPE_FLOAT, &sp, " min=0.005 max=0.5 step=0.005");
 	//TwAddVarRW(bar, "Calculations per frame", TW_TYPE_INT32, &cpf, " min=1 max=500 step=1");
 	settings = TwNewBar("Settings");
-
-	TwAddVarRW(settings, "FractalScale", TW_TYPE_FLOAT, &params[0], "min=0 max=5 step=0.01  group='Fractal parameter");
-	TwAddVarRW(settings, "FractalAngle1", TW_TYPE_FLOAT, &params[1], "min=-5 max=5 step=0.01  group='Fractal parameter");
-	TwAddVarRW(settings, "FractalAngle2", TW_TYPE_FLOAT, &params[2], "min=-5 max=5 step=0.01  group='Fractal parameter");
-	TwAddVarRW(settings, "FractalShift", TW_TYPE_DIR3F, &params->segment<3>(3), " group='Fractal parameter");
-	TwAddVarRW(settings, "FractalColor", TW_TYPE_DIR3F, &params->segment<3>(6), " group='Fractal parameter");
+	float *p = params->data();
+	TwAddVarRW(settings, "FractalScale", TW_TYPE_FLOAT, p, "min=0 max=5 step=0.01  group='Fractal parameter");
+	TwAddVarRW(settings, "FractalAngle1", TW_TYPE_FLOAT, p+1, "min=-5 max=5 step=0.01  group='Fractal parameter");
+	TwAddVarRW(settings, "FractalAngle2", TW_TYPE_FLOAT, p+2, "min=-5 max=5 step=0.01  group='Fractal parameter");
+	TwAddVarRW(settings, "FractalShift", TW_TYPE_DIR3F, p+3, " group='Fractal parameter");
+	TwAddVarRW(settings, "FractalColor", TW_TYPE_DIR3F, p+6, " group='Fractal parameter");
 
 	int barPos1[2] = { 16, 450 };
 
 	TwSetParam(settings, NULL, "position", TW_PARAM_INT32, 2, &barPos1);
 
 	TwDefine(" GLOBAL fontsize=3 ");
+	TwDefine("Settings color='255 128 0' alpha=210");
+	TwDefine("Statistics color='0 128 255' alpha=210");
 }
 
 void Overlays::DrawAntTweakBar()
@@ -451,6 +453,20 @@ bool Overlays::TwManageEvent(sf::Event &event)
 		if (RMB && released)
 		{
 			handl = handl || TwMouseButton(TW_MOUSE_RELEASED, TW_MOUSE_RIGHT);
+		}
+
+		if (RMB && released)
+		{
+			handl = handl || TwMouseButton(TW_MOUSE_RELEASED, TW_MOUSE_RIGHT);
+		}
+
+		bool keypress = event.type == sf::Event::KeyPressed;
+		bool keyrelease = event.type == sf::Event::MouseButtonReleased;
+		int keycode = event.key.code;
+
+		if (keypress)
+		{
+			handl = handl || TwKeyPressed(TW_KEY_F1 + keycode - sf::Keyboard::F1, TW_KMOD_NONE);
 		}
 
 		return handl;
