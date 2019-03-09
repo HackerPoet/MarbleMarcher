@@ -9,7 +9,7 @@ Marble Marcher is a video game demo that uses a fractal physics engine and fully
 The goal of the game is to reach the flag as quickly as possible.  But be careful not to
 fall off the level or get crushed by the fractal!  There are 24 levels to unlock.
 
-Download Link: https://codeparade.itch.io/marblemarcher
+Download Link: https://github.com/MichaelMoroz/MarbleMarcher/releases
 
 Video Explanation: https://youtu.be/9U0XVdvQwAI
 
