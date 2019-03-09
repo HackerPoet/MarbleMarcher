@@ -16,7 +16,7 @@ Video Explanation: https://youtu.be/9U0XVdvQwAI
 ## Instructions
 Press F4 to enable AntTweakBar
 
-The tweak bar can be used to easely modify the fractal parameters on the fly.
+The tweak bar can be used to easily modify the fractal parameters on the fly.
 
 ![Example](https://raw.githubusercontent.com/MichaelMoroz/MarbleMarcher/sandbox/doc/AntTweakBar.PNG)
 
