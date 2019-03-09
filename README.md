@@ -16,6 +16,7 @@ Video Explanation: https://youtu.be/9U0XVdvQwAI
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 * [SFML 2.5.0](https://www.sfml-dev.org)
+* [AntTweakBar](http://anttweakbar.sourceforge.net/doc/)
 ### MacOS
 On macOS these can be conveniently installed using [Homebrew](https://brew.sh):
 
