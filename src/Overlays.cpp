@@ -476,3 +476,9 @@ bool Overlays::TwManageEvent(sf::Event &event)
 		return 0;
 	}
 }
+
+
+void Overlays::SetTWBARResolution(int Width, int Height)
+{
+	TwWindowSize(Width, Height);
+}

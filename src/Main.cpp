@@ -207,7 +207,7 @@ int main(int argc, char *argv[]) {
     window_style = sf::Style::Fullscreen;
   } else {
     screen_size = sf::VideoMode(resolution->width, resolution->height, 24);
-    window_style = sf::Style::Close;
+    window_style = sf::Style::Default;
   }
   sf::RenderWindow window(screen_size, "Marble Marcher", window_style, settings);
   window.setVerticalSyncEnabled(true);
@@ -218,6 +218,9 @@ int main(int argc, char *argv[]) {
   if (resolution->width == screen_size.width && resolution->height == screen_size.height) {
     fullscreen = false;
   }
+
+  //force fullscreen mode
+  fullscreen = true;
 
   //fullscreen = false;
   //Create the render texture if needed
@@ -251,7 +254,6 @@ int main(int argc, char *argv[]) {
   float lag_ms = 0.0f;
 
   overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene.frac_params);
- // ERROR_MSG(num2str(screen_size.width).c_str());
 
   while (window.isOpen()) {
     sf::Event event;
@@ -269,6 +271,14 @@ int main(int argc, char *argv[]) {
 			if (game_mode == PLAYING) {
 				PauseGame(window, scene);
 			}
+		}
+		else if (event.type == sf::Event::Resized) {
+			screen_size.width = event.size.width;
+			screen_size.height = event.size.height;
+			overlays.SetTWBARResolution(event.size.width, event.size.height);
+			overlays.SetScale( std::max(float(screen_size.width), float(screen_size.height))/ 1280.0f);
+			sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+			window.setView(sf::View(visibleArea));
 		}
 
 		// If event has not been handled by AntTweakBar, process it

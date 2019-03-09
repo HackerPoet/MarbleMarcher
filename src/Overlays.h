@@ -60,6 +60,7 @@ public:
   //Relative to 1280x720
   void SetScale(float scale) { draw_scale = scale; }
   void SetAntTweakBar(int Width, int Height, float &fps, FractalParams *params);
+  void SetTWBARResolution(int Width, int Height);
 
   Texts GetOption(Texts from, Texts to);
   int& GetLevelPage() { return level_page; }
