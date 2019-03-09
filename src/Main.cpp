@@ -44,6 +44,7 @@ static const float wheel_sensitivity = 0.2f;
 static const float music_vol = 75.0f;
 static const float target_fps = 60.0f;
 
+
 //Game modes
 enum GameMode {
   MAIN_MENU,
@@ -62,6 +63,14 @@ static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
 static bool mouse_clicked = false;
 static bool show_cheats = false;
 static GameMode game_mode = MAIN_MENU;
+
+//convert any number to a string
+template < typename T > std::string num2str(const T& n)
+{
+	std::ostringstream stm;
+	stm << n;
+	return stm.str();
+}
 
 float GetVol() {
   if (game_settings.mute) {
@@ -201,6 +210,9 @@ int main(int argc, char *argv[]) {
     screen_size = sf::VideoMode(resolution->width, resolution->height, 24);
 	window_style = sf::Style::Default;
   }
+
+  sf::Vector2f screenshot_size = sf::Vector2f(std::min(resolution->width*4.f, 3840.f), std::min(resolution->height * 4.f, 2160.f));
+
   sf::RenderWindow window(screen_size, "Marble Marcher", window_style, settings);
   window.setVerticalSyncEnabled(true);
   window.setKeyRepeatEnabled(false);
@@ -216,6 +228,12 @@ int main(int argc, char *argv[]) {
 
   //Create the render texture if needed
   sf::RenderTexture renderTexture;
+  //screenshot number
+  int screenshot_i = 0;
+  sf::RenderTexture screenshotTexture;
+  screenshotTexture.create(screenshot_size.x, screenshot_size.y, settings);
+  screenshotTexture.setSmooth(true);
+
   if (fullscreen) {
     renderTexture.create(resolution->width, resolution->height, settings);
     renderTexture.setSmooth(true);
@@ -223,9 +241,12 @@ int main(int argc, char *argv[]) {
     window.setActive(false);
   }
 
+  
+
   //Create the fractal scene
   Scene scene(level_music);
   const sf::Glsl::Vec2 window_res((float)resolution->width, (float)resolution->height);
+  const sf::Glsl::Vec2 sres_res((float)screenshot_size.x, (float)screenshot_size.y);
   shader.setUniform("iResolution", window_res);
   scene.Write(shader);
 
@@ -233,6 +254,10 @@ int main(int argc, char *argv[]) {
   sf::RectangleShape rect;
   rect.setSize(window_res);
   rect.setPosition(0, 0);
+
+  sf::RectangleShape rect_scrshot;
+  rect_scrshot.setSize(sres_res);
+  rect_scrshot.setPosition(0, 0);
 
   //Create the menus
   Overlays overlays(&font, &font_mono);
@@ -304,6 +329,29 @@ int main(int argc, char *argv[]) {
             show_cheats = !show_cheats;
             scene.EnbaleCheats();
           }
+		} else if (keycode == sf::Keyboard::F5) { 
+			///Screenshot
+			//Update the shader values
+			shader.setUniform("iResolution", sres_res);
+			scene.Write(shader);
+
+			//Setup full-screen shader
+			sf::RenderStates states = sf::RenderStates::Default;
+			states.shader = &shader;
+			window.setActive(false);
+			//Draw the fractal
+			//Draw to the render texture
+			screenshotTexture.setActive(true);
+			screenshotTexture.draw(rect_scrshot, states);
+			screenshotTexture.display();
+			screenshotTexture.getTexture().copyToImage().saveToFile("screenshots/"+num2str(screenshot_i)+".png");
+
+			screenshotTexture.setActive(false);
+			window.setActive(true);
+
+			shader.setUniform("iResolution", window_res);
+			scene.Write(shader);
+			screenshot_i++;
         } else if (keycode == sf::Keyboard::C) {
           scene.Cheat_ColorChange();
         } else if (keycode == sf::Keyboard::F) {
