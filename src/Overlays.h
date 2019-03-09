@@ -21,6 +21,7 @@
 #include <SFML/Audio.hpp>
 #include <AntTweakBar.h>
 
+
 extern Settings game_settings;
 
 class Overlays {
@@ -83,6 +84,7 @@ public:
   void DrawCheats(sf::RenderWindow& window);
   void DrawAntTweakBar();
 
+  bool TwManageEvent(sf::Event &event);
 protected:
   void MakeText(const char* str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono=false);
   void MakeTime(int t, float x, float y, float size, const sf::Color& color, sf::Text& text);

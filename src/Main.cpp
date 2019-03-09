@@ -250,27 +250,31 @@ int main(int argc, char *argv[]) {
   float smooth_fps = target_fps;
   float lag_ms = 0.0f;
 
-  overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene.level_copy.params);
+  overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene.frac_params);
  // ERROR_MSG(num2str(screen_size.width).c_str());
 
   while (window.isOpen()) {
     sf::Event event;
-	int handled = TwEventSFML(&event, 2, 5); 
+	
 	float mouse_wheel = 0.0f;
-	// If event has not been handled by AntTweakBar, process it
-	if (!handled)
+	
+	while (window.pollEvent(event)) 
 	{
-		while (window.pollEvent(event)) {
-			if (event.type == sf::Event::Closed) {
-				window.close();
-				break;
+		bool handled = overlays.TwManageEvent(event);
+		if (event.type == sf::Event::Closed) {
+			window.close();
+			break;
+		}
+		else if (event.type == sf::Event::LostFocus) {
+			if (game_mode == PLAYING) {
+				PauseGame(window, scene);
 			}
-			else if (event.type == sf::Event::LostFocus) {
-				if (game_mode == PLAYING) {
-					PauseGame(window, scene);
-				}
-			}
-			else if (event.type == sf::Event::KeyPressed) {
+		}
+
+		// If event has not been handled by AntTweakBar, process it
+		if (!handled)
+		{
+			if (event.type == sf::Event::KeyPressed) {
 				const sf::Keyboard::Key keycode = event.key.code;
 				if (event.key.code < 0 || event.key.code >= sf::Keyboard::KeyCount) { continue; }
 				if (game_mode == CREDITS) {
@@ -572,6 +576,7 @@ int main(int argc, char *argv[]) {
 		renderTexture.setActive(false);
 		window.setActive(true);
       } else {
+	    window.setActive(true);
         //Draw directly to the main window
         window.draw(rect, states);
       }

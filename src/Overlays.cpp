@@ -28,9 +28,9 @@ Overlays::Overlays(const sf::Font* _font, const sf::Font* _font_mono) :
   font_mono(_font_mono),
   draw_scale(1.0f),
   level_page(0),
-  top_level(true)
+  top_level(true),
+  TWBAR_ENABLED(false)
 {
-  TWBAR_ENABLED = false;
   memset(all_hover, 0, sizeof(all_hover));
   buff_hover.loadFromFile(menu_hover_wav);
   sound_hover.setBuffer(buff_hover);
@@ -366,6 +366,7 @@ void Overlays::UpdateHover(Texts from, Texts to, float mouse_x, float mouse_y) {
   }
 }
 
+
 void Overlays::SetAntTweakBar(int Width, int Height, float &fps, FractalParams *params)
 {
 	//TW interface
@@ -383,17 +384,17 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, FractalParams *
 	//TwAddVarRW(bar, "Calculations per frame", TW_TYPE_INT32, &cpf, " min=1 max=500 step=1");
 	settings = TwNewBar("Settings");
 
-	/*TwAddVarRW(settings, "FractalScale", TW_TYPE_FLOAT, &params[0], "min=0 max=5 step=0.01  group='Fractal parameter");
+	TwAddVarRW(settings, "FractalScale", TW_TYPE_FLOAT, &params[0], "min=0 max=5 step=0.01  group='Fractal parameter");
 	TwAddVarRW(settings, "FractalAngle1", TW_TYPE_FLOAT, &params[1], "min=-5 max=5 step=0.01  group='Fractal parameter");
 	TwAddVarRW(settings, "FractalAngle2", TW_TYPE_FLOAT, &params[2], "min=-5 max=5 step=0.01  group='Fractal parameter");
 	TwAddVarRW(settings, "FractalShift", TW_TYPE_DIR3F, &params->segment<3>(3), " group='Fractal parameter");
 	TwAddVarRW(settings, "FractalColor", TW_TYPE_DIR3F, &params->segment<3>(6), " group='Fractal parameter");
-	*/
+
 	int barPos1[2] = { 16, 450 };
 
 	TwSetParam(settings, NULL, "position", TW_PARAM_INT32, 2, &barPos1);
 
-	TwDefine(" GLOBAL fontsize=2 ");
+	TwDefine(" GLOBAL fontsize=3 ");
 }
 
 void Overlays::DrawAntTweakBar()
@@ -404,5 +405,58 @@ void Overlays::DrawAntTweakBar()
 		TwRefreshBar(stats);
 		TwRefreshBar(settings);
 		TwDraw();
+	}
+}
+
+bool Overlays::TwManageEvent(sf::Event &event)
+{
+	if (TWBAR_ENABLED)
+	{
+		bool released = event.type == sf::Event::MouseButtonReleased;
+		bool moved = event.type == sf::Event::MouseMoved;
+		bool LMB = event.mouseButton.button == sf::Mouse::Left;
+		bool RMB = event.mouseButton.button == sf::Mouse::Right;
+		bool MMB = event.mouseButton.button == sf::Mouse::Middle;
+
+		bool handl = 0;
+
+		if (moved)
+		{
+			sf::Vector2i mouse = sf::Vector2i(event.mouseMove.x, event.mouseMove.y);
+			handl = handl || TwMouseMotion(mouse.x, mouse.y);
+		}
+
+		if (LMB && !released)
+		{
+			handl = handl || TwMouseButton(TW_MOUSE_PRESSED, TW_MOUSE_LEFT);
+		}
+		if (LMB && released)
+		{
+			handl = handl || TwMouseButton(TW_MOUSE_RELEASED, TW_MOUSE_LEFT);
+		}
+
+		if (MMB && !released)
+		{
+			handl = handl || TwMouseButton(TW_MOUSE_PRESSED, TW_MOUSE_MIDDLE);
+		}
+		if (MMB && released)
+		{
+			handl = handl || TwMouseButton(TW_MOUSE_RELEASED, TW_MOUSE_MIDDLE);
+		}
+
+		if (RMB && !released)
+		{
+			handl = handl || TwMouseButton(TW_MOUSE_PRESSED, TW_MOUSE_RIGHT);
+		}
+		if (RMB && released)
+		{
+			handl = handl || TwMouseButton(TW_MOUSE_RELEASED, TW_MOUSE_RIGHT);
+		}
+
+		return handl;
+	}
+	else
+	{
+		return 0;
 	}
 }
