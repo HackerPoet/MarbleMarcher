@@ -8,6 +8,7 @@ set(SFML_INCLUDE_DIR C:/Libraries/SFML-2.5.1/include)
 set(SDK_DIRECTORY "C:/Program Files (x86)/Microsoft SDKs")
 set(EIGEN3_INCLUDE_DIR C:/Libraries/eigen3/)
 set(SFML_STATIC_LIBRARIES TRUE)
+set(ANTTWEAKBAR_DIR C:/Libraries/AntTweakBar)
 
 find_package(SFML 2.5 COMPONENTS system window graphics audio REQUIRED)
 
@@ -18,8 +19,10 @@ target_include_directories(MarbleMarcherSources PUBLIC
   src
   ${EIGEN3_INCLUDE_DIR}
   ${SFML_INCLUDE_DIR}
+  ${ANTTWEAKBAR_DIR}/include
 )
 
+include_directories(${ANTTWEAKBAR_DIR}/include)
 include_directories(${SDK_DIRECTORY}/Windows/v7.1/Include)
 
 target_compile_definitions(MarbleMarcherSources PRIVATE SFML_STATIC)
@@ -39,6 +42,7 @@ add_custom_command(TARGET MarbleMarcher PRE_BUILD
 target_compile_definitions(MarbleMarcher PRIVATE SFML_STATIC)
 target_link_libraries(MarbleMarcher
   MarbleMarcherSources
+  ${ANTTWEAKBAR_DIR}/lib/AntTweakBar.lib
   sfml-system
   sfml-window
   sfml-graphics

@@ -32,6 +32,7 @@ public:
     FINAL,
     MIDPOINT
   };
+  Level           level_copy;
 
   Scene(sf::Music* level_music);
 
@@ -100,7 +101,6 @@ protected:
 
 private:
   int             cur_level;
-  Level           level_copy;
   bool            is_fullrun;
   bool            intro_needs_snap;
   bool            play_single;
