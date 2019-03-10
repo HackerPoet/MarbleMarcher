@@ -1,0 +1,4 @@
+#Screenshot width
+2560
+#Screenshot height
+1440

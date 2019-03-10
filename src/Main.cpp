@@ -211,7 +211,10 @@ int main(int argc, char *argv[]) {
 	window_style = sf::Style::Default;
   }
 
-  sf::Vector2f screenshot_size = sf::Vector2f(std::min(resolution->width*4.f, 3840.f), std::min(resolution->height * 4.f, 2160.f));
+  AdditionalSettings addsett;
+  addsett.Load("assets/config.txt");
+
+  sf::Vector2f screenshot_size = sf::Vector2f(addsett.screenshot_width, addsett.screenshot_height);
 
   sf::RenderWindow window(screen_size, "Marble Marcher", window_style, settings);
   window.setVerticalSyncEnabled(true);
@@ -331,6 +334,7 @@ int main(int argc, char *argv[]) {
           }
 		} else if (keycode == sf::Keyboard::F5) { 
 			///Screenshot
+			screenshot_i++;
 			//Update the shader values
 			shader.setUniform("iResolution", sres_res);
 			scene.Write(shader);
@@ -344,14 +348,13 @@ int main(int argc, char *argv[]) {
 			screenshotTexture.setActive(true);
 			screenshotTexture.draw(rect_scrshot, states);
 			screenshotTexture.display();
-			screenshotTexture.getTexture().copyToImage().saveToFile("screenshots/"+num2str(screenshot_i)+".png");
+			screenshotTexture.getTexture().copyToImage().saveToFile("screenshots/screenshot_"+num2str(screenshot_i)+".jpg");
 
 			screenshotTexture.setActive(false);
 			window.setActive(true);
 
 			shader.setUniform("iResolution", window_res);
 			scene.Write(shader);
-			screenshot_i++;
         } else if (keycode == sf::Keyboard::C) {
           scene.Cheat_ColorChange();
         } else if (keycode == sf::Keyboard::F) {

@@ -16,6 +16,7 @@
 */
 #pragma once
 #include <fstream>
+#include <sstream>
 
 class Settings {
 public:
@@ -37,4 +38,62 @@ public:
 
   bool   mute;
   int    mouse_sensitivity;
+};
+
+class AdditionalSettings
+{
+public:
+	int screenshot_width;
+	int screenshot_height;
+
+// TODO
+//	bool PBR_rendering;
+//	bool shadows;
+
+	AdditionalSettings() :
+		screenshot_width(1920),
+		screenshot_height(1080)
+	{}
+
+	void Load(const std::string& fname) {
+		int increment = 0;
+		std::ifstream config;
+		config.open(fname);
+		if (config.fail())
+		{
+			return;
+		}
+		std::string line;
+		while (getline(config, line))
+		{
+			if (line.substr(0, 1) != "#")
+			{
+				increment++;
+				std::istringstream iss(line);
+				float num;
+				while ((iss >> num))
+				{
+					switch (increment)
+					{
+					case 1:
+						screenshot_width = num;
+						break;
+					case 2:
+						screenshot_height = num;
+						break;
+
+					//TODO
+					case 3:
+					
+						break;
+					case 4:
+						
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
+	}
 };
