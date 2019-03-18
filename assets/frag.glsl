@@ -63,6 +63,7 @@ uniform vec3 iFlagPos;
 uniform float iExposure;
 
 float FOVperPixel;
+float s1, c1, s2, c2;
 
 vec3 refraction(vec3 rd, vec3 n, float p) {
 	float dot_nd = dot(rd, n);
@@ -139,21 +140,22 @@ float de_capsule(vec4 p, float h, float r) {
 float de_fractal(vec4 p) {
 	for (int i = 0; i < FRACTAL_ITER; ++i) {
 		p.xyz = abs(p.xyz);
-		rotZ(p, iFracAng1);
+		rotZ(p, s1, c1);
 		mengerFold(p);
-		rotX(p, iFracAng2);
+		rotX(p, s2, c2);
 		p *= iFracScale;
 		p.xyz += iFracShift;
 	}
 	return de_box(p, vec3(6.0));
 }
+
 vec4 col_fractal(vec4 p) {
 	vec3 orbit = vec3(0.0);
 	for (int i = 0; i < FRACTAL_ITER; ++i) {
 		p.xyz = abs(p.xyz);
-		rotZ(p, iFracAng1);
+		rotZ(p, s1, c1);
 		mengerFold(p);
-		rotX(p, iFracAng2);
+		rotX(p, s2, c2);
 		p *= iFracScale;
 		p.xyz += iFracShift;
 		orbit = max(orbit, p.xyz*iFracCol);
@@ -442,7 +444,11 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 void main() {
 	//Calculate the view angle per pixel, with a minimum quality level
 	FOVperPixel = 1.0 / max(iResolution.x, 900.0);
-
+	s1 = sin(iFracAng1);
+	c1 = cos(iFracAng1);
+	s2 = sin(iFracAng2);
+	c2 = cos(iFracAng2);
+	
 	vec3 col = vec3(0.0);
 	for (int i = 0; i < ANTIALIASING_SAMPLES; ++i) {
 		for (int j = 0; j < ANTIALIASING_SAMPLES; ++j) {
