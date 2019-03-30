@@ -47,6 +47,7 @@ static const float wheel_sensitivity = 0.2f;
 static const float music_vol = 75.0f;
 static const float target_fps = 60.0f;
 
+
 //Game modes
 enum GameMode {
   MAIN_MENU,
@@ -65,6 +66,14 @@ static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
 static bool mouse_clicked = false;
 static bool show_cheats = false;
 static GameMode game_mode = MAIN_MENU;
+
+//convert any number to a string
+template < typename T > std::string num2str(const T& n)
+{
+	std::ostringstream stm;
+	stm << n;
+	return stm.str();
+}
 
 float GetVol() {
   if (game_settings.mute) {
@@ -205,8 +214,14 @@ int main(int argc, char *argv[]) {
     window_style = sf::Style::Fullscreen;
   } else {
     screen_size = sf::VideoMode(resolution->width, resolution->height, 24);
-    window_style = sf::Style::Close;
+	window_style = sf::Style::Default;
   }
+
+  AdditionalSettings addsett;
+  addsett.Load("assets/config.txt");
+
+  sf::Vector2f screenshot_size = sf::Vector2f(addsett.screenshot_width, addsett.screenshot_height);
+
   sf::RenderWindow window(screen_size, "Marble Marcher", window_style, settings);
   window.setVerticalSyncEnabled(true);
   window.setKeyRepeatEnabled(false);
@@ -217,8 +232,17 @@ int main(int argc, char *argv[]) {
     fullscreen = false;
   }
 
+  //force fullscreen mode
+  fullscreen = true;
+
   //Create the render texture if needed
   sf::RenderTexture renderTexture;
+  //screenshot number
+  int screenshot_i = 0;
+  sf::RenderTexture screenshotTexture;
+  screenshotTexture.create(screenshot_size.x, screenshot_size.y, settings);
+  screenshotTexture.setSmooth(true);
+
   if (fullscreen) {
     renderTexture.create(resolution->width, resolution->height, settings);
     renderTexture.setSmooth(true);
@@ -226,9 +250,12 @@ int main(int argc, char *argv[]) {
     window.setActive(false);
   }
 
+  
+
   //Create the fractal scene
   Scene scene(level_music);
   const sf::Glsl::Vec2 window_res((float)resolution->width, (float)resolution->height);
+  const sf::Glsl::Vec2 sres_res((float)screenshot_size.x, (float)screenshot_size.y);
   shader.setUniform("iResolution", window_res);
   scene.Write(shader);
 
@@ -236,6 +263,10 @@ int main(int argc, char *argv[]) {
   sf::RectangleShape rect;
   rect.setSize(window_res);
   rect.setPosition(0, 0);
+
+  sf::RectangleShape rect_scrshot;
+  rect_scrshot.setSize(sres_res);
+  rect_scrshot.setPosition(0, 0);
 
   //Create the menus
   Overlays overlays(&font, &font_mono);
@@ -258,7 +289,13 @@ int main(int argc, char *argv[]) {
         if (game_mode == PLAYING) {
           PauseGame(window, scene);
         }
-      } else if (event.type == sf::Event::KeyPressed) {
+      } else if (event.type == sf::Event::Resized) {
+		  screen_size.width = event.size.width;
+		  screen_size.height = event.size.height;
+		  overlays.SetScale(std::max(float(screen_size.width), float(screen_size.height)) / 1280.0f);
+		  sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+		  window.setView(sf::View(visibleArea));
+	  } else if (event.type == sf::Event::KeyPressed) {
         const sf::Keyboard::Key keycode = event.key.code;
         if (event.key.code < 0 || event.key.code >= sf::Keyboard::KeyCount) { continue; }
         if (game_mode == CREDITS) {
@@ -301,6 +338,29 @@ int main(int argc, char *argv[]) {
             show_cheats = !show_cheats;
             scene.EnbaleCheats();
           }
+		} else if (keycode == sf::Keyboard::F5) { 
+			///Screenshot
+			screenshot_i++;
+			//Update the shader values
+			shader.setUniform("iResolution", sres_res);
+			scene.Write(shader);
+
+			//Setup full-screen shader
+			sf::RenderStates states = sf::RenderStates::Default;
+			states.shader = &shader;
+			window.setActive(false);
+			//Draw the fractal
+			//Draw to the render texture
+			screenshotTexture.setActive(true);
+			screenshotTexture.draw(rect_scrshot, states);
+			screenshotTexture.display();
+			screenshotTexture.getTexture().copyToImage().saveToFile("screenshots/screenshot_"+num2str(screenshot_i)+".jpg");
+
+			screenshotTexture.setActive(false);
+			window.setActive(true);
+
+			shader.setUniform("iResolution", window_res);
+			scene.Write(shader);
         } else if (keycode == sf::Keyboard::C) {
           scene.Cheat_ColorChange();
         } else if (keycode == sf::Keyboard::F) {

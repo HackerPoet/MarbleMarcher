@@ -20,6 +20,7 @@
 #define ANTIALIASING_SAMPLES 1
 #define BACKGROUND_COLOR vec3(0.6,0.8,1.0)
 #define COL col_scene
+#define CAMERA_SIZE 0.035
 #define DE de_scene
 #define DIFFUSE_ENABLED 0
 #define DIFFUSE_ENHANCED_ENABLED 1
@@ -30,9 +31,12 @@
 #define LIGHT_COLOR vec3(1.0,0.95,0.8)
 #define LIGHT_DIRECTION vec3(-0.36, 0.8, 0.48)
 #define MAX_DIST 30.0
-#define MAX_MARCHES 1000
+#define MAX_MARCHES 512
 #define MIN_DIST 1e-5
 #define PI 3.14159265358979
+#define PBR_ENABLED 1
+#define PBR_METALLIC 0.5
+#define PBR_ROUGHNESS 0.4
 #define SHADOWS_ENABLED 1
 #define SHADOW_DARKNESS 0.7
 #define SHADOW_SHARPNESS 10.0
@@ -60,6 +64,7 @@ uniform vec3 iFlagPos;
 uniform float iExposure;
 
 float FOVperPixel;
+float s1, c1, s2, c2;
 
 vec3 refraction(vec3 rd, vec3 n, float p) {
 	float dot_nd = dot(rd, n);
@@ -136,21 +141,22 @@ float de_capsule(vec4 p, float h, float r) {
 float de_fractal(vec4 p) {
 	for (int i = 0; i < FRACTAL_ITER; ++i) {
 		p.xyz = abs(p.xyz);
-		rotZ(p, iFracAng1);
+		rotZ(p, s1, c1);
 		mengerFold(p);
-		rotX(p, iFracAng2);
+		rotX(p, s2, c2);
 		p *= iFracScale;
 		p.xyz += iFracShift;
 	}
 	return de_box(p, vec3(6.0));
 }
+
 vec4 col_fractal(vec4 p) {
 	vec3 orbit = vec3(0.0);
 	for (int i = 0; i < FRACTAL_ITER; ++i) {
 		p.xyz = abs(p.xyz);
-		rotZ(p, iFracAng1);
+		rotZ(p, s1, c1);
 		mengerFold(p);
-		rotX(p, iFracAng2);
+		rotX(p, s2, c2);
 		p *= iFracScale;
 		p.xyz += iFracShift;
 		orbit = max(orbit, p.xyz*iFracCol);
@@ -221,34 +227,72 @@ vec4 smoothColor(vec4 p, vec3 s1, vec3 s2, float dx) {
 vec4 ray_march(inout vec4 p, vec4 ray, float sharpness) {
 	//March the ray
 	float d = DE(p);
-	if (d < 0.0 && sharpness == 1.0) {
-		vec3 v;
-		if (abs(iMarblePos.x) >= 999.0f) {
-			v = (-20.0 * iMarbleRad) * iMat[2].xyz;
-		} else {
-			v = iMarblePos.xyz - iMat[3].xyz;
-		}
-		d = dot(v, v) / dot(v, ray.xyz) - iMarbleRad;
-	}
 	float s = 0.0;
 	float td = 0.0;
 	float min_d = 1.0;
 	for (; s < MAX_MARCHES; s += 1.0) {
 		//if the distance from the surface is less than the distance per pixel we stop
 		float min_dist = max(FOVperPixel*td, MIN_DIST);
-		if (d < min_dist) {
-			s += d / min_dist;
-			break;
-		} else if (td > MAX_DIST) {
+		if(d < -min_dist || td > MAX_DIST)
+		{
 			break;
 		}
-		td += d;
-		p += ray * d;
+		else if (d < min_dist)
+		{
+			s += d / min_dist;
+			break;
+		} 
+		td += d+min_dist*0.1;
+		p += ray * (d+min_dist*0.1);
 		min_d = min(min_d, sharpness * d / td);
 		d = DE(p);
 	}
 	return vec4(d, s, td, min_d);
 }
+
+
+///PBR functions 
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+}  
+
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a      = roughness*roughness;
+    float a2     = a*a;
+    float NdotH  = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
+	
+    float num   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+	
+    return num / denom;
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float num   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+	
+    return num / denom;
+}
+
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+	
+    return ggx1 * ggx2;
+}
+///END PBR functions
+
 
 vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 	//Trace the ray
@@ -265,7 +309,7 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 		vec3 n = calcNormal(p, min_dist*0.5);
 
 		//find closest surface point, without this we get weird coloring artifacts
-		p.xyz -= n*d;
+		if(s>0) p.xyz -= n*d;
 
 		//Get coloring
 		#if FILTERING_ENABLE
@@ -280,44 +324,106 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 		#endif
 		col.w = orig_col.w;
 
-		//Get if this point is in shadow
-		float k = 1.0;
-		#if SHADOWS_ENABLED
-			vec4 light_pt = p;
-			light_pt.xyz += n * MIN_DIST * 100;
-			vec4 rm = ray_march(light_pt, vec4(LIGHT_DIRECTION, 0.0), SHADOW_SHARPNESS);
-			k = rm.w * min(rm.z, 1.0);
+		#if PBR_ENABLED
+			vec3 albedo = orig_col.xyz;
+			float metallic = PBR_METALLIC;
+			float roughness = PBR_ROUGHNESS;
+		
+			//reflectance equation
+			vec3 Lo = vec3(0.0);
+			vec3 V = -ray.xyz;
+			vec3 N = n;
+			
+			vec3 F0 = vec3(0.04); 
+			F0 = mix(F0, albedo, metallic);
+			float attenuation = 1;
+			
+			#if SHADOWS_ENABLED
+			//saves 1 march
+			if(dot(n, LIGHT_DIRECTION)>0)
+			{
+				vec4 light_pt = p;
+				light_pt.xyz += n * MIN_DIST * 100;
+				vec4 rm = ray_march(light_pt, vec4(LIGHT_DIRECTION, 0.0), SHADOW_SHARPNESS);
+				attenuation *= rm.w * min(rm.z, 1.0);
+			} 
+			else
+			{
+				attenuation = 0;
+			}
+			#endif
+	
+			
+			float ao0 = 1.f/(2.5*AMBIENT_OCCLUSION_STRENGTH*s + 1);
+			
+			
+			vec3 L = normalize(LIGHT_DIRECTION);
+			vec3 H = normalize(V + L);
+			vec3 radiance = 3.8*LIGHT_COLOR * attenuation;        
+			
+			// cook-torrance brdf
+			float NDF = DistributionGGX(N, H, roughness);        
+			float G   = GeometrySmith(N, V, L, roughness);      
+			vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
+			
+			vec3 kS = F;
+			vec3 kD = vec3(1.0) - kS;
+			kD *= 1.0 - metallic;	  
+			
+			vec3 numerator    = NDF * G * F;
+			float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+			vec3 specular     = numerator / max(denominator, 0.001);  
+				
+			// add to outgoing radiance Lo
+			float NdotL = max(dot(N, L), 0.0);                
+			Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+	
+    			//background AO
+			vec3 ambient = 1.4*AMBIENT_OCCLUSION_COLOR_DELTA * albedo * (0.7*BACKGROUND_COLOR+0.3*LIGHT_COLOR) * ao0;
+			
+			col.xyz = clamp(Lo+ambient,0,1);
+			
+		#else
+			//Get if this point is in shadow
+			float k = 1.0;
+			#if SHADOWS_ENABLED
+				vec4 light_pt = p;
+				light_pt.xyz += n * MIN_DIST * 100;
+				vec4 rm = ray_march(light_pt, vec4(LIGHT_DIRECTION, 0.0), SHADOW_SHARPNESS);
+				k = rm.w * min(rm.z, 1.0);
+			#endif
+
+			//Get specular
+			#if SPECULAR_HIGHLIGHT > 0
+				vec3 reflected = ray.xyz - 2.0*dot(ray.xyz, n) * n;
+				float specular = max(dot(reflected, LIGHT_DIRECTION), 0.0);
+				specular = pow(specular, SPECULAR_HIGHLIGHT);
+				col.xyz += specular * LIGHT_COLOR * (k * SPECULAR_MULT);
+			#endif
+
+			//Get diffuse lighting
+			#if DIFFUSE_ENHANCED_ENABLED
+				k = min(k, SHADOW_DARKNESS * 0.5 * (dot(n, LIGHT_DIRECTION) - 1.0) + 1.0);
+			#elif DIFFUSE_ENABLED
+				k = min(k, dot(n, LIGHT_DIRECTION));
+			#endif
+
+			//Don't make shadows entirely dark
+			k = max(k, 1.0 - SHADOW_DARKNESS);
+			col.xyz += orig_col.xyz * LIGHT_COLOR * k;
+
+			//Add small amount of ambient occlusion
+			float a = 1.0 / (1.0 + s * AMBIENT_OCCLUSION_STRENGTH);
+			col.xyz += (1.0 - a) * AMBIENT_OCCLUSION_COLOR_DELTA;
+			
 		#endif
-
-		//Get specular
-		#if SPECULAR_HIGHLIGHT > 0
-			vec3 reflected = ray.xyz - 2.0*dot(ray.xyz, n) * n;
-			float specular = max(dot(reflected, LIGHT_DIRECTION), 0.0);
-			specular = pow(specular, SPECULAR_HIGHLIGHT);
-			col.xyz += specular * LIGHT_COLOR * (k * SPECULAR_MULT);
-		#endif
-
-		//Get diffuse lighting
-		#if DIFFUSE_ENHANCED_ENABLED
-			k = min(k, SHADOW_DARKNESS * 0.5 * (dot(n, LIGHT_DIRECTION) - 1.0) + 1.0);
-		#elif DIFFUSE_ENABLED
-			k = min(k, dot(n, LIGHT_DIRECTION));
-		#endif
-
-		//Don't make shadows entirely dark
-		k = max(k, 1.0 - SHADOW_DARKNESS);
-		col.xyz += orig_col.xyz * LIGHT_COLOR * k;
-
-		//Add small amount of ambient occlusion
-		float a = 1.0 / (1.0 + s * AMBIENT_OCCLUSION_STRENGTH);
-		col.xyz += (1.0 - a) * AMBIENT_OCCLUSION_COLOR_DELTA;
 
 		//Add fog effects
 		#if FOG_ENABLED
-			a = td / MAX_DIST;
-			col.xyz = (1.0 - a) * col.xyz + a * BACKGROUND_COLOR;
+			float b = td / MAX_DIST;
+			col.xyz = (1.0 - b) * col.xyz + b * BACKGROUND_COLOR;
 		#endif
-
+			
 		//Return normal through ray
 		ray = vec4(n, 0.0);
 	} else {
@@ -339,7 +445,11 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 void main() {
 	//Calculate the view angle per pixel, with a minimum quality level
 	FOVperPixel = 1.0 / max(iResolution.x, 900.0);
-
+	s1 = sin(iFracAng1);
+	c1 = cos(iFracAng1);
+	s2 = sin(iFracAng2);
+	c2 = cos(iFracAng2);
+	
 	vec3 col = vec3(0.0);
 	for (int i = 0; i < ANTIALIASING_SAMPLES; ++i) {
 		for (int j = 0; j < ANTIALIASING_SAMPLES; ++j) {
@@ -352,7 +462,7 @@ void main() {
 
 			//Convert screen coordinate to 3d ray
 			vec4 ray = iMat * normalize(vec4(uv.x, uv.y, -FOCAL_DIST, 0.0));
-			vec4 p = iMat[3];
+			vec4 p = iMat * normalize(vec4(CAMERA_SIZE*uv.x, CAMERA_SIZE*uv.y, 0, 1));
 
 			//Reflect light if needed
 			float vignette = 1.0 - VIGNETTE_STRENGTH * length(screen_pos - 0.5);
@@ -371,15 +481,29 @@ void main() {
 				vec4 r_temp = vec4(q, 0.0);
 				vec3 refr = scene(p_temp, r_temp, 0.8).xyz;
 
-				//Calculate refraction
+				//Calculate reflection
 				n = normalize(p.xyz - iMarblePos);
 				q = r - n*(2*dot(r,n));
 				p_temp = vec4(p.xyz + n * (MIN_DIST * 10), 1.0);
 				r_temp = vec4(q, 0.0);
 				vec3 refl = scene(p_temp, r_temp, 0.8).xyz;
+				
+				//PBR reflections/refractions
+				vec3 V = -r;
+				vec3 N = n;
+				//glass
+				vec3 F0 = vec3(0.03); 
+				vec3 L = normalize(q.xyz);
+				vec3 H = normalize(V + L);
+				vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);  
+				
+				vec3 kS = F;
+				vec3 kD = vec3(1.0) - kS;
+				
 
 				//Combine for final marble color
-				col += refr * 0.6f + refl * 0.4f + col_r.xyz;
+				col += kS*refl + kD*refr + col_r.xyz;
+				
 			} else {
 				col += col_r.xyz;
 			}
