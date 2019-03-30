@@ -111,3 +111,7 @@ LD_LIBRARY_PATH=`pwd`/usr/lib ./MarbleMarcher
 
 ### Debug Screen
 Press `o` to toggle the debug screen.
+
+### Screenshots
+Press `F5` to take a screenshot.
+
