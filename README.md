@@ -11,6 +11,9 @@ Download Link: https://codeparade.itch.io/marblemarcher
 
 Video Explanation: https://youtu.be/9U0XVdvQwAI
 
+## No Further Development Planned
+There is currently no further major development planned for this game. Please submit issues and pull requests to the [Marble Marcher Community Edition](https://github.com/WAUthethird/Marble-Marcher-Community-Edition) repository instead.
+
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 * [SFML 2.5.0](https://www.sfml-dev.org)
