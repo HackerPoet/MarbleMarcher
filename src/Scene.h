@@ -32,6 +32,8 @@ public:
     FINAL,
     MIDPOINT
   };
+  FractalParams   frac_params;
+  FractalParams   frac_params_smooth;
 
   Scene(sf::Music* level_music);
 
@@ -100,7 +102,6 @@ protected:
 
 private:
   int             cur_level;
-  Level           level_copy;
   bool            is_fullrun;
   bool            intro_needs_snap;
   bool            play_single;
@@ -124,8 +125,7 @@ private:
 
   Eigen::Vector3f flag_pos;
 
-  FractalParams   frac_params;
-  FractalParams   frac_params_smooth;
+
 
   int             timer;
   int             final_time;
@@ -144,6 +144,8 @@ private:
   sf::SoundBuffer buff_shatter;
 
   sf::Music* music;
+
+  Level           level_copy;
 
   bool            enable_cheats;
   bool            free_camera;

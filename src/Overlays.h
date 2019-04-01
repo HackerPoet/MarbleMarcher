@@ -16,8 +16,11 @@
 */
 #pragma once
 #include "Settings.h"
+#include "Level.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <AntTweakBar.h>
+
 
 extern Settings game_settings;
 
@@ -49,11 +52,15 @@ public:
     NUM_TEXTS
   };
   static const int LEVELS_PER_PAGE = 15;
-
+  bool TWBAR_ENABLED;
+  TwBar *stats, *settings;
+  
   Overlays(const sf::Font* _font, const sf::Font* _font_mono);
 
   //Relative to 1280x720
   void SetScale(float scale) { draw_scale = scale; }
+  void SetAntTweakBar(int Width, int Height, float &fps, FractalParams *params);
+  void SetTWBARResolution(int Width, int Height);
 
   Texts GetOption(Texts from, Texts to);
   int& GetLevelPage() { return level_page; }
@@ -76,7 +83,9 @@ public:
   void DrawSumTime(sf::RenderWindow& window, int t);
   void DrawCheatsEnabled(sf::RenderWindow& window);
   void DrawCheats(sf::RenderWindow& window);
+  void DrawAntTweakBar();
 
+  bool TwManageEvent(sf::Event &event);
 protected:
   void MakeText(const char* str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono=false);
   void MakeTime(int t, float x, float y, float size, const sf::Color& color, sf::Text& text);
