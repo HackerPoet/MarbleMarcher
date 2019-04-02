@@ -46,12 +46,6 @@ static const float music_vol = 75.0f;
 static const float target_fps = 60.0f;
 
 
-template < typename T > std::string num2str(const T& n)
-{
-	std::ostringstream stm;
-	stm << n;
-	return stm.str();
-}
 //Game modes
 enum GameMode {
   MAIN_MENU,
@@ -65,7 +59,7 @@ enum GameMode {
 };
 
 //Global variables
-static sf::Vector2i mouse_pos;
+static sf::Vector2i mouse_pos, mouse_prev_pos;
 static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
 static bool mouse_clicked = false;
 static bool show_cheats = false;
@@ -279,6 +273,8 @@ int main(int argc, char *argv[]) {
   sf::Clock clock;
   float smooth_fps = target_fps;
   float lag_ms = 0.0f;
+  mouse_pos = sf::Vector2i(0, 0);
+  mouse_prev_pos = sf::Vector2i(0, 0);
 
   overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene.frac_params);
 
@@ -378,7 +374,7 @@ int main(int argc, char *argv[]) {
           screenshotTexture.setActive(true);
           screenshotTexture.draw(rect_scrshot, states);
           screenshotTexture.display();
-          screenshotTexture.getTexture().copyToImage().saveToFile("screenshots/screenshot_"+num2str(screenshot_i)+".jpg");
+          screenshotTexture.getTexture().copyToImage().saveToFile((std::string)"screenshots/screenshot_"+(std::string)num2str(screenshot_i)+".jpg");
 
           screenshotTexture.setActive(false);
           window.setActive(true);
@@ -542,6 +538,7 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			else if (event.type == sf::Event::MouseMoved) {
+				mouse_prev_pos = mouse_pos;
 				mouse_pos = sf::Vector2i(event.mouseMove.x, event.mouseMove.y);
 			}
 			else if (event.type == sf::Event::MouseWheelScrolled) {
@@ -585,21 +582,50 @@ int main(int argc, char *argv[]) {
         (all_keys[sf::Keyboard::Up] || all_keys[sf::Keyboard::W] ? 1.0f : 0.0f);
 
       //Collect mouse input
-      const sf::Vector2i mouse_delta = mouse_pos - screen_center;
-      sf::Mouse::setPosition(screen_center, window);
-      float ms = mouse_sensitivity;
-      if (game_settings.mouse_sensitivity == 1) {
-        ms *= 0.5f;
-      } else if (game_settings.mouse_sensitivity == 2) {
-        ms *= 0.25f;
-      }
-      const float cam_lr = float(-mouse_delta.x) * ms;
-      const float cam_ud = float(-mouse_delta.y) * ms;
-      const float cam_z = mouse_wheel * wheel_sensitivity;
+	  if (overlays.TWBAR_ENABLED)
+	  {
+		  sf::Vector2i mouse_delta = sf::Vector2i(0, 0);
+		  window.setMouseCursorVisible(true);
+		  if (mouse_clicked)
+		  {
+			  mouse_delta = mouse_pos - mouse_prev_pos;
+		  }
+		 
+		  float ms = mouse_sensitivity;
+		  if (game_settings.mouse_sensitivity == 1) {
+			  ms *= 0.5f;
+		  }
+		  else if (game_settings.mouse_sensitivity == 2) {
+			  ms *= 0.25f;
+		  }
+		  const float cam_lr = float(-mouse_delta.x) * ms;
+		  const float cam_ud = float(-mouse_delta.y) * ms;
+		  const float cam_z = mouse_wheel * wheel_sensitivity;
 
-      //Apply forces to marble and camera
-      scene.UpdateMarble(force_lr, force_ud);
-      scene.UpdateCamera(cam_lr, cam_ud, cam_z, mouse_clicked);
+		  scene.UpdateCamera(cam_lr, cam_ud, cam_z, mouse_clicked);
+	  }
+	  else
+	  {
+		  window.setMouseCursorVisible(false);
+		  const sf::Vector2i mouse_delta = mouse_pos - screen_center;
+		  sf::Mouse::setPosition(screen_center, window);
+		  float ms = mouse_sensitivity;
+		  if (game_settings.mouse_sensitivity == 1) {
+			  ms *= 0.5f;
+		  }
+		  else if (game_settings.mouse_sensitivity == 2) {
+			  ms *= 0.25f;
+		  }
+		  const float cam_lr = float(-mouse_delta.x) * ms;
+		  const float cam_ud = float(-mouse_delta.y) * ms;
+		  const float cam_z = mouse_wheel * wheel_sensitivity;
+
+		  scene.UpdateCamera(cam_lr, cam_ud, cam_z, mouse_clicked);
+	  }
+
+	  //Apply forces to marble and camera
+	  scene.UpdateMarble(force_lr, force_ud);
+     
     } else if (game_mode == PAUSED) {
       overlays.UpdatePaused((float)mouse_pos.x, (float)mouse_pos.y);
     }
