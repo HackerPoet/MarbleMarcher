@@ -405,7 +405,7 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	TwAddVarRW(settings, "Camera size", TW_TYPE_FLOAT, &scene->camera_size, "min=0 max=10 step=0.001 group='Gameplay settings'");
 	TwAddVarRW(settings, "Camera speed(Free mode)", TW_TYPE_FLOAT, &scene->free_camera_speed, "min=0 max=10 step=0.001 group='Gameplay settings'");
 
-	float *p = scene->frac_params.data();
+	float *p = scene->level_copy.params.data();
 	TwAddVarRW(settings, "Fractal_Iterations", TW_TYPE_INT32, &scene->Fractal_Iterations, "min=1 max=20 step=1 group='Fractal parameters'");
 	TwAddVarRW(settings, "FractalScale", TW_TYPE_FLOAT, p, "min=0 max=5 step=0.0001  group='Fractal parameters'");
 	TwAddVarRW(settings, "FractalAngle1", TW_TYPE_FLOAT, p+1, "min=-10 max=10 step=0.0001  group='Fractal parameters'");

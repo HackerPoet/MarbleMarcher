@@ -287,6 +287,7 @@ int main(int argc, char *argv[]) {
     sf::Event event;
 	
 	float mouse_wheel = 0.0f;
+	mouse_prev_pos = mouse_pos;
 	
 	while (window.pollEvent(event)) 
 	{
@@ -543,7 +544,6 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			else if (event.type == sf::Event::MouseMoved) {
-				mouse_prev_pos = mouse_pos;
 				mouse_pos = sf::Vector2i(event.mouseMove.x, event.mouseMove.y);
 			}
 			else if (event.type == sf::Event::MouseWheelScrolled) {
@@ -592,6 +592,7 @@ int main(int argc, char *argv[]) {
       //Collect mouse input
 	  if (overlays.TWBAR_ENABLED)
 	  {
+		 
 		  sf::Vector2i mouse_delta = sf::Vector2i(0, 0);
 		  window.setMouseCursorVisible(true);
 		  if (mouse_clicked)
@@ -714,6 +715,8 @@ int main(int argc, char *argv[]) {
     if (!skip_frame) {
       //Finally display to the screen
 	  overlays.DrawAntTweakBar();
+	  if(overlays.TWBAR_ENABLED)
+		scene.Synchronize();
       window.display();
 
       //If V-Sync is running higher than desired fps, slow down!

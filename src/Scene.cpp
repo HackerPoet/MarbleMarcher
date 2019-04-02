@@ -249,6 +249,14 @@ void Scene::ResetCheats() {
   zoom_to_scale = false;
 }
 
+void Scene::Synchronize()
+{
+	for (int i = 0; i < 9; i++)
+	{
+		 frac_params_smooth[i] = frac_params[i] = level_copy.params[i];
+	}
+}
+
 void Scene::UpdateCamera(float dx, float dy, float dz, bool speedup) {
   //Camera update depends on current mode
   const int iters = speedup ? 5 : 1;

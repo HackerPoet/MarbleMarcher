@@ -35,6 +35,8 @@ public:
   FractalParams   frac_params;
   FractalParams   frac_params_smooth;
 
+  Level           level_copy;
+
   bool PBR_Enabled;
   bool Refl_Refr_Enabled;
   bool Shadows_Enabled;
@@ -85,6 +87,7 @@ public:
   void StartSingle(int level);
   void ResetLevel();
   void ResetCheats();
+  void Synchronize();
 
   void UpdateMarble(float dx=0.0f, float dy=0.0f);
   void UpdateCamera(float dx=0.0f, float dy=0.0f, float dz=0.0f, bool speedup=false);
@@ -159,7 +162,7 @@ private:
 
   sf::Music* music;
 
-  Level           level_copy;
+
 
   bool            enable_cheats;
   bool            free_camera;
