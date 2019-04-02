@@ -52,6 +52,7 @@ template < typename T > std::string num2str(const T& n)
 	stm << n;
 	return stm.str();
 }
+
 //Game modes
 enum GameMode {
   MAIN_MENU,
@@ -71,13 +72,6 @@ static bool mouse_clicked = false;
 static bool show_cheats = false;
 static GameMode game_mode = MAIN_MENU;
 
-//convert any number to a string
-template < typename T > std::string num2str(const T& n)
-{
-	std::ostringstream stm;
-	stm << n;
-	return stm.str();
-}
 
 float GetVol() {
   if (game_settings.mute) {
