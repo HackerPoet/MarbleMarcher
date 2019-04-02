@@ -40,10 +40,10 @@
 #endif
 
 //Constants
-static const float mouse_sensitivity = 0.005f;
-static const float wheel_sensitivity = 0.2f;
-static const float music_vol = 75.0f;
-static const float target_fps = 60.0f;
+static float mouse_sensitivity = 0.005f;
+static float wheel_sensitivity = 0.2f;
+static float music_vol = 75.0f;
+static float target_fps = 60.0f;
 
 
 template < typename T > std::string num2str(const T& n)
@@ -71,6 +71,9 @@ static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
 static bool mouse_clicked = false;
 static bool show_cheats = false;
 static GameMode game_mode = MAIN_MENU;
+
+//Graphics settings
+static bool VSYNC = true;
 
 
 float GetVol() {
@@ -116,19 +119,21 @@ int WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR lpCmdLine, int nCmdShow) {
 int main(int argc, char *argv[]) {
 #endif
   //Make sure shader is supported
+	std::stringstream error_log;
+	sf::err().rdbuf(error_log.rdbuf());
   if (!sf::Shader::isAvailable()) {
-    ERROR_MSG("Graphics card does not support shaders");
+    ERROR_MSG((error_log.str()).c_str());
     return 1;
   }
   //Load the vertex shader
   sf::Shader shader;
   if (!shader.loadFromFile(vert_glsl, sf::Shader::Vertex)) {
-    ERROR_MSG("Failed to compile vertex shader");
+    ERROR_MSG((error_log.str()).c_str());
     return 1;
   }
   //Load the fragment shader
   if (!shader.loadFromFile(frag_glsl, sf::Shader::Fragment)) {
-    ERROR_MSG("Failed to compile fragment shader");
+    ERROR_MSG((error_log.str()).c_str());
     return 1;
   }
 
@@ -218,7 +223,7 @@ int main(int argc, char *argv[]) {
   sf::Vector2f screenshot_size = sf::Vector2f(addsett.screenshot_width, addsett.screenshot_height);
 
   sf::RenderWindow window(screen_size, "Marble Marcher", window_style, settings);
-  window.setVerticalSyncEnabled(true);
+  window.setVerticalSyncEnabled(VSYNC);
   window.setKeyRepeatEnabled(false);
   window.requestFocus();
 
@@ -276,7 +281,7 @@ int main(int argc, char *argv[]) {
   mouse_pos = sf::Vector2i(0, 0);
   mouse_prev_pos = sf::Vector2i(0, 0);
 
-  overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene.frac_params);
+  overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);
 
   while (window.isOpen()) {
     sf::Event event;
@@ -581,6 +586,9 @@ int main(int argc, char *argv[]) {
         (all_keys[sf::Keyboard::Down] || all_keys[sf::Keyboard::S] ? -1.0f : 0.0f) +
         (all_keys[sf::Keyboard::Up] || all_keys[sf::Keyboard::W] ? 1.0f : 0.0f);
 
+	  //Apply forces to marble and camera
+	  scene.UpdateMarble(force_lr, force_ud);
+
       //Collect mouse input
 	  if (overlays.TWBAR_ENABLED)
 	  {
@@ -623,9 +631,7 @@ int main(int argc, char *argv[]) {
 		  scene.UpdateCamera(cam_lr, cam_ud, cam_z, mouse_clicked);
 	  }
 
-	  //Apply forces to marble and camera
-	  scene.UpdateMarble(force_lr, force_ud);
-     
+ 
     } else if (game_mode == PAUSED) {
       overlays.UpdatePaused((float)mouse_pos.x, (float)mouse_pos.y);
     }
@@ -636,6 +642,7 @@ int main(int argc, char *argv[]) {
       lag_ms -= 1000.0f / target_fps;
       skip_frame = true;
     } else {
+	  window.setVerticalSyncEnabled(VSYNC);
       //Update the shader values
       scene.Write(shader);
 

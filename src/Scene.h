@@ -35,6 +35,25 @@ public:
   FractalParams   frac_params;
   FractalParams   frac_params_smooth;
 
+  bool PBR_Enabled;
+  bool Refl_Refr_Enabled;
+  bool Shadows_Enabled;
+  int Fractal_Iterations;
+  float camera_size;
+  float free_camera_speed;
+  int MarbleType;
+  Eigen::Vector3f LIGHT_DIRECTION;
+  float PBR_METALLIC;
+  float PBR_ROUGHNESS;
+
+
+
+
+  float           marble_rad;
+  Eigen::Vector3f marble_pos;
+  Eigen::Vector3f marble_vel;
+  Eigen::Matrix3f marble_mat;
+
   Scene(sf::Music* level_music);
 
   void LoadLevel(int level);
@@ -117,11 +136,6 @@ private:
   float           cam_look_y_smooth;
   float           cam_dist_smooth;
   Eigen::Vector3f cam_pos_smooth;
-
-  float           marble_rad;
-  Eigen::Vector3f marble_pos;
-  Eigen::Vector3f marble_vel;
-  Eigen::Matrix3f marble_mat;
 
   Eigen::Vector3f flag_pos;
 

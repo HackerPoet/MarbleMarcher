@@ -20,24 +20,17 @@
 #define ANTIALIASING_SAMPLES 1
 #define BACKGROUND_COLOR vec3(0.6,0.8,1.0)
 #define COL col_scene
-#define CAMERA_SIZE 0.035
 #define DE de_scene
 #define DIFFUSE_ENABLED 0
 #define DIFFUSE_ENHANCED_ENABLED 1
 #define FILTERING_ENABLE 0
 #define FOCAL_DIST 1.73205080757
 #define FOG_ENABLED 0
-#define FRACTAL_ITER 16
 #define LIGHT_COLOR vec3(1.0,0.95,0.8)
-#define LIGHT_DIRECTION vec3(-0.36, 0.8, 0.48)
 #define MAX_DIST 30.0
 #define MAX_MARCHES 512
 #define MIN_DIST 1e-5
 #define PI 3.14159265358979
-#define PBR_ENABLED 1
-#define PBR_METALLIC 0.5
-#define PBR_ROUGHNESS 0.4
-#define SHADOWS_ENABLED 1
 #define SHADOW_DARKNESS 0.7
 #define SHADOW_SHARPNESS 10.0
 #define SPECULAR_HIGHLIGHT 40
@@ -61,6 +54,16 @@ uniform float iMarbleRad;
 uniform float iFlagScale;
 uniform vec3 iFlagPos;
 uniform float iExposure;
+
+uniform vec3 LIGHT_DIRECTION;
+uniform bool PBR_ENABLED; 
+uniform float PBR_METALLIC; 
+uniform float PBR_ROUGHNESS;
+uniform bool SHADOWS_ENABLED; 
+uniform float CAMERA_SIZE;
+uniform int FRACTAL_ITER;
+uniform bool REFL_REFR_ENABLED;
+uniform int MARBLE_MODE;
 
 float FOVperPixel;
 float s1, c1, s2, c2;
@@ -323,7 +326,8 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 		#endif
 		col.w = orig_col.w;
 
-		#if PBR_ENABLED
+		if(PBR_ENABLED)
+		{
 			vec3 albedo = orig_col.xyz;
 			float metallic = PBR_METALLIC;
 			float roughness = PBR_ROUGHNESS;
@@ -337,20 +341,21 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			F0 = mix(F0, albedo, metallic);
 			float attenuation = 1;
 			
-			#if SHADOWS_ENABLED
-			//saves 1 march
-			if(dot(n, LIGHT_DIRECTION)>0)
+			if(SHADOWS_ENABLED)
 			{
-				vec4 light_pt = p;
-				light_pt.xyz += n * MIN_DIST * 100;
-				vec4 rm = ray_march(light_pt, vec4(LIGHT_DIRECTION, 0.0), SHADOW_SHARPNESS);
-				attenuation *= rm.w * min(rm.z, 1.0);
-			} 
-			else
-			{
-				attenuation = 0;
+				//saves 1 march
+				if(dot(n, LIGHT_DIRECTION)>0)
+				{
+					vec4 light_pt = p;
+					light_pt.xyz += n * MIN_DIST * 100;
+					vec4 rm = ray_march(light_pt, vec4(LIGHT_DIRECTION, 0.0), SHADOW_SHARPNESS);
+					attenuation *= rm.w * min(rm.z, 1.0);
+				} 
+				else
+				{
+					attenuation = 0;
+				}
 			}
-			#endif
 	
 			
 			float ao0 = 1.f/(2.5*AMBIENT_OCCLUSION_STRENGTH*s + 1);
@@ -358,7 +363,7 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			
 			vec3 L = normalize(LIGHT_DIRECTION);
 			vec3 H = normalize(V + L);
-			vec3 radiance = 3.8*LIGHT_COLOR * attenuation;        
+			vec3 radiance = 3.5*LIGHT_COLOR * attenuation;        
 			
 			// cook-torrance brdf
 			float NDF = DistributionGGX(N, H, roughness);        
@@ -378,19 +383,22 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			Lo += (kD * albedo / PI + specular) * radiance * NdotL;
 	
     			//background AO
-			vec3 ambient = 1.4*AMBIENT_OCCLUSION_COLOR_DELTA * albedo * (0.7*BACKGROUND_COLOR+0.3*LIGHT_COLOR) * ao0;
+			vec3 ambient = 0.9*AMBIENT_OCCLUSION_COLOR_DELTA * albedo * (0.7*BACKGROUND_COLOR+0.3*LIGHT_COLOR) * ao0;
 			
 			col.xyz = clamp(Lo+ambient,0,1);
 			
-		#else
+		}	
+		else
+		{
 			//Get if this point is in shadow
 			float k = 1.0;
-			#if SHADOWS_ENABLED
+			if(SHADOWS_ENABLED)
+			{
 				vec4 light_pt = p;
 				light_pt.xyz += n * MIN_DIST * 100;
 				vec4 rm = ray_march(light_pt, vec4(LIGHT_DIRECTION, 0.0), SHADOW_SHARPNESS);
 				k = rm.w * min(rm.z, 1.0);
-			#endif
+			}
 
 			//Get specular
 			#if SPECULAR_HIGHLIGHT > 0
@@ -415,7 +423,7 @@ vec4 scene(inout vec4 p, inout vec4 ray, float vignette) {
 			float a = 1.0 / (1.0 + s * AMBIENT_OCCLUSION_STRENGTH);
 			col.xyz += (1.0 - a) * AMBIENT_OCCLUSION_COLOR_DELTA;
 			
-		#endif
+		}
 
 		//Add fog effects
 		#if FOG_ENABLED
@@ -470,39 +478,55 @@ void main() {
 
 			//Check if this is the glass marble
 			if (col_r.w > 0.5) {
-				//Calculate refraction
-				vec3 n = normalize(iMarblePos - p.xyz);
-				vec3 q = refraction(r, n, 1.0 / 1.5);
-				vec3 p2 = p.xyz + (dot(q, n) * 2.0 * iMarbleRad) * q;
-				n = normalize(p2 - iMarblePos);
-				q = (dot(q, r) * 2.0) * q - r;
-				vec4 p_temp = vec4(p2 + n * (MIN_DIST * 10), 1.0);
-				vec4 r_temp = vec4(q, 0.0);
-				vec3 refr = scene(p_temp, r_temp, 0.8).xyz;
+				if(REFL_REFR_ENABLED)
+				{
+					//Calculate refraction
+					vec3 n = normalize(iMarblePos - p.xyz);
+					vec3 q = refraction(r, n, 1.0 / 1.5);
+					vec3 p2 = p.xyz + (dot(q, n) * 2.0 * iMarbleRad) * q;
+					n = normalize(p2 - iMarblePos);
+					q = (dot(q, r) * 2.0) * q - r;
+					vec4 p_temp = vec4(p2 + n * (MIN_DIST * 10), 1.0);
+					vec4 r_temp = vec4(q, 0.0);
+					vec3 refr = scene(p_temp, r_temp, 0.8).xyz;
 
-				//Calculate reflection
-				n = normalize(p.xyz - iMarblePos);
-				q = r - n*(2*dot(r,n));
-				p_temp = vec4(p.xyz + n * (MIN_DIST * 10), 1.0);
-				r_temp = vec4(q, 0.0);
-				vec3 refl = scene(p_temp, r_temp, 0.8).xyz;
-				
-				//PBR reflections/refractions
-				vec3 V = -r;
-				vec3 N = n;
-				//glass
-				vec3 F0 = vec3(0.03); 
-				vec3 L = normalize(q.xyz);
-				vec3 H = normalize(V + L);
-				vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);  
-				
-				vec3 kS = F;
-				vec3 kD = vec3(1.0) - kS;
-				
-
-				//Combine for final marble color
-				col += kS*refl + kD*refr + col_r.xyz;
-				
+					//Calculate reflection
+					n = normalize(p.xyz - iMarblePos);
+					q = r - n*(2*dot(r,n));
+					p_temp = vec4(p.xyz + n * (MIN_DIST * 10), 1.0);
+					r_temp = vec4(q, 0.0);
+					vec3 refl = scene(p_temp, r_temp, 0.8).xyz;
+					
+					//PBR reflections/refractions
+					vec3 V = -r;
+					vec3 N = n;
+					
+					//Combine for final marble color
+					if(MARBLE_MODE == 0)
+					{
+						//glass
+						vec3 F0 = vec3(0.03); 
+						vec3 L = normalize(q.xyz);
+						vec3 H = normalize(V + L);
+						vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);  
+						
+						vec3 kS = F;
+						vec3 kD = vec3(1.0) - kS;
+						col += kS*refl + kD*refr + col_r.xyz;
+					}
+					else
+					{
+						//metal
+						vec3 F0 = vec3(0.6); 
+						vec3 L = normalize(q.xyz);
+						vec3 H = normalize(V + L);
+						vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);  
+						
+						vec3 kS = F;
+						vec3 kD = vec3(1.0) - kS;
+						col += kS*refl + col_r.xyz;
+					}
+				}
 			} else {
 				col += col_r.xyz;
 			}

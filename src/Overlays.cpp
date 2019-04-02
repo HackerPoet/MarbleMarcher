@@ -367,36 +367,59 @@ void Overlays::UpdateHover(Texts from, Texts to, float mouse_x, float mouse_y) {
 }
 
 
-void Overlays::SetAntTweakBar(int Width, int Height, float &fps, FractalParams *params)
+void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, bool *vsync, float *mouse_sensitivity, float *wheel_sensitivity, float *music_vol, float *target_fps)
 {
 	//TW interface
 	TwInit(TW_OPENGL, NULL);
 	TwWindowSize(Width, Height);
 
 	stats = TwNewBar("Statistics" );
-	TwDefine(" GLOBAL help='Marble Marcher mod by Michael Moroz' ");
+	TwDefine(" GLOBAL help='Marble Marcher Community Edition. Work in progress.' ");
 
 	// Change bar position
 	int barPos[2] = { 16, 60 };
 	TwSetParam(stats, NULL, "position", TW_PARAM_INT32, 2, &barPos);
 	TwAddVarRO(stats, "FPS", TW_TYPE_FLOAT, &fps, " label='FPS' ");
-	//TwAddVarRW(bar, "Camera speed", TW_TYPE_FLOAT, &sp, " min=0.005 max=0.5 step=0.005");
-	//TwAddVarRW(bar, "Calculations per frame", TW_TYPE_INT32, &cpf, " min=1 max=500 step=1");
+	TwAddVarRO(stats, "Mable velocity", TW_TYPE_DIR3F, scene->marble_vel.data(),  " label='Mable velocity' ");
+	TwAddVarRO(stats, "Mable position", TW_TYPE_DIR3F, scene->marble_pos.data(), " label='Mable position' ");
+	
 	settings = TwNewBar("Settings");
-	float *p = params->data();
-	TwAddVarRW(settings, "FractalScale", TW_TYPE_FLOAT, p, "min=0 max=5 step=0.01  group='Fractal parameter");
-	TwAddVarRW(settings, "FractalAngle1", TW_TYPE_FLOAT, p+1, "min=-5 max=5 step=0.01  group='Fractal parameter");
-	TwAddVarRW(settings, "FractalAngle2", TW_TYPE_FLOAT, p+2, "min=-5 max=5 step=0.01  group='Fractal parameter");
-	TwAddVarRW(settings, "FractalShift", TW_TYPE_DIR3F, p+3, " group='Fractal parameter");
-	TwAddVarRW(settings, "FractalColor", TW_TYPE_DIR3F, p+6, " group='Fractal parameter");
 
-	int barPos1[2] = { 16, 450 };
+	TwAddVarRW(settings, "VSYNC", TW_TYPE_BOOLCPP, vsync, "group='Graphics settings'");
+	TwAddVarRW(settings, "PBR", TW_TYPE_BOOLCPP, &scene->PBR_Enabled, "group='Graphics settings'");
+	TwAddVarRW(settings, "PBR roughness", TW_TYPE_FLOAT, &scene->PBR_ROUGHNESS, "min=0 max=1 step=0.001 group='Graphics settings'");
+	TwAddVarRW(settings, "PBR metallic", TW_TYPE_FLOAT, &scene->PBR_METALLIC, "min=0 max=1 step=0.001 group='Graphics settings'");
+	TwAddVarRW(settings, "Sun direction", TW_TYPE_DIR3F, scene->LIGHT_DIRECTION.data(), " group='Graphics settings'");
+	TwAddVarRW(settings, "Shadows", TW_TYPE_BOOLCPP, &scene->Shadows_Enabled, "group='Graphics settings'");
+	TwAddVarRW(settings, "Reflection and Refraction", TW_TYPE_BOOLCPP, &scene->Refl_Refr_Enabled, "group='Graphics settings'");
+
+	TwEnumVal marble_type[] = { { 0, "Glass"  },
+								{ 1,  "Metal" } };
+
+	TwType Marble_type = TwDefineEnum("Marble type", marble_type, 2);
+	TwAddVarRW(settings, "Marble type", Marble_type, &scene->MarbleType, "group='Gameplay settings'");
+	TwAddVarRW(settings, "Mouse sensitivity", TW_TYPE_FLOAT, mouse_sensitivity, "min=0.001 max=0.02 step=0.001 group='Gameplay settings'");
+	TwAddVarRW(settings, "Wheel sensitivity", TW_TYPE_FLOAT, wheel_sensitivity, "min=0.01 max=0.5 step=0.01 group='Gameplay settings'");
+	TwAddVarRW(settings, "Music volume", TW_TYPE_FLOAT, music_vol, "min=0 max=100 step=1 group='Gameplay settings'");
+	TwAddVarRW(settings, "Target FPS", TW_TYPE_FLOAT, target_fps, "min=24 max=144 step=1 group='Gameplay settings'");
+	TwAddVarRW(settings, "Camera size", TW_TYPE_FLOAT, &scene->camera_size, "min=0 max=10 step=0.001 group='Gameplay settings'");
+	TwAddVarRW(settings, "Camera speed(Free mode)", TW_TYPE_FLOAT, &scene->free_camera_speed, "min=0 max=10 step=0.001 group='Gameplay settings'");
+
+	float *p = scene->frac_params.data();
+	TwAddVarRW(settings, "Fractal_Iterations", TW_TYPE_INT32, &scene->Fractal_Iterations, "min=1 max=20 step=1 group='Fractal parameters'");
+	TwAddVarRW(settings, "FractalScale", TW_TYPE_FLOAT, p, "min=0 max=5 step=0.0001  group='Fractal parameters'");
+	TwAddVarRW(settings, "FractalAngle1", TW_TYPE_FLOAT, p+1, "min=-10 max=10 step=0.0001  group='Fractal parameters'");
+	TwAddVarRW(settings, "FractalAngle2", TW_TYPE_FLOAT, p+2, "min=-10 max=10 step=0.0001  group='Fractal parameters'");
+	TwAddVarRW(settings, "FractalShift", TW_TYPE_DIR3F, p+3, "step=0.0001 group='Fractal parameters'");
+	TwAddVarRW(settings, "FractalColor", TW_TYPE_DIR3F, p+6, "step=0.005 group='Fractal parameters'");
+
+	int barPos1[2] = { 16, 250 };
 
 	TwSetParam(settings, NULL, "position", TW_PARAM_INT32, 2, &barPos1);
 
 	TwDefine(" GLOBAL fontsize=3 ");
-	TwDefine("Settings color='255 128 0' alpha=210");
-	TwDefine("Statistics color='0 128 255' alpha=210");
+	TwDefine("Settings color='255 128 0' alpha=210 size='420 350' valueswidth=200");
+	TwDefine("Statistics color='0 128 255' alpha=210 size='420 160' valueswidth=200");
 }
 
 void Overlays::DrawAntTweakBar()
