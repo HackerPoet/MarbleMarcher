@@ -380,8 +380,8 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	int barPos[2] = { 16, 60 };
 	TwSetParam(stats, NULL, "position", TW_PARAM_INT32, 2, &barPos);
 	TwAddVarRO(stats, "FPS", TW_TYPE_FLOAT, &fps, " label='FPS' ");
-	TwAddVarRO(stats, "Mable velocity", TW_TYPE_DIR3F, scene->marble_vel.data(),  " label='Mable velocity' ");
-	TwAddVarRO(stats, "Mable position", TW_TYPE_DIR3F, scene->marble_pos.data(), " label='Mable position' ");
+	TwAddVarRO(stats, "Marble velocity", TW_TYPE_DIR3F, scene->marble_vel.data(),  " label='Mable velocity' ");
+	TwAddVarRO(stats, "Marble position", TW_TYPE_DIR3F, scene->marble_pos.data(), " label='Mable position' ");
 	
 	settings = TwNewBar("Settings");
 
