@@ -60,6 +60,7 @@ public:
 
   //Relative to 1280x720
   void SetScale(float scale) { draw_scale = scale; }
+  bool GetUnlock();
   void SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, bool *vsync, float *mouse_sensitivity, float *wheel_sensitivity, float *music_vol, float *target_fps);
   void SetTWBARResolution(int Width, int Height);
 

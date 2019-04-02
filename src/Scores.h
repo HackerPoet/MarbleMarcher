@@ -50,6 +50,14 @@ public:
     return false;
   }
 
+  void UnlockEverything()
+  {
+	  for (int i = 0; i < num_levels; i++)
+	  {
+		  Update(i, 0);
+	  }
+  }
+
   void Load(const std::string& fname) {
     std::ifstream fin(fname, std::ios::binary);
     if (!fin) { return; }

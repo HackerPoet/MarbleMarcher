@@ -45,7 +45,6 @@ static float wheel_sensitivity = 0.2f;
 static float music_vol = 75.0f;
 static float target_fps = 60.0f;
 
-
 template < typename T > std::string num2str(const T& n)
 {
 	std::ostringstream stm;
@@ -564,6 +563,12 @@ int main(int argc, char *argv[]) {
       scene.SetExposure(0.5f);
       credits_music.play();
     }
+
+
+	if (overlays.GetUnlock())
+	{
+		high_scores.UnlockEverything();
+	}
 
     //Main game update
     if (game_mode == MAIN_MENU) {

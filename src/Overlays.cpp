@@ -64,7 +64,7 @@ void Overlays::UpdateMenu(float mouse_x, float mouse_y) {
   MakeText("Controls", 80, 370, 60, sf::Color::White, all_text[CONTROLS]);
   MakeText("Screen Saver", 80, 440, 60, sf::Color::White, all_text[SCREEN_SAVER]);
   MakeText("Exit", 80, 510, 60, sf::Color::White, all_text[EXIT]);
-  MakeText("\xA9""2019 CodeParade 1.1.2 alpha, Community Edition with AntTweakBar\nMusic by PettyTheft", 16, 652, 32, sf::Color::White, all_text[CREDITS], true);
+  MakeText("\xA9""2019 CodeParade 1.1.2, Community Edition with AntTweakBar\nMusic by PettyTheft", 16, 652, 32, sf::Color::White, all_text[CREDITS], true);
   all_text[TITLE].setLineSpacing(0.76f);
   all_text[CREDITS].setLineSpacing(0.9f);
 
@@ -367,6 +367,22 @@ void Overlays::UpdateHover(Texts from, Texts to, float mouse_x, float mouse_y) {
 }
 
 
+static bool UNLOCK = false;
+
+
+void TW_CALL Callback(void *clientData)
+{
+	//bool **UNLOCK = (bool**)(clientData);
+
+	UNLOCK = true;
+}
+
+bool Overlays::GetUnlock()
+{
+	return UNLOCK;
+	UNLOCK = !UNLOCK;
+}
+
 void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, bool *vsync, float *mouse_sensitivity, float *wheel_sensitivity, float *music_vol, float *target_fps)
 {
 	//TW interface
@@ -404,6 +420,8 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	TwAddVarRW(settings, "Target FPS", TW_TYPE_FLOAT, target_fps, "min=24 max=144 step=1 group='Gameplay settings'");
 	TwAddVarRW(settings, "Camera size", TW_TYPE_FLOAT, &scene->camera_size, "min=0 max=10 step=0.001 group='Gameplay settings'");
 	TwAddVarRW(settings, "Camera speed(Free mode)", TW_TYPE_FLOAT, &scene->free_camera_speed, "min=0 max=10 step=0.001 group='Gameplay settings'");
+	TwAddButton(settings, "UnlockEverything", Callback, NULL,
+		" label='--> Unlock Everything, kek'  help='Set all levels to completed.' ");
 
 	float *p = scene->level_copy.params.data();
 	TwAddVarRW(settings, "Fractal_Iterations", TW_TYPE_INT32, &scene->Fractal_Iterations, "min=1 max=20 step=1 group='Fractal parameters'");
