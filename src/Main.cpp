@@ -226,6 +226,11 @@ int main(int argc, char *argv[]) {
   window.setKeyRepeatEnabled(false);
   window.requestFocus();
 
+  //set window icon
+  sf::Image icon;
+  icon.loadFromFile(icon_png); 
+  window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+
   //If native resolution is the same, then we don't need a render texture
   if (resolution->width == screen_size.width && resolution->height == screen_size.height) {
     fullscreen = false;
