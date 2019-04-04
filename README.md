@@ -46,23 +46,28 @@ Though Marble Marcher CE is a largely finished game, there are still several imp
   - figure out why so many people get `Failed to compile vertex shader`
 - ### User Experience Improvements
   - pre-built versions for the common operating systems and make them available as github releases (in progress)
-  - confirmation, exit buttons in end screens
-  - change "controls" menu to "settings" and have audio, controls, sensitivity and fullscreen options there, also allow custom input bindings
   - make the fractal recoloring from cheats persistent
   - more efficient anti-aliasing modes
   - toggle to always activate fast cutscenes
-  - debug mode
   - better autosplitter integration
-  - improve text rendering
+  - #### UI Redesign
+    - confirmation, exit buttons in end screens
+    - change "controls" menu to "settings" and have audio, controls, sensitivity and fullscreen options there, also allow custom input bindings
+    - improve text rendering
+    - better layout
 - ### New Features
-  - recording/replay functionality
-  - custom map support
-  - custom marble designs
   - cheat: no drag
-  - anaglyph/stereoscopic mode (easy to implement but how do we switch between them)
+  - anaglyph/stereoscopic mode
   - screenshot mode (temporarily higher resolution and AA)
   - native controller support (+deadzone)
-  - in-game fractal editor, using sliders (currently using mousewheel scroll and numbers)
+  - custom marble designs
+- ### Currently WIP
+  - in-game level editor
+  - metal marble skin
+  - custom map support
+  - recording/replay functionality
+  - debug info screen
+  - cheat: unlock all levels
 
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
