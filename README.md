@@ -87,7 +87,6 @@ Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
 `sudo pacman -S eigen sfml git cmake make`
 
 
-
 ## Building
 ### MacOS
 #### Build Script
@@ -104,6 +103,7 @@ Note that this just builds a binary and not an Application bundle like you might
 Alternatively, one can use the platform-dependent build system, for example `Make`:
 
 * `make -C build`
+
 ### Arch Linux
 * `cd ~`
 * `git clone https://github.com/WAUthethird/Marble-Marcher-Community-Edition.git`
