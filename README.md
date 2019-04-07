@@ -74,19 +74,20 @@ Though Marble Marcher CE is a largely finished game, there are still several imp
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 * [SFML 2.5.0](https://www.sfml-dev.org)
+* [AntTweakBar](http://anttweakbar.sourceforge.net/)
 ### MacOS
 On macOS these can be conveniently installed using [HomeBrew](https://brew.sh):
 
-`brew install eigen sfml`
+`brew install eigen sfml anttweakbar`
 
 The version of SFML required is 2.5.1 or newer. HomeBrew does not have this version yet so it must be [downloaded manually](https://www.sfml-dev.org/download/sfml/2.5.1/) and installed using [these instructions](https://www.sfml-dev.org/tutorials/2.5/start-osx.php). You must install the Frameworks option not the dylib option or the build script may fail.
 **It is very important that if you installed SFML with brew before realizing that you have to install it manually, that you remove the version of SFML that Brew installed using `brew remove sfml`.**
 
 Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
 
-`vcpkg install eigen3 sfml`
+`vcpkg install eigen3 sfml anttweakbar`
 ### Arch Linux
-`sudo pacman -S eigen sfml git cmake make`
+`sudo pacman -S eigen sfml anttweakbar git cmake make`
 
 
 ## Building
