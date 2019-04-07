@@ -38,6 +38,7 @@ All credit goes to [HackerPoet](https://github.com/HackerPoet) (aka [CodeParade]
 - numerous miscellaneous fixes have been applied
 - easier compilation for macOS
 - ingame statistics added (marble speed, ground/air state, ...). Press `o` to toggle.
+- AntTweakBar editor added. Press `F4` to toggle.
 
 ## Proposed Changes
 Though Marble Marcher CE is a largely finished game, there are still several improvements we'd like to implement. Here are our proposed changes:
