@@ -52,25 +52,35 @@ static void ModPi(float& a, float b) {
 }
 
 Scene::Scene(sf::Music* level_music) :
-  intro_needs_snap(true),
-  play_single(false),
-  is_fullrun(false),
-  exposure(1.0f),
-  cam_mat(Eigen::Matrix4f::Identity()),
-  cam_look_x(0.0f),
-  cam_look_y(0.0f),
-  cam_dist(default_zoom),
-  cam_pos(0.0f, 0.0f, 0.0f),
-  cam_mode(CamMode::INTRO),
-  marble_rad(1.0f),
-  marble_pos(0.0f, 0.0f, 0.0f),
-  marble_vel(0.0f, 0.0f, 0.0f),
-  marble_mat(Eigen::Matrix3f::Identity()),
-  flag_pos(0.0f, 0.0f, 0.0f),
-  timer(0),
-  sum_time(0),
-  music(level_music),
-  cur_level(0)
+	intro_needs_snap(true),
+	play_single(false),
+	is_fullrun(false),
+	exposure(1.0f),
+	cam_mat(Eigen::Matrix4f::Identity()),
+	cam_look_x(0.0f),
+	cam_look_y(0.0f),
+	cam_dist(default_zoom),
+	cam_pos(0.0f, 0.0f, 0.0f),
+	cam_mode(CamMode::INTRO),
+	marble_rad(1.0f),
+	marble_pos(0.0f, 0.0f, 0.0f),
+	marble_vel(0.0f, 0.0f, 0.0f),
+	marble_mat(Eigen::Matrix3f::Identity()),
+	flag_pos(0.0f, 0.0f, 0.0f),
+	timer(0),
+	sum_time(0),
+	music(level_music),
+	cur_level(0),
+	PBR_Enabled(1),
+	Refl_Refr_Enabled(1),
+	Shadows_Enabled(1),
+	Fractal_Iterations(16),
+	MarbleType(0),
+	free_camera_speed(1.f),
+    LIGHT_DIRECTION(Eigen::Vector3f(-0.36, 0.8, 0.48)),
+	PBR_METALLIC(0.5),
+	PBR_ROUGHNESS(0.4),
+	camera_size(0.035)
 {
   ResetCheats();
   frac_params.setOnes();
@@ -245,6 +255,14 @@ void Scene::ResetCheats() {
   zoom_to_scale = false;
 }
 
+void Scene::Synchronize()
+{
+	for (int i = 0; i < 9; i++)
+	{
+		 frac_params_smooth[i] = frac_params[i] = level_copy.params[i];
+	}
+}
+
 void Scene::UpdateCamera(float dx, float dy, float dz, bool speedup) {
   //Camera update depends on current mode
   const int iters = speedup ? 5 : 1;
@@ -293,9 +311,9 @@ void Scene::UpdateMarble(float dx, float dy) {
   }
 
   if (free_camera) {
-    cam_pos += cam_mat.block<3,1>(0,2) * (-marble_rad * dy * 0.5f);
-    cam_pos += cam_mat.block<3, 1>(0,0) * (marble_rad * dx * 0.5f);
-    cam_pos_smooth = cam_pos_smooth*0.8f + cam_pos*0.2f;
+    cam_pos += cam_mat.block<3,1>(0,2) * (-marble_rad * dy * 0.5f * free_camera_speed);
+    cam_pos += cam_mat.block<3, 1>(0,0) * (marble_rad * dx * 0.5f * free_camera_speed);
+    cam_pos_smooth = cam_pos_smooth*0.9f + cam_pos*0.1f;
   } else {
     //Apply all physics (gravity and collision)
     bool onGround = false;
@@ -659,6 +677,17 @@ void Scene::Write(sf::Shader& shader) const {
   shader.setUniform("iFracCol", sf::Glsl::Vec3(frac_params_smooth[6], frac_params_smooth[7], frac_params_smooth[8]));
 
   shader.setUniform("iExposure", exposure);
+
+
+  shader.setUniform("LIGHT_DIRECTION", sf::Glsl::Vec3(LIGHT_DIRECTION[0], LIGHT_DIRECTION[1], LIGHT_DIRECTION[2]));
+  shader.setUniform("PBR_ENABLED", PBR_Enabled);
+  shader.setUniform("PBR_METALLIC", PBR_METALLIC);
+  shader.setUniform("PBR_ROUGHNESS", PBR_ROUGHNESS);
+  shader.setUniform("SHADOWS_ENABLED", Shadows_Enabled);
+  shader.setUniform("CAMERA_SIZE", camera_size);
+  shader.setUniform("FRACTAL_ITER", Fractal_Iterations);
+  shader.setUniform("REFL_REFR_ENABLED", Refl_Refr_Enabled);
+  shader.setUniform("MARBLE_MODE", MarbleType);
 }
 
 //Hard-coded to match the fractal

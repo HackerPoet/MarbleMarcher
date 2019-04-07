@@ -32,6 +32,29 @@ public:
     FINAL,
     MIDPOINT
   };
+  FractalParams   frac_params;
+  FractalParams   frac_params_smooth;
+
+  Level           level_copy;
+
+  bool PBR_Enabled;
+  bool Refl_Refr_Enabled;
+  bool Shadows_Enabled;
+  int Fractal_Iterations;
+  float camera_size;
+  float free_camera_speed;
+  int MarbleType;
+  Eigen::Vector3f LIGHT_DIRECTION;
+  float PBR_METALLIC;
+  float PBR_ROUGHNESS;
+
+
+
+
+  float           marble_rad;
+  Eigen::Vector3f marble_pos;
+  Eigen::Vector3f marble_vel;
+  Eigen::Matrix3f marble_mat;
 
   Scene(sf::Music* level_music);
 
@@ -69,6 +92,7 @@ public:
   void StartSingle(int level);
   void ResetLevel();
   void ResetCheats();
+  void Synchronize();
 
   void UpdateMarble(float dx=0.0f, float dy=0.0f);
   void UpdateCamera(float dx=0.0f, float dy=0.0f, float dz=0.0f, bool speedup=false);
@@ -105,7 +129,6 @@ protected:
 
 private:
   int             cur_level;
-  Level           level_copy;
   bool            is_fullrun;
   bool            intro_needs_snap;
   bool            play_single;
@@ -122,15 +145,9 @@ private:
   float           cam_dist_smooth;
   Eigen::Vector3f cam_pos_smooth;
 
-  float           marble_rad;
-  Eigen::Vector3f marble_pos;
-  Eigen::Vector3f marble_vel;
-  Eigen::Matrix3f marble_mat;
-
   Eigen::Vector3f flag_pos;
 
-  FractalParams   frac_params;
-  FractalParams   frac_params_smooth;
+
 
   int             timer;
   int             final_time;
@@ -149,6 +166,8 @@ private:
   sf::SoundBuffer buff_shatter;
 
   sf::Music* music;
+
+
 
   bool            enable_cheats;
   bool            free_camera;

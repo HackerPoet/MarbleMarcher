@@ -1,0 +1,1 @@
+The screenshot numbering currently resets after each start. 
