@@ -4,11 +4,13 @@ mkdir -p winBuild
 cp  src/* winBuild/
 cd winBuild
 wget -nc http://bitbucket.org/eigen/eigen/get/3.3.7.zip
-wget -nc https://www.sfml-dev.org/files/SFML-2.5.1-windows-gcc-7.3.0-mingw-64-bit.zip
+wget -nc https://www.sfml-dev.org/files/SFML-2.5.1-windows-gcc-7.3.0-mingw-32-bit.zip
+wget -nc https://astuteinternet.dl.sourceforge.net/project/anttweakbar/AntTweakBar_116.zip
 unzip -u -o 3.3.7.zip
 unzip -u -o SFML-2.5.1-windows-gcc-7.3.0-mingw-64-bit.zip
+unzip -u -o AntTweakBar_116.zip
 git clone https://github.com/SFML/SFML.git
-export CPATH=`pwd`/eigen-eigen-323c052e1731/:`pwd`/SFML-2.5.1/include:`pwd`/SFML/exttlibs/headers
+export CPATH=`pwd`/eigen-eigen-323c052e1731/:`pwd`/SFML-2.5.1/include:`pwd`/SFML/exttlibs/headers:`pwd`/AntTweakBar_116/AntTweakBar:`pwd`/AntTweakBar_116/AntTweakBar/include
 
 x86_64-w64-mingw32-g++ -Ofast -c Level.cpp -D SFML_STATIC
 x86_64-w64-mingw32-g++ -Ofast -c Level.h -D SFML_STATIC
