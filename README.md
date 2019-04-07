@@ -1,5 +1,7 @@
 # Marble Marcher: Community Edition
 
+### Version 1.2.0
+
 This is the community edition of Marble Marcher, a procedurally rendered fractal physics marble game in which you must get to the flag in each level as fast as you can. With 24 levels to unlock and an active speedrunning community, along with a rudimentary level editor, there's always new features being developed. If you complete all levels, you can use cheats to enhance and create a more exploratory experience.
 
 Because version 1.1.0 is most likely going to be the last feature update of Marble Marcher, we (the Marble Marcher Speedrunning Community) have opted to create a community edition to keep the community around the game alive and continuously improve the experience.
