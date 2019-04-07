@@ -522,3 +522,4 @@ bool Overlays::TwManageEvent(sf::Event &event)
 void Overlays::SetTWBARResolution(int Width, int Height)
 {
 	TwWindowSize(Width, Height);
+}
