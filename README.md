@@ -4,7 +4,7 @@
 
 This is the community edition of Marble Marcher, a procedurally rendered fractal physics marble game in which you must get to the flag in each level as fast as you can. With 24 levels to unlock and an active speedrunning community, along with a rudimentary level editor, there's always new features being developed. If you complete all levels, you can use cheats to enhance and create a more exploratory experience.
 
-Because version 1.1.0 is most likely going to be the last feature update of Marble Marcher, we (the Marble Marcher Speedrunning Community) have opted to create a community edition to keep the community around the game alive and continuously improve the experience.
+Because version 1.1.0 was the last feature update of Marble Marcher, we (the Marble Marcher Speedrunning Community) opted to create a community edition to keep the community around the game alive and continuously improve the experience.
 Currently this is maintained mainly by members of the [Marble Marcher Speedrunning Community on Discord](https://discord.gg/r3XrJxH), in addition to the members of the [subreddit](https://www.reddit.com/r/marblemarcher) and anyone else who has contributed.
 
 All credit goes to [HackerPoet](https://github.com/HackerPoet) (aka [CodeParade](https://www.youtube.com/channel/UCrv269YwJzuZL3dH5PCgxUw)) for the [original game](https://github.com/HackerPoet/MarbleMarcher).
@@ -122,7 +122,7 @@ Alternatively, one can use the platform-dependent build system, for example `Mak
 This requires you to install wget, mingw-w64, and git (which you probably already have) either with HomeBrew (recommended) or otherwise. Theoretically, you should be able to just run `winMacOSBuild.sh`. There are no manual instructions because due to issues I had to just compile the thing manually which is annoying and has too many steps.
 
 ### Compiling on Windows
-Windows compilation has proved to be quite tough, and all efforts to compile via CMake have failed. There's only been one person who has managed to compile and run on Windows, and that was via manual compilation. But in case you'd like to try your hand at it, [here are some configuring (not compiling) instructions](https://www.reddit.com/r/Marblemarcher/comments/atpq47/how_to_configure_source_for_windows_with_cmake/). Keep in mind that after you finish the configuration, (which is a lot easier to pull off than compilation) you're on your own. But don't fret; we'll be fixing these issues once we figure out *how* exactly to do it.
+Windows compilation should work just fine now. It's relatively easy to do without help, but in case you'd like it, [here are some configuring and compiling instructions](https://www.reddit.com/r/Marblemarcher/comments/bamqyh/how_to_configure_and_compile_source_for_windows/).
 
 ## Launching
 ## macOS
