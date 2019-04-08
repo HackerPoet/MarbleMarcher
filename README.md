@@ -33,6 +33,7 @@ All credit goes to [HackerPoet](https://github.com/HackerPoet) (aka [CodeParade]
 - [Launching](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#launching)
   - [macOS](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#macos-2)
 - [Other](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#other)
+  - [Shortcuts](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#shortcuts)
 
 ## Changes
 - numerous miscellaneous fixes have been applied
@@ -139,9 +140,7 @@ LD_LIBRARY_PATH=`pwd`/usr/lib ./MarbleMarcher
 ```
 
 ## Other
-### Debug Screen
-Press `o` to toggle the debug screen.
-
 ### Shortcuts
+* Press `o` to toggle the debug screen.
 * Press `F5` to take a screenshot.
 * Press `F4` to open AntTweakBar.
