@@ -1,16 +1,16 @@
 /* This file is part of the Marble Marcher (https://github.com/HackerPoet/MarbleMarcher).
 * Copyright(C) 2018 CodeParade
-* 
+*
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 2 of the License, or
 * (at your option) any later version.
-* 
+*
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
-* 
+*
 * You should have received a copy of the GNU General Public License
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
@@ -97,6 +97,9 @@ Scene::Scene(sf::Music* level_music) :
   buff_shatter.loadFromFile(shatter_wav);
   sound_shatter.setBuffer(buff_shatter);
 }
+Eigen::Vector3f Scene::GetVelocity() {
+	return marble_vel;
+}
 
 void Scene::LoadLevel(int level) {
   SetLevel(level);
@@ -110,6 +113,9 @@ void Scene::SetMarble(float x, float y, float z, float r) {
   marble_rad = r;
   marble_pos = Eigen::Vector3f(x, y, z);
   marble_vel.setZero();
+}
+void Scene::SetMarbleScale(float r) {
+  marble_rad = r;
 }
 
 void Scene::SetFlag(float x, float y, float z) {
@@ -455,16 +461,16 @@ void Scene::UpdateOrbit() {
   const Eigen::Vector3f perp_vec(std::sin(t), 0.0f, std::cos(t));
   cam_pos = orbit_pt + perp_vec * (orbit_dist * 2.5f);
   cam_pos_smooth = cam_pos_smooth*orbit_smooth + cam_pos*(1 - orbit_smooth);
-  
+
   //Solve for the look direction
   cam_look_x = std::atan2(cam_pos_smooth.x(), cam_pos_smooth.z());
   ModPi(cam_look_x_smooth, cam_look_x);
   cam_look_x_smooth = cam_look_x_smooth*(1 - a) + cam_look_x*a;
-  
+
   //Update look smoothing
   cam_look_y = -0.3f;
   cam_look_y_smooth = cam_look_y_smooth*orbit_smooth + cam_look_y*(1 - orbit_smooth);
-  
+
   //Update the camera matrix
   marble_mat.setIdentity();
   MakeCameraRotation();
@@ -832,7 +838,7 @@ bool Scene::MarbleCollision(float& delta_v) {
   if (de >= marble_rad) {
     return de < marble_rad * ground_ratio;
   }
-  
+
   //Check if the marble has been crushed by the fractal
   if (de < marble_rad * 0.001f) {
     sound_shatter.play();
