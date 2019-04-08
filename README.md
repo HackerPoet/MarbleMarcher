@@ -48,7 +48,7 @@ Though Marble Marcher CE is a largely finished game, there are still several imp
   - mouse/camera speed is too fast while skipping cutscenes
   - figure out why so many people get `Failed to compile vertex shader`
 - ### User Experience Improvements
-  - pre-built versions for the common operating systems and make them available as github releases (in progress)
+  - pre-built versions for the common operating systems and make them available as GitHub releases (in progress)
   - make the fractal recoloring from cheats persistent
   - more efficient anti-aliasing modes
   - toggle to always activate fast cutscenes
@@ -64,6 +64,8 @@ Though Marble Marcher CE is a largely finished game, there are still several imp
   - screenshot mode (temporarily higher resolution and AA)
   - native controller support (+deadzone)
   - custom marble designs
+  - add a script to build for all platforms at once
+  - have MarbleMarcher added to package managers
 - ### Currently WIP
   - in-game level editor
   - metal marble skin
@@ -71,6 +73,7 @@ Though Marble Marcher CE is a largely finished game, there are still several imp
   - recording/replay functionality
   - debug info screen
   - cheat: unlock all levels
+  - add creation of macOS `.dng` for easy distribution.
 
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
@@ -81,12 +84,14 @@ On macOS these can be conveniently installed using [HomeBrew](https://brew.sh):
 
 `brew install eigen sfml anttweakbar`
 
-The version of SFML required is 2.5.1 or newer. HomeBrew does not have this version yet so it must be [downloaded manually](https://www.sfml-dev.org/download/sfml/2.5.1/) and installed using [these instructions](https://www.sfml-dev.org/tutorials/2.5/start-osx.php). You must install the Frameworks option not the dylib option or the build script may fail.
-**It is very important that if you installed SFML with brew before realizing that you have to install it manually, that you remove the version of SFML that Brew installed using `brew remove sfml`.**
+The version of SFML required is 2.5.1 or newer. It has come to my attention that HomeBrew does now have this version (unlike when these instructions where first written) so installing via HomeBrew should work but you can still [downloaded manually](https://www.sfml-dev.org/download/sfml/2.5.1/) if you wish and install using [these instructions](https://www.sfml-dev.org/tutorials/2.5/start-osx.php). You must install the Frameworks option not the dylib option or the build script may fail.
+**Note that if HomeBrew installed a version of SFML older than 2.5.1 for some reason or you wish to install manually, you must remove the version of SFML that Brew installed using `brew remove sfml`.**
 
-Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
+Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used though it is unsupported:
 
 `vcpkg install eigen3 sfml anttweakbar`
+
+It may also be possible to use MacPorts which is also unsupported and untested.
 ### Arch Linux
 `sudo pacman -S eigen sfml anttweakbar git cmake make`
 
@@ -94,6 +99,7 @@ Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
 ## Building
 ### MacOS
 #### Build Script
+**Note for the current version: the macOS build is not yet entirely working properly so revert to the previous prerelease as required. SFML is properly included but as of yet, AntTweakBar is not so this executable will not work on machines without it installed.**
 Simply run `./macOSBuild.sh`. This will generate the full Application bundle that can be used like any other application. It can even be used on systems without SFML as SFML is included in the bundle and the binary is relinked to these versions. Currently the script will only do the relinking part properly if you use SFML 2.5.1 specifically however it is planned to allow for any version. If you have another version, the script will still work, the app just won't work on a machine without SFML.
 #### Manual
 * `mkdir build && cd build`
@@ -122,7 +128,7 @@ Alternatively, one can use the platform-dependent build system, for example `Mak
 This requires you to install wget, mingw-w64, and git (which you probably already have) either with HomeBrew (recommended) or otherwise. Theoretically, you should be able to just run `winMacOSBuild.sh`. There are no manual instructions because due to issues I had to just compile the thing manually which is annoying and has too many steps.
 
 ### Compiling on Windows
-Windows compilation has proved to be quite tough, and all efforts to compile via CMake have failed. There's only been one person who has managed to compile and run on Windows, and that was via manual compilation. But in case you'd like to try your hand at it, [here are some configuring (not compiling) instructions](https://www.reddit.com/r/Marblemarcher/comments/atpq47/how_to_configure_source_for_windows_with_cmake/). Keep in mind that after you finish the configuration, (which is a lot easier to pull off than compilation) you're on your own. But don't fret; we'll be fixing these issues once we figure out *how* exactly to do it.
+Windows compilation has proved to be quite tough, some work into allowing cmake compilation has been done. The current version of `CMakeLists.txt` may work but it relies on specific locations of libraries and may require some editing. Previous to this, the only way that compilation was achieved was via manual compilation. In case you'd like to try your hand at getting cmake to work, [here are some configuring (not compiling) instructions](https://www.reddit.com/r/Marblemarcher/comments/atpq47/how_to_configure_source_for_windows_with_cmake/). Keep in mind that after you finish the configuration, (which is a lot easier to pull off than compilation) you're on your own. But don't fret; we'll be fixing these issues once we figure out *how* exactly to do it.
 
 ## Launching
 ## macOS
@@ -138,10 +144,7 @@ You'll just need to run MarbleMarcher with the correct `LD_LIBRARY_PATH`:
 LD_LIBRARY_PATH=`pwd`/usr/lib ./MarbleMarcher
 ```
 
-## Other
-### Debug Screen
-Press `o` to toggle the debug screen.
-
-### Shortcuts
+## Special Controls
+* Press `o` to toggle the debug screen.
 * Press `F5` to take a screenshot.
 * Press `F4` to open AntTweakBar.
