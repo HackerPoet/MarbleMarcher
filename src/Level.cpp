@@ -16,7 +16,41 @@
 */
 #include "Level.h"
 
-const Level all_levels[num_levels] = {
+using namespace std;
+
+string ConvertSpaces2_(string text)
+{
+	while (true)
+	{
+		std::size_t pos = text.find(" ");
+
+		if (pos == std::string::npos)
+			break;
+
+		text = text.replace(pos, 1, "_");
+	}
+	return text;
+}
+
+//get path vector of all files of given type
+vector<fs::path> GetFilesInFolder(string folder, string filetype)
+{
+	vector<fs::path> paths;
+
+	for (const auto & entry : fs::directory_iterator(folder))
+	{
+		//check if the file has the correct filetype
+		if (entry.path().extension().string() == filetype)
+		{
+			paths.push_back(entry.path());
+		}
+	}
+
+	return paths;
+}
+
+
+Level all_levels[num_levels] = {
   //Level 1
   Level(
     1.8f, -0.12f, 0.5f,                              //Scale, Angle1, Angle2
@@ -352,6 +386,18 @@ const Level all_levels[num_levels] = {
     "Fatal Fissures"),                               //Description
 };
 
+Level default_level(2.f, 0.0f, 0.0f,                 //Scale, Angle1, Angle2
+	Eigen::Vector3f(-1.f, -2.f, 0.f),				 //Offset
+	Eigen::Vector3f(1.f, 1.f, 1.f),				     //Color
+	0.035f,                                          //Marble Radius
+	-2.0f,                                           //Start Look Direction
+	3.3f,                                            //Orbit Distance
+	Eigen::Vector3f(-2.95862f, 2.68825f, -1.11868f), //Marble Position
+	Eigen::Vector3f(2.95227f, 2.65057f, 1.11848f),   //Flag Position
+	-4.0f,                                           //Death Barrier
+	false,                                           //Is Planet
+	"Untitled level");
+
 Level::Level(float s, float a1, float a2,
   const Eigen::Vector3f& v,
   const Eigen::Vector3f& c,
@@ -362,7 +408,7 @@ Level::Level(float s, float a1, float a2,
   const Eigen::Vector3f& end,
   float kill,
   bool pg,
-  const char* desc,
+  const char* name,
   float an1, float an2, float an3)
 {
   params[0] = s;
@@ -377,8 +423,194 @@ Level::Level(float s, float a1, float a2,
   end_pos = end;
   kill_y = kill;
   planet = pg;
-  txt = desc;
+  txt = name;
   anim_1 = an1;
   anim_2 = an2;
   anim_3 = an3;
+
+  FractalIter = 16;			    
+
+  PBR_roughness = 0.5;		 
+  PBR_metal = 0.4;           
+
+  desc = " ";			
+          
+  light_dir = Eigen::Vector3f(-0.36, 0.8, 0.48);
+  light_col = Eigen::Vector3f(1, 1, 1);
+
+  level_id = 0;				 
+  link_level = 0;	
+  use_music = "level1.ogg";    
+}
+
+void Level::LoadFromFile(fs::path path)
+{
+	int lvl_size = fs::file_size(path);
+	int LevelF_size = sizeof(LevelF);
+
+	if (lvl_size != LevelF_size)
+	{
+		ERROR_MSG("Invalid .LVL file");
+	}
+
+	LevelF loaded_lvl;
+
+	std::ifstream level_file(path, ios_base::in | ios_base::binary);
+
+	level_file.seekg(0);
+	level_file.read(reinterpret_cast<char *>(&loaded_lvl), sizeof(LevelF));
+
+	level_file.close();
+
+	LoadLevelF(loaded_lvl);
+
+}
+
+void Level::SaveToFile(std::string file, int ID, int Link)
+{
+	std::ofstream level_file(file, ios_base::out | ios_base::trunc | ios_base::binary);
+	
+	LevelF lvl_to_save = GetLevelF();
+
+	lvl_to_save.level_id = ID;
+	lvl_to_save.link_level = Link;
+
+	level_file.write(reinterpret_cast<char *>(&lvl_to_save), sizeof(lvl_to_save));
+
+	level_file.close();
+}
+
+void Level::LoadLevelF(LevelF lvl)
+{
+	FractalIter = lvl.FractalIterations;			 //Fractal iterations
+	params = FractalParams(lvl.FractalParams);      //Fractal parameters
+
+	PBR_roughness = lvl.PBR_roughness;		 //Fractal roughness
+	PBR_metal = lvl.PBR_metal;           //Fractal metalicity
+
+	marble_rad = lvl.marble_rad;          //Radius of the marble
+	start_look_x = lvl.start_look_x;        //Camera direction on start
+	orbit_dist = lvl.orbit_dist;          //Distance to orbit
+	start_pos = Eigen::Vector3f(lvl.start_pos); //Starting position of the marble
+	end_pos = Eigen::Vector3f(lvl.end_pos);   //Ending goal flag position
+	kill_y = lvl.kill_y;              //Below this height player is killed
+	planet = lvl.planet;               //True if gravity should be like a planet
+	txt = std::string(lvl.txt);           //Title
+	desc = std::string(lvl.desc); 		 //Description
+	anim_1 = lvl.anim_1;              //Animation amount for angle1 parameter
+	anim_2 = lvl.anim_2;              //Animation amount for angle2 parameter
+	anim_3 = lvl.anim_3;              //Animation amount for offset_y parameter
+	light_dir = Eigen::Vector3f(lvl.light_dir); //Sun light direction
+	light_col = Eigen::Vector3f(lvl.light_col); //Sun light color
+
+	level_id = lvl.level_id;				 //level identifier
+	link_level = lvl.link_level;			 //Play what level after finish
+	use_music = std::string(lvl.use_music);      //what track to use
+}
+
+LevelF Level::GetLevelF()
+{
+	LevelF lvlF;
+
+	strcpy(lvlF.txt, txt.c_str());
+	strcpy(lvlF.desc, desc.c_str());
+	strcpy(lvlF.use_music, use_music.c_str());
+
+	lvlF.FractalIterations = FractalIter;	
+	std::copy(params.data(), params.data() + 9, lvlF.FractalParams);
+
+	lvlF.PBR_roughness = PBR_roughness;		
+	lvlF.PBR_metal = PBR_metal;         
+
+	lvlF.marble_rad = marble_rad;         
+	lvlF.start_look_x = start_look_x;        
+	lvlF.orbit_dist = orbit_dist;      
+	std::copy(start_pos.data(), start_pos.data() + 3, lvlF.start_pos);
+	std::copy(end_pos.data(), end_pos.data() + 3, lvlF.end_pos);
+
+	lvlF.kill_y = kill_y;             
+	lvlF.planet = planet;              
+	lvlF.anim_1 = anim_1;              
+	lvlF.anim_2 = anim_2;              
+	lvlF.anim_3 = anim_3;         
+	std::copy(light_dir.data(), light_dir.data() + 3, lvlF.light_dir);
+	std::copy(light_col.data(), light_col.data() + 3, lvlF.light_col);
+
+	lvlF.level_id = level_id;				
+	lvlF.link_level = link_level;			 
+	
+	return lvlF;
+}
+
+void All_Levels::LoadLevelsFromFolder(std::string folder)
+{
+	lvl_folder = folder;
+	level_num = 0;
+	vector<fs::path> files = GetFilesInFolder(folder, ".lvl");
+	for (int i = 0; i < files.size(); i++)
+	{
+		LoadLevelFromFile(files[i]);
+	}
+
+}
+
+void All_Levels::LoadMusicFromFolder(std::string folder)
+{
+	vector<fs::path> files = GetFilesInFolder(folder, ".ogg");
+	for (int i = 0; i < files.size(); i++)
+	{
+		music_map.insert(std::make_pair(files[i].filename().string(), new sf::Music()));
+		music_map[files[i].filename().string()]->openFromFile(files[i].string());
+		music_map[files[i].filename().string()]->setLoop(true);
+		music_names.push_back(files[i].filename().string());
+	}
+}
+
+Level All_Levels::GetLevel(int ID)
+{
+	return level_map[ID];
+}
+
+int All_Levels::GetLevelNum()
+{
+	return level_num;
+}
+
+vector<string> All_Levels::getLevelNames()
+{
+	return level_names;
+}
+
+std::vector<std::string> All_Levels::getLevelDesc()
+{
+	return level_descriptions;
+}
+
+std::vector<int> All_Levels::getLevelIds()
+{
+	return level_ids;
+}
+
+sf::Music* All_Levels::GetLevelMusic(int ID)
+{
+	return music_map[level_map[ID].use_music];
+}
+
+void All_Levels::ReloadLevel(int IDt)
+{
+	vector<fs::path> files = GetFilesInFolder(lvl_folder, "LVL");
+	Level cur_lvl;
+	cur_lvl.LoadFromFile(files[IDt]);
+	level_map[level_ids[IDt]] = cur_lvl;
+}
+
+void All_Levels::LoadLevelFromFile(fs::path file)
+{
+	Level cur_lvl;
+	cur_lvl.LoadFromFile(file);
+	level_map.insert(std::make_pair(cur_lvl.level_id, cur_lvl));
+	level_names.push_back(cur_lvl.txt);
+	level_descriptions.push_back(cur_lvl.desc);
+	level_ids.push_back(cur_lvl.level_id);
+	level_num++;
 }

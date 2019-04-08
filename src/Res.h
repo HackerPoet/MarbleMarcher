@@ -33,9 +33,13 @@ static const char menu_click_wav[] = "sound/fx/menu_click.wav";
 static const char count_down_wav[] = "sound/fx/count_down.wav";
 static const char count_go_wav[] = "sound/fx/count_go.wav";
 static const char arrow_png[] = "images/arrow.png";
+static const char edit_png[] = "images/edit.png";
 static const char icon_png[] = "images/MarbleMarcher.png";
 static const char goal_wav[] = "sound/fx/assets/goal.wav";
 static const char bounce1_wav[] = "sound/fx/bounce1.wav";
 static const char bounce2_wav[] = "sound/fx/bounce2.wav";
 static const char bounce3_wav[] = "sound/fx/bounce3.wav";
 static const char shatter_wav[] = "sound/fx/shatter.wav";
+
+static const char level_folder[] = "levels";
+static const char music_folder[] = "sound/music";

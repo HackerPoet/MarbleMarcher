@@ -36,6 +36,7 @@ public:
   FractalParams   frac_params_smooth;
 
   Level           level_copy;
+  All_Levels	  levels;
 
   bool PBR_Enabled;
   bool Refl_Refr_Enabled;
@@ -47,9 +48,6 @@ public:
   Eigen::Vector3f LIGHT_DIRECTION;
   float PBR_METALLIC;
   float PBR_ROUGHNESS;
-
-
-
 
   float           marble_rad;
   Eigen::Vector3f marble_pos;
@@ -85,6 +83,7 @@ public:
   void StartNewGame();
   void StartNextLevel();
   void StartSingle(int level);
+  void StartDefault();
   void ResetLevel();
   void ResetCheats();
   void Synchronize();
@@ -96,6 +95,10 @@ public:
   void HideObjects();
 
   void Write(sf::Shader& shader) const;
+  void WriteLVL(int lvl)
+  {
+	  cur_level = lvl;
+  }
 
   float DE(const Eigen::Vector3f& pt) const;
   Eigen::Vector3f NP(const Eigen::Vector3f& pt) const;
@@ -161,7 +164,6 @@ private:
   sf::SoundBuffer buff_shatter;
 
   sf::Music* music;
-
 
 
   bool            enable_cheats;

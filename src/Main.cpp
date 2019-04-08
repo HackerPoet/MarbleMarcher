@@ -60,6 +60,7 @@ enum GameMode {
   SCREEN_SAVER,
   CONTROLS,
   LEVELS,
+  LEVEL_EDITOR,
   CREDITS,
   MIDPOINT
 };
@@ -69,7 +70,7 @@ static sf::Vector2i mouse_pos, mouse_prev_pos;
 static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
 static bool mouse_clicked = false;
 static bool show_cheats = false;
-static GameMode game_mode = MAIN_MENU;
+extern GameMode game_mode = MAIN_MENU;
 
 //Graphics settings
 static bool VSYNC = true;
@@ -246,11 +247,11 @@ int main(int argc, char *argv[]) {
   int screenshot_i = 0;
   sf::RenderTexture screenshotTexture;
   screenshotTexture.create(screenshot_size.x, screenshot_size.y, settings);
-  screenshotTexture.setSmooth(true);
+  screenshotTexture.setSmooth(false);
 
   if (fullscreen) {
     renderTexture.create(resolution->width, resolution->height, settings);
-    renderTexture.setSmooth(true);
+    renderTexture.setSmooth(false);
   }
 
   
@@ -271,9 +272,7 @@ int main(int argc, char *argv[]) {
   rect_scrshot.setSize(sres_res);
   rect_scrshot.setPosition(0, 0);
 
-  //Create the menus
-  Overlays overlays(&font, &font_mono);
-  overlays.SetScale(float(screen_size.width) / 1280.0f);
+  
   
   menu_music.setVolume(GetVol());
   menu_music.play();
@@ -284,6 +283,20 @@ int main(int argc, char *argv[]) {
   float lag_ms = 0.0f;
   mouse_pos = sf::Vector2i(0, 0);
   mouse_prev_pos = sf::Vector2i(0, 0);
+
+  //temporary code
+  for (int i = 0; i < 24; i++)
+  {
+	  all_levels[i].desc = "Official Level by Codeparade";
+	  all_levels[i].SaveToFile(std::string(level_folder) + "/" + ConvertSpaces2_(all_levels[i].txt)+".lvl", i, (i<24)?(i+1):-1);
+  }
+
+  scene.levels.LoadLevelsFromFolder(level_folder);
+  scene.levels.LoadMusicFromFolder(music_folder);
+
+  //Create the menus
+  Overlays overlays(&font, &font_mono, &scene);
+  overlays.SetScale(float(screen_size.width) / 1280.0f);
 
   overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);
 
@@ -384,7 +397,7 @@ int main(int argc, char *argv[]) {
           screenshotTexture.setActive(true);
           screenshotTexture.draw(rect_scrshot, states);
           screenshotTexture.display();
-          screenshotTexture.getTexture().copyToImage().saveToFile((std::string)"screenshots/screenshot_"+(std::string)num2str(screenshot_i)+".jpg");
+          screenshotTexture.getTexture().copyToImage().saveToFile((std::string)"screenshots/screenshot"+(std::string)num2str(time(NULL))+".jpg");
 
           screenshotTexture.setActive(false);
           window.setActive(true);
@@ -468,6 +481,48 @@ int main(int argc, char *argv[]) {
 						}
 					}
 					else if (game_mode == LEVELS) {
+						int selected = overlays.level_menu.GetSelection();
+
+						if (selected == -1)
+						{
+							//nothing
+						}
+						else if (selected == -1)
+						{
+
+						}
+						else if (selected == -2)
+						{
+							//go back
+							game_mode = MAIN_MENU;
+							scene.SetExposure(1.0f);
+						}
+						else if (selected == -3)
+						{
+							//go to level editor
+							game_mode = LEVEL_EDITOR;
+							menu_music.stop();
+							scene.SetExposure(1.0f);
+							overlays.TWBAR_ENABLED = true;
+							TwDefine("LevelEditor visible=true position='100 100'");
+							TwDefine("FractalEditor visible=true position='100 500'");
+							TwDefine("Settings iconified=true");
+							TwDefine("Statistics iconified=true");
+							scene.StartDefault();
+
+						}
+						else if (selected >= 0)
+						{
+							//play level
+							game_mode = PLAYING;
+							menu_music.stop();
+							scene.SetExposure(1.0f);
+							scene.levels.GetLevelMusic(selected)->setVolume(GetVol());
+							scene.levels.GetLevelMusic(selected)->play();
+							scene.StartSingle(selected);
+							LockMouse(window);
+						}
+						/*
 						const Overlays::Texts selected = overlays.GetOption(Overlays::L0, Overlays::BACK2);
 						if (selected == Overlays::BACK2) {
 							game_mode = MAIN_MENU;
@@ -482,15 +537,9 @@ int main(int argc, char *argv[]) {
 						else if (selected >= Overlays::L0 && selected <= Overlays::L14) {
 							const int level = selected - Overlays::L0 + overlays.GetLevelPage() * Overlays::LEVELS_PER_PAGE;
 							if (high_scores.HasUnlocked(level)) {
-								game_mode = PLAYING;
-								menu_music.stop();
-								scene.SetExposure(1.0f);
-								scene.StartSingle(level);
-								scene.GetCurMusic().setVolume(GetVol());
-								scene.GetCurMusic().play();
-								LockMouse(window);
+								
 							}
-						}
+						}*/
 					}
 					else if (game_mode == SCREEN_SAVER) {
 						scene.SetMode(Scene::INTRO);
@@ -584,10 +633,11 @@ int main(int argc, char *argv[]) {
       overlays.UpdateControls((float)mouse_pos.x, (float)mouse_pos.y);
     } else if (game_mode == LEVELS) {
       scene.UpdateCamera();
+	  overlays.UpdateLevelMenu(mouse_pos.x, mouse_pos.y, mouse_wheel);
       overlays.UpdateLevels((float)mouse_pos.x, (float)mouse_pos.y);
     } else if (game_mode == SCREEN_SAVER) {
       scene.UpdateCamera();
-    } else if (game_mode == PLAYING || game_mode == CREDITS || game_mode == MIDPOINT) {
+    } else if (game_mode == PLAYING || game_mode == CREDITS || game_mode == MIDPOINT || game_mode == LEVEL_EDITOR) {
       //Collect keyboard input
       const float force_lr =
         (all_keys[sf::Keyboard::Left] || all_keys[sf::Keyboard::A] ? -1.0f : 0.0f) +
@@ -692,7 +742,7 @@ int main(int argc, char *argv[]) {
       overlays.DrawLevels(window);
     } else if (game_mode == PLAYING) {
       if (scene.GetMode() == Scene::ORBIT && scene.GetMarble().x() < 998.0f) {
-        overlays.DrawLevelDesc(window, scene.GetLevel());
+        overlays.DrawLevelDesc(window, scene.level_copy.txt);
       } else if (scene.GetMode() == Scene::MARBLE && !scene.IsFreeCamera()) {
         overlays.DrawArrow(window, scene.GetGoalDirection());
       }
@@ -718,7 +768,7 @@ int main(int argc, char *argv[]) {
     } else if (game_mode == MIDPOINT) {
       overlays.DrawMidPoint(window, scene.IsFullRun(), scene.GetSumTime());
     }
-    if (!scene.IsFreeCamera()) {
+    if (!scene.IsFreeCamera() || game_mode == LEVEL_EDITOR) {
       overlays.DrawFPS(window, int(smooth_fps + 0.5f));
     }
 

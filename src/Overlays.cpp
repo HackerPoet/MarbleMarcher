@@ -1,3 +1,5 @@
+#include "Overlays.h"
+#include "Overlays.h"
 /* This file is part of the Marble Marcher (https://github.com/HackerPoet/MarbleMarcher).
 * Copyright(C) 2018 CodeParade
 * 
@@ -23,7 +25,7 @@ static const float pi = 3.14159265359f;
 static const int num_level_pages = 1 + (num_levels - 1) / Overlays::LEVELS_PER_PAGE;
 Settings game_settings;
 
-Overlays::Overlays(const sf::Font* _font, const sf::Font* _font_mono) :
+Overlays::Overlays(sf::Font* _font, sf::Font* _font_mono, Scene* scene) :
   font(_font),
   font_mono(_font_mono),
   draw_scale(1.0f),
@@ -44,6 +46,24 @@ Overlays::Overlays(const sf::Font* _font, const sf::Font* _font_mono) :
   arrow_tex.setSmooth(true);
   arrow_spr.setTexture(arrow_tex);
   arrow_spr.setOrigin(arrow_spr.getLocalBounds().width / 2, arrow_spr.getLocalBounds().height / 2);
+
+
+  std::vector<std::string> names = scene->levels.getLevelNames();
+  std::vector<std::string> desc = scene->levels.getLevelDesc();
+  std::vector<int> ids = scene->levels.getLevelIds();
+
+
+  level_menu.SetPosition(40, 40);
+
+  level_menu.AddButton("Back To Main Menu");
+
+  for (int i = 0; i < scene->levels.GetLevelNum(); i++)
+  {
+	  level_menu.AddLevelButton(ids[i], names[i], desc[i], "TODO:best time");
+  }
+
+  level_menu.AddButton("Create New Level");
+  level_menu.AddFonts(_font, _font_mono);
 }
 
 Overlays::Texts Overlays::GetOption(Texts from, Texts to) {
@@ -95,7 +115,7 @@ void Overlays::UpdateLevels(float mouse_x, float mouse_y) {
     if (i < num_levels) {
       const float y = 80.0f + float(j / 3) * 120.0f;
       const float x = 240.0f + float(j % 3) * 400.0f;
-      const char* txt = high_scores.HasUnlocked(i) ? all_levels[i].txt : "???";
+      const char* txt = high_scores.HasUnlocked(i) ? all_levels[i].txt.c_str() : "???";
       MakeText(txt, x, y, 32, sf::Color::White, all_text[j + L0]);
       const sf::FloatRect text_bounds = all_text[j + L0].getLocalBounds();
       all_text[j + L0].setOrigin(text_bounds.width / 2, text_bounds.height / 2);
@@ -117,6 +137,11 @@ void Overlays::UpdateLevels(float mouse_x, float mouse_y) {
 
   //Check if mouse intersects anything
   UpdateHover(L0, BACK2, mouse_x, mouse_y);
+}
+
+void Overlays::UpdateLevelMenu(float mouse_x, float mouse_y, float scroll)
+{
+	level_menu.UpdateMenu(mouse_x, mouse_y, scroll);
 }
 
 void Overlays::UpdatePaused(float mouse_x, float mouse_y) {
@@ -201,9 +226,9 @@ void Overlays::DrawTimer(sf::RenderWindow& window, int t, bool is_high_score) {
   window.draw(text);
 }
 
-void Overlays::DrawLevelDesc(sf::RenderWindow& window, int level) {
+void Overlays::DrawLevelDesc(sf::RenderWindow& window, std::string desc) {
   sf::Text text;
-  MakeText(all_levels[level].txt, 640, 60, 48, sf::Color::White, text);
+  MakeText(desc.c_str(), 640, 60, 48, sf::Color::White, text);
   const sf::FloatRect text_bounds = text.getLocalBounds();
   text.setOrigin(text_bounds.width / 2, text_bounds.height / 2);
   window.draw(text);
@@ -281,7 +306,8 @@ void Overlays::DrawMidPoint(sf::RenderWindow& window, bool fullrun, int t) {
 
 void Overlays::DrawLevels(sf::RenderWindow& window) {
   //Draw the level names
-  for (int i = L0; i <= BACK2; ++i) {
+
+  /*for (int i = L0; i <= BACK2; ++i) {
     window.draw(all_text[i]);
   }
   //Draw the times
@@ -296,7 +322,9 @@ void Overlays::DrawLevels(sf::RenderWindow& window) {
       MakeTime(high_scores.Get(i), x, y, 48, sf::Color(64, 255, 64), text);
       window.draw(text);
     }
-  }
+  }*/
+
+  level_menu.RenderMenu(window);
 }
 
 void Overlays::DrawSumTime(sf::RenderWindow& window, int t) {
@@ -368,7 +396,35 @@ void Overlays::UpdateHover(Texts from, Texts to, float mouse_x, float mouse_y) {
 
 
 static bool UNLOCK = false;
+Scene *scene_ptr;
 
+void TW_CALL MarbleSet(void *data)
+{
+
+}
+
+void TW_CALL FlagSet(void *data)
+{
+
+}
+
+void TW_CALL SaveLevel(void *data)
+{
+	Level* copy = &scene_ptr->level_copy;
+	int lvlid = scene_ptr->GetLevel();
+	if (lvlid < 0)
+		lvlid = time(NULL);
+	copy->SaveToFile(std::string(level_folder) + "/" + ConvertSpaces2_(copy->txt) + ".lvl", lvlid, copy->link_level);
+	if (scene_ptr->GetLevel() >= 0)
+	{
+		scene_ptr->levels.ReloadLevel(scene_ptr->GetLevel());
+	}
+	else
+	{
+		scene_ptr->levels.LoadLevelFromFile(std::filesystem::path(std::string(level_folder) + "/" + ConvertSpaces2_(copy->txt) + ".lvl"));
+		scene_ptr->WriteLVL(lvlid);
+	}
+}
 
 void TW_CALL Callback(void *clientData)
 {
@@ -383,11 +439,19 @@ bool Overlays::GetUnlock()
 	UNLOCK = !UNLOCK;
 }
 
+void TW_CALL CopyStdStringToClient(std::string& destinationClientString, const std::string& sourceLibraryString)
+{
+	// Copy the content of souceString handled by the AntTweakBar library to destinationClientString handled by your application
+	destinationClientString = sourceLibraryString;
+}
+
+
 void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, bool *vsync, float *mouse_sensitivity, float *wheel_sensitivity, float *music_vol, float *target_fps)
 {
 	//TW interface
 	TwInit(TW_OPENGL, NULL);
 	TwWindowSize(Width, Height);
+	scene_ptr = scene;
 
 	stats = TwNewBar("Statistics" );
 	TwDefine(" GLOBAL help='Marble Marcher Community Edition. Work in progress.' ");
@@ -396,8 +460,8 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	int barPos[2] = { 16, 60 };
 	TwSetParam(stats, NULL, "position", TW_PARAM_INT32, 2, &barPos);
 	TwAddVarRO(stats, "FPS", TW_TYPE_FLOAT, &fps, " label='FPS' ");
-	TwAddVarRO(stats, "Marble velocity", TW_TYPE_DIR3F, scene->marble_vel.data(),  " label='Mable velocity' ");
-	TwAddVarRO(stats, "Marble position", TW_TYPE_DIR3F, scene->marble_pos.data(), " label='Mable position' ");
+	TwAddVarRO(stats, "Marble velocity", TW_TYPE_DIR3F, scene->marble_vel.data(),  " ");
+	TwAddVarRO(stats, "Marble position", TW_TYPE_DIR3F, scene->marble_pos.data(), " ");
 	
 	settings = TwNewBar("Settings");
 
@@ -423,19 +487,44 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	TwAddButton(settings, "UnlockEverything", Callback, NULL,
 		" label='--> Unlock Everything, kek'  help='Set all levels to completed.' ");
 
-	float *p = scene->level_copy.params.data();
-	TwAddVarRW(settings, "Fractal_Iterations", TW_TYPE_INT32, &scene->Fractal_Iterations, "min=1 max=20 step=1 group='Fractal parameters'");
-	TwAddVarRW(settings, "FractalScale", TW_TYPE_FLOAT, p, "min=0 max=5 step=0.0001  group='Fractal parameters'");
-	TwAddVarRW(settings, "FractalAngle1", TW_TYPE_FLOAT, p+1, "min=-10 max=10 step=0.0001  group='Fractal parameters'");
-	TwAddVarRW(settings, "FractalAngle2", TW_TYPE_FLOAT, p+2, "min=-10 max=10 step=0.0001  group='Fractal parameters'");
-	TwAddVarRW(settings, "FractalShift", TW_TYPE_DIR3F, p+3, "step=0.0001 group='Fractal parameters'");
-	TwAddVarRW(settings, "FractalColor", TW_TYPE_DIR3F, p+6, "step=0.005 group='Fractal parameters'");
-
 	int barPos1[2] = { 16, 250 };
 
 	TwSetParam(settings, NULL, "position", TW_PARAM_INT32, 2, &barPos1);
 
+	TwCopyStdStringToClientFunc(CopyStdStringToClient);
+
+	level_editor = TwNewBar("LevelEditor");
+	Level *copy = &scene->level_copy;
+
+	TwAddVarRW(level_editor, "Level Name", TW_TYPE_STDSTRING, &copy->txt, "");
+	TwAddVarRW(level_editor, "Level Description", TW_TYPE_STDSTRING, &copy->desc, "");
+
+	TwAddButton(level_editor, "Save", SaveLevel, NULL,
+		" label='Save Level'  ");
+
+	TwAddButton(level_editor, "Set Marble", MarbleSet, NULL,
+		" label='Set Marble Position'  help='Click on the fractal to place' ");
+
+	TwAddButton(level_editor, "Set Flag", FlagSet, NULL,
+		" label='Set Flag Position'  help='Click on the fractal to place' ");
+
+
+
+	fractal_editor = TwNewBar("FractalEditor");
+
+
+	float *p = copy->params.data();
+	TwAddVarRW(fractal_editor, "Fractal Iterations", TW_TYPE_INT32, &scene->Fractal_Iterations, "min=1 max=20 step=1 group='Fractal parameters'");
+	TwAddVarRW(fractal_editor, "Fractal Scale", TW_TYPE_FLOAT, p, "min=0 max=5 step=0.0001");
+	TwAddVarRW(fractal_editor, "Fractal Angle1", TW_TYPE_FLOAT, p + 1, "min=-10 max=10 step=0.0001 ");
+	TwAddVarRW(fractal_editor, "Fractal Angle2", TW_TYPE_FLOAT, p + 2, "min=-10 max=10 step=0.0001  ");
+	TwAddVarRW(fractal_editor, "Fractal Shift", TW_TYPE_DIR3F, p + 3, "step=0.0001");
+	TwAddVarRW(fractal_editor, "Fractal Color", TW_TYPE_DIR3F, p + 6, "step=0.005");
+
+
 	TwDefine(" GLOBAL fontsize=3 ");
+	TwDefine("LevelEditor visible=false size='420 250' color='0 80 230' alpha=210 label='Level editor' valueswidth=200");
+	TwDefine("FractalEditor visible=false size='420 250' color='0 120 200' alpha=210 label='Fractal editor' valueswidth=200");
 	TwDefine("Settings color='255 128 0' alpha=210 size='420 350' valueswidth=200");
 	TwDefine("Statistics color='0 128 255' alpha=210 size='420 160' valueswidth=200");
 }
@@ -507,7 +596,16 @@ bool Overlays::TwManageEvent(sf::Event &event)
 
 		if (keypress)
 		{
-			handl = handl || TwKeyPressed(TW_KEY_F1 + keycode - sf::Keyboard::F1, TW_KMOD_NONE);
+			if (keycode >= sf::Keyboard::F1 && keycode <= sf::Keyboard::F12)
+			{
+				handl = handl || TwKeyPressed(TW_KEY_F1 + keycode - sf::Keyboard::F1, TW_KMOD_NONE);
+			}
+		}
+
+		if (event.type == sf::Event::TextEntered)
+		{
+			if (event.text.unicode < 128)
+				handl = handl || TwKeyPressed(static_cast<char>(event.text.unicode), TW_KMOD_NONE);
 		}
 
 		return handl;
@@ -522,4 +620,183 @@ bool Overlays::TwManageEvent(sf::Event &event)
 void Overlays::SetTWBARResolution(int Width, int Height)
 {
 	TwWindowSize(Width, Height);
+}
+
+Menu::Menu()
+{
+	buff_hover.loadFromFile(menu_hover_wav);
+	sound_hover.setBuffer(buff_hover);
+	buff_click.loadFromFile(menu_click_wav);
+	sound_click.setBuffer(buff_click);
+	buff_count.loadFromFile(count_down_wav);
+	sound_count.setBuffer(buff_count);
+	buff_go.loadFromFile(count_go_wav);
+	sound_go.setBuffer(buff_go);
+	active = -1;
+	scroll_value = 0;
+	scroll_velocity = 0;
+	button_id = 1;
+
+	edit_tex.loadFromFile(edit_png);
+	edit_tex.setSmooth(true);
+	edit_spr.setTexture(edit_tex);
+	edit_spr.setOrigin(edit_spr.getLocalBounds().width / 2, edit_spr.getLocalBounds().height / 2);
+}
+
+void Menu::AddFonts(sf::Font* a, sf::Font* b)
+{
+	font = a;
+	font_mono = b;
+}
+
+void Menu::SetPosition(int posx, int posy)
+{
+	menu_x = posx;
+	menu_y = posy;
+}
+
+void Menu::SetScale(float scale)
+{
+	draw_scale = scale;
+	text.setLetterSpacing(0.8f);
+	text.setOutlineThickness(3.0f * draw_scale);
+	text.setOutlineColor(sf::Color::Black);
+	edit_spr.setScale(draw_scale*0.25f, draw_scale*0.25f);
+}
+
+void Menu::AddButton(std::string text)
+{
+	texts.push_back(text);
+	types.push_back(Button);
+	description.push_back("");
+	bsttime.push_back("");
+	button_id++;
+	lvl_id.push_back(-button_id);
+}
+
+void Menu::AddLevelButton(int LVL_ID, std::string name, std::string desc, std::string best_time)
+{
+	lvl_id.push_back(LVL_ID);
+	texts.push_back(name);
+	types.push_back(LevelButton);
+	description.push_back(desc);
+	bsttime.push_back(best_time);
+}
+
+void Menu::UpdateMenu(int mouse_x, int mouse_y, int scroll)
+{
+	menu_size = texts.size() * Element_Height * draw_scale;
+	//scroll only if the menu is bigger than the screen
+	if (menu_size > w_size_y)
+	{
+		if (scroll != 0)
+			scroll_velocity += 6*scroll;
+		scroll_velocity *= 0.85;
+		scroll_value += scroll_velocity;
+		if (scroll_value > 0)
+		{
+			scroll_value = 0;
+			scroll_velocity = 0;
+		}
+		if (scroll_value < w_size_y/draw_scale - menu_y - texts.size()  * (Element_Height+Descr_Height))
+		{
+			scroll_value = w_size_y / draw_scale - menu_y - (texts.size()) * (Element_Height + Descr_Height);
+			scroll_velocity = 0;
+		}
+	}
+	last_active = active;
+	active = -1;
+	for (int i = 0; i < texts.size(); i++)
+	{
+		const sf::FloatRect bounds(menu_x*draw_scale, GetElementYPosition(i)*draw_scale, w_size_x*0.8f*draw_scale, Element_Height*draw_scale);
+		if (bounds.contains(mouse_x, mouse_y))
+		{
+			active = i;
+			if (active != last_active)
+			{
+				sound_hover.play();
+			}
+		}
+	}
+}
+
+int Menu::WhichActive()
+{
+	return active;
+}
+
+int Menu::WhatLevelActive()
+{
+	if (active >= 0)
+	{
+		return lvl_id[active];
+	}
+	else
+	{
+		return -2;
+	}
+}
+
+int Menu::GetSelection()
+{
+	if (active >= 0)
+	{
+		return lvl_id[active];
+	}
+	else
+	{
+		return -1;
+	}
+	
+}
+
+void Menu::SetText(std::string str, float x, float y, float size, const sf::Color& color, bool mono) 
+{
+	text.setString(str);
+	text.setFont(mono ? *font_mono : *font);
+	text.setCharacterSize(int(size * draw_scale));
+	text.setPosition((x - 2.0f) * draw_scale, (y - 2.0f) * draw_scale);
+	text.setFillColor(color);
+}
+
+void Menu::RenderMenu(sf::RenderWindow & window)
+{
+	w_size_x = window.getSize().x;
+	w_size_y = window.getSize().y;
+	
+	for (int i = 0; i < texts.size(); i++)
+	{
+		if ((GetElementYPosition(i))*draw_scale < w_size_y && (GetElementYPosition(i)+Element_Height+ Descr_Height)*draw_scale > 0)
+		{
+			bool is_active = active == i;
+
+			SetText(texts[i], menu_x, GetElementYPosition(i), 30, is_active ? sf::Color::Red : sf::Color::White, true);
+			window.draw(text);
+
+			float xcor = (w_size_x/ draw_scale - 15 - 2.0f) * draw_scale;
+			float ycor = (GetElementYPosition(i) - 2.0f) * draw_scale;
+			switch (types[i])
+			{
+			case Button:
+				break;
+			case LevelButton:
+				SetText(description[i], menu_x, GetElementYPosition(i)+Element_Height*0.6, 25, is_active ? sf::Color(160,220,160) : sf::Color(160, 160, 160), true);
+				window.draw(text);
+
+				SetText(bsttime[i], w_size_x*0.5, GetElementYPosition(i), 30, is_active ? sf::Color(0, 255, 0) : sf::Color(0, 255, 128), false);
+				window.draw(text);
+				
+				edit_spr.setPosition(xcor,ycor);
+				window.draw(edit_spr);
+				break;
+			default:
+				break;
+			}
+		}
+	}
+}
+
+int Menu::GetElementYPosition(int i)
+{
+	return scroll_value + menu_y + i*(Element_Height+ Descr_Height);
 }

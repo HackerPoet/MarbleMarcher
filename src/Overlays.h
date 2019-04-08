@@ -19,11 +19,86 @@
 #include "Level.h"
 #include "Scene.h"
 #include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
+
 #include <AntTweakBar.h>
 
 
 extern Settings game_settings;
+
+const int Element_Height = 50;
+const int Descr_Height = 25;
+
+//Generalized menu overlay 
+class Menu
+{
+public:
+	enum ElementType
+	{
+		Button,
+		LevelButton
+	};
+
+	Menu();
+
+	void AddFonts(sf::Font * a, sf::Font * b);
+
+	void SetPosition(int posx, int posy);
+	void SetScale(float scale);
+	void AddButton(std::string text);
+	void AddLevelButton(int LVL_ID, std::string name, std::string desc, std::string best_time);
+
+	void UpdateMenu(int px, int py, int scroll);
+
+	int WhichActive();
+	int WhatLevelActive();
+	int GetSelection();
+
+	void SetText(std::string str, float x, float y, float size, const sf::Color & color, bool mono);
+
+	void RenderMenu(sf::RenderWindow& window);
+
+private:
+
+	int GetElementYPosition(int i);
+
+	float draw_scale;
+
+	//scroll parameters
+	float scroll_value, scroll_velocity;
+
+	//window size
+	int w_size_x, w_size_y;
+
+	//menu position
+	int menu_x, menu_y;
+
+	//y size of the menu
+	int menu_size;
+	int button_id;
+	int active;
+	int last_active;
+	std::vector<int> lvl_id;
+	std::vector<ElementType> types;
+	std::vector<std::string> texts;
+	std::vector<std::string> description;
+	std::vector<std::string> bsttime;
+
+	sf::Text text;
+	sf::Font* font;
+	sf::Font* font_mono;
+
+	sf::Sound sound_hover;
+	sf::SoundBuffer buff_hover;
+	sf::Sound sound_click;
+	sf::SoundBuffer buff_click;
+	sf::Sound sound_count;
+	sf::SoundBuffer buff_count;
+	sf::Sound sound_go;
+	sf::SoundBuffer buff_go;
+
+	sf::Texture edit_tex;
+	sf::Sprite edit_spr;
+};
 
 class Overlays {
 public:
@@ -54,12 +129,13 @@ public:
   };
   static const int LEVELS_PER_PAGE = 15;
   bool TWBAR_ENABLED;
-  TwBar *stats, *settings;
-  
-  Overlays(const sf::Font* _font, const sf::Font* _font_mono);
+  TwBar *stats, *settings, *fractal_editor, *level_editor;
+  Menu level_menu;
+
+  Overlays(sf::Font* _font, sf::Font* _font_mono, Scene* scene);
 
   //Relative to 1280x720
-  void SetScale(float scale) { draw_scale = scale; }
+  void SetScale(float scale) { draw_scale = scale;  level_menu.SetScale(scale); }
   bool GetUnlock();
   void SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, bool *vsync, float *mouse_sensitivity, float *wheel_sensitivity, float *music_vol, float *target_fps);
   void SetTWBARResolution(int Width, int Height);
@@ -70,12 +146,13 @@ public:
   void UpdateMenu(float mouse_x, float mouse_y);
   void UpdateControls(float mouse_x, float mouse_y);
   void UpdateLevels(float mouse_x, float mouse_y);
+  void UpdateLevelMenu(float mouse_x, float mouse_y, float scroll);
   void UpdatePaused(float mouse_x, float mouse_y);
 
   void DrawMenu(sf::RenderWindow& window);
   void DrawControls(sf::RenderWindow& window);
   void DrawTimer(sf::RenderWindow& window, int t, bool is_high_score);
-  void DrawLevelDesc(sf::RenderWindow& window, int level);
+  void DrawLevelDesc(sf::RenderWindow& window, std::string desc);
   void DrawFPS(sf::RenderWindow& window, int fps);
   void DrawPaused(sf::RenderWindow& window);
   void DrawArrow(sf::RenderWindow& window, const sf::Vector3f& v3);

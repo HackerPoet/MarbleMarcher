@@ -117,8 +117,8 @@ void Scene::SetFlag(float x, float y, float z) {
 }
 
 void Scene::SetLevel(int level) {
-  cur_level = level;
-  level_copy = all_levels[level];
+  cur_level = level;    
+  level_copy = levels.GetLevel(level);
 }
 
 void Scene::SetMode(CamMode mode) {
@@ -215,6 +215,19 @@ void Scene::StartSingle(int level) {
   SetLevel(level);
   HideObjects();
   SetMode(ORBIT);
+}
+
+void Scene::StartDefault()
+{
+	play_single = true;
+	is_fullrun = false;
+	ResetCheats();
+	cur_level = -1;
+	level_copy = default_level;
+	HideObjects();
+	SetMode(ORBIT);
+	enable_cheats = true;
+	free_camera = true;
 }
 
 void Scene::ResetLevel() {
