@@ -32,6 +32,15 @@ public:
     FINAL,
     MIDPOINT
   };
+
+  enum EditorMode
+  {
+	  DEFAULT,
+	  PLACE_MARBLE,
+	  PLACE_FLAG
+  };
+
+  EditorMode cur_ed_mode;
   FractalParams   frac_params;
   FractalParams   frac_params_smooth;
 
@@ -62,6 +71,8 @@ public:
   void SetFlag(float x, float y, float z);
   void SetMode(CamMode mode);
   void SetExposure(float e) { exposure = e; }
+  void SetResolution(sf::Shader& shader, int x, int y);
+  void SetWindowResolution(int x, int y);
   void EnbaleCheats() { enable_cheats = true; }
   Eigen::Vector3f GetVelocity();
 
@@ -88,7 +99,7 @@ public:
   void StartNewGame();
   void StartNextLevel();
   void StartSingle(int level);
-  void StartDefault();
+  void StartLevelEditor();
   void ResetLevel();
   void ResetCheats();
   void Synchronize();
@@ -119,6 +130,9 @@ public:
   void Cheat_Zoom();
   void Cheat_Param(int param);
 
+  Eigen::Vector3f MouseRayCast(int mousex, int mousey);
+  Eigen::Vector3f RayMarch(const Eigen::Vector3f& pt, const Eigen::Vector3f& ray);
+
 protected:
   void SetLevel(int level);
 
@@ -135,6 +149,7 @@ private:
   bool            is_fullrun;
   bool            intro_needs_snap;
   bool            play_single;
+  bool			  level_editor;
 
   Eigen::Matrix4f cam_mat;
   float           cam_look_x;
@@ -151,7 +166,8 @@ private:
   Eigen::Vector3f flag_pos;
 
 
-
+  int			  ResX, ResY;
+  int			  WinX, WinY;
   int             timer;
   int             final_time;
   int             sum_time;

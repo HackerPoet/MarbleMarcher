@@ -65,6 +65,8 @@ enum GameMode {
   MIDPOINT
 };
 
+
+
 //Global variables
 static sf::Vector2i mouse_pos, mouse_prev_pos;
 static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
@@ -260,9 +262,9 @@ int main(int argc, char *argv[]) {
   Scene scene(level_music);
   const sf::Glsl::Vec2 window_res((float)resolution->width, (float)resolution->height);
   const sf::Glsl::Vec2 sres_res((float)screenshot_size.x, (float)screenshot_size.y);
-  shader.setUniform("iResolution", window_res);
   scene.Write(shader);
-
+  scene.SetResolution(shader, window_res.x, window_res.y);
+  scene.SetWindowResolution(window.getSize().x, window.getSize().y);
   //Create screen rectangle
   sf::RectangleShape rect;
   rect.setSize(window_res);
@@ -325,6 +327,7 @@ int main(int argc, char *argv[]) {
 			overlays.SetScale( std::max(float(screen_size.width), float(screen_size.height))/ 1280.0f);
 			sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
 			window.setView(sf::View(visibleArea));
+			scene.SetWindowResolution(window.getSize().x, window.getSize().y);
 		}
 
 		// If event has not been handled by AntTweakBar, process it
@@ -385,7 +388,7 @@ int main(int argc, char *argv[]) {
           ///Screenshot
           screenshot_i++;
           //Update the shader values
-          shader.setUniform("iResolution", sres_res);
+		  scene.SetResolution(shader, sres_res.x, sres_res.y);
           scene.Write(shader);
 
           //Setup full-screen shader
@@ -402,7 +405,7 @@ int main(int argc, char *argv[]) {
           screenshotTexture.setActive(false);
           window.setActive(true);
 
-          shader.setUniform("iResolution", window_res);
+		  scene.SetResolution(shader, window_res.x, window_res.y);
           scene.Write(shader);
         } else if (keycode == sf::Keyboard::F4) {
 					overlays.TWBAR_ENABLED = !overlays.TWBAR_ENABLED;
@@ -508,7 +511,7 @@ int main(int argc, char *argv[]) {
 							TwDefine("FractalEditor visible=true position='100 500'");
 							TwDefine("Settings iconified=true");
 							TwDefine("Statistics iconified=true");
-							scene.StartDefault();
+							scene.StartLevelEditor();
 
 						}
 						else if (selected >= 0)
@@ -581,6 +584,21 @@ int main(int argc, char *argv[]) {
 						}
 						else if (selected == Overlays::MOUSE) {
 							game_settings.mouse_sensitivity = (game_settings.mouse_sensitivity + 1) % 3;
+						}
+					}
+					if (game_mode == LEVEL_EDITOR)
+					{
+						if (scene.cur_ed_mode == Scene::EditorMode::PLACE_MARBLE)
+						{
+							Eigen::Vector3f marble_pos = scene.MouseRayCast(mouse_pos.x, mouse_pos.y);
+							scene.level_copy.start_pos = marble_pos;
+							scene.cur_ed_mode = Scene::EditorMode::DEFAULT;
+						}
+						else if(scene.cur_ed_mode == Scene::EditorMode::PLACE_FLAG)
+						{
+							Eigen::Vector3f flag_pos = scene.MouseRayCast(mouse_pos.x, mouse_pos.y);
+							scene.level_copy.end_pos = flag_pos;
+							scene.cur_ed_mode = Scene::EditorMode::DEFAULT;
 						}
 					}
 				}

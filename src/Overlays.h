@@ -129,7 +129,7 @@ public:
   };
   static const int LEVELS_PER_PAGE = 15;
   bool TWBAR_ENABLED;
-  TwBar *stats, *settings, *fractal_editor, *level_editor;
+  TwBar *stats, *settings, *fractal_editor, *level_editor, *confirmation_box;
   Menu level_menu;
 
   Overlays(sf::Font* _font, sf::Font* _font_mono, Scene* scene);

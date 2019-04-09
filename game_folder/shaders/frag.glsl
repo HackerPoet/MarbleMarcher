@@ -469,7 +469,7 @@ void main() {
 
 			//Convert screen coordinate to 3d ray
 			vec4 ray = iMat * normalize(vec4(uv.x, uv.y, -FOCAL_DIST, 0.0));
-			vec4 p = iMat * normalize(vec4(CAMERA_SIZE*uv.x, CAMERA_SIZE*uv.y, 0, 1));
+			vec4 p = iMat * vec4(CAMERA_SIZE*uv.x, CAMERA_SIZE*uv.y, 0, 1);
 
 			//Reflect light if needed
 			float vignette = 1.0 - VIGNETTE_STRENGTH * length(screen_pos - 0.5);

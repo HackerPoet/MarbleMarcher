@@ -80,7 +80,9 @@ Scene::Scene(sf::Music* level_music) :
     LIGHT_DIRECTION(Eigen::Vector3f(-0.36, 0.8, 0.48)),
 	PBR_METALLIC(0.5),
 	PBR_ROUGHNESS(0.4),
-	camera_size(0.035)
+	camera_size(0.035),
+	cur_ed_mode(DEFAULT),
+	level_editor(false)
 {
   ResetCheats();
   frac_params.setOnes();
@@ -136,6 +138,20 @@ void Scene::SetMode(CamMode mode) {
     intro_needs_snap = true;
   }
   cam_mode = mode;
+}
+
+void Scene::SetResolution(sf::Shader& shader, int x, int y)
+{
+	ResX = x;
+	ResY = y;
+	const sf::Glsl::Vec2 window_res((float)ResX, (float)ResY);
+	shader.setUniform("iResolution", window_res);
+}
+
+void Scene::SetWindowResolution(int x, int y)
+{
+	WinX = x;
+	WinY = y;
 }
 
 int Scene::GetCountdownTime() const {
@@ -223,14 +239,14 @@ void Scene::StartSingle(int level) {
   SetMode(ORBIT);
 }
 
-void Scene::StartDefault()
+void Scene::StartLevelEditor()
 {
 	play_single = true;
 	is_fullrun = false;
 	ResetCheats();
 	cur_level = -1;
 	level_copy = default_level;
-	HideObjects();
+	level_editor = true;
 	SetMode(ORBIT);
 	enable_cheats = true;
 	free_camera = true;
@@ -671,17 +687,27 @@ void Scene::HideObjects() {
 void Scene::Write(sf::Shader& shader) const {
   shader.setUniform("iMat", sf::Glsl::Mat4(cam_mat.data()));
 
-  shader.setUniform("iMarblePos", free_camera ?
-    sf::Glsl::Vec3(999.0f, 999.0f, 999.0f) :
-    sf::Glsl::Vec3(marble_pos.x(), marble_pos.y(), marble_pos.z())
-  );
+  if (level_editor)
+  {
+	  shader.setUniform("iMarblePos", sf::Glsl::Vec3(level_copy.start_pos.x(), level_copy.start_pos.y(), level_copy.start_pos.z()));
+	  shader.setUniform("iFlagPos",  sf::Glsl::Vec3(level_copy.end_pos.x(), level_copy.end_pos.y(), level_copy.end_pos.z()));
+  }
+  else
+  {
+	  shader.setUniform("iMarblePos", free_camera ?
+		  sf::Glsl::Vec3(999.0f, 999.0f, 999.0f) :
+		  sf::Glsl::Vec3(marble_pos.x(), marble_pos.y(), marble_pos.z())
+	  );
+	  shader.setUniform("iFlagPos", free_camera ?
+		  sf::Glsl::Vec3(-999.0f, -999.0f, -999.0f) :
+		  sf::Glsl::Vec3(flag_pos.x(), flag_pos.y(), flag_pos.z())
+	  );
+  }
+ 
   shader.setUniform("iMarbleRad", marble_rad);
 
   shader.setUniform("iFlagScale", level_copy.planet ? -marble_rad : marble_rad);
-  shader.setUniform("iFlagPos", free_camera ?
-    sf::Glsl::Vec3(-999.0f, -999.0f, -999.0f) :
-    sf::Glsl::Vec3(flag_pos.x(), flag_pos.y(), flag_pos.z())
-  );
+  
 
   shader.setUniform("iFracScale", frac_params_smooth[0]);
   shader.setUniform("iFracAng1", frac_params_smooth[1]);
@@ -702,6 +728,7 @@ void Scene::Write(sf::Shader& shader) const {
   shader.setUniform("REFL_REFR_ENABLED", Refl_Refr_Enabled);
   shader.setUniform("MARBLE_MODE", MarbleType);
 }
+
 
 //Hard-coded to match the fractal
 float Scene::DE(const Eigen::Vector3f& pt) const {
@@ -896,4 +923,41 @@ void Scene::Cheat_Zoom() {
 void Scene::Cheat_Param(int param) {
   if (!enable_cheats) { return; }
   param_mod = param;
+}
+
+#define MAX_DIST 20.f
+#define MAX_MARCHES 1000
+#define MIN_DIST 1e-4f
+#define FOCAL_DIST 1.73205080757
+
+Eigen::Vector3f Scene::MouseRayCast(int mousex, int mousey)
+{
+	Eigen::Vector2f screen_pos = Eigen::Vector2f((float)mousex / (float)WinX,1.f - (float)mousey/ (float)WinY);
+
+	Eigen::Vector2f uv = 2 * screen_pos - Eigen::Vector2f(1.f, 1.f);
+	uv.x() *= (float)ResX / (float)ResY;
+
+	//Convert screen coordinate to 3d ray
+	Eigen::Vector4f v1 = Eigen::Vector4f(uv.x(), uv.y(), -FOCAL_DIST, 0.0);
+	v1.normalize();
+	Eigen::Vector4f v2 = Eigen::Vector4f(camera_size*uv.x(), camera_size*uv.y(), 0, 1);
+	Eigen::Vector4f ray = cam_mat * v1;
+	Eigen::Vector4f p = cam_mat * v2;
+
+	return RayMarch(Eigen::Vector3f(p[0], p[1], p[2]), Eigen::Vector3f(ray[0], ray[1], ray[2]));
+}
+
+Eigen::Vector3f Scene::RayMarch(const Eigen::Vector3f & pt, const Eigen::Vector3f & ray)
+{
+	float td = 0;
+	for (int i = 0; i < MAX_MARCHES && td < MAX_DIST; i++)
+	{
+		float de = DE(pt + td * ray);
+		td += de;
+		if (de < MIN_DIST)
+		{
+			break;
+		}
+	}
+	return pt + td * ray;
 }

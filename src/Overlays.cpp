@@ -398,14 +398,27 @@ void Overlays::UpdateHover(Texts from, Texts to, float mouse_x, float mouse_y) {
 static bool UNLOCK = false;
 Scene *scene_ptr;
 
+extern bool confirmed = false;
+extern bool canceled = false;
+
+void TW_CALL Confirm(void *data)
+{
+	confirmed = true;
+}
+
+void TW_CALL Cancel(void *data)
+{
+	canceled = true;
+}
+
 void TW_CALL MarbleSet(void *data)
 {
-
+	scene_ptr->cur_ed_mode = Scene::EditorMode::PLACE_MARBLE;
 }
 
 void TW_CALL FlagSet(void *data)
 {
-
+	scene_ptr->cur_ed_mode = Scene::EditorMode::PLACE_FLAG;
 }
 
 void TW_CALL SaveLevel(void *data)
@@ -508,7 +521,8 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	TwAddButton(level_editor, "Set Flag", FlagSet, NULL,
 		" label='Set Flag Position'  help='Click on the fractal to place' ");
 
-
+	TwAddVarRW(level_editor, "Flag Position", TW_TYPE_DIR3F, copy->end_pos.data(), "step=0.0001");
+	TwAddVarRW(level_editor, "Marble Position", TW_TYPE_DIR3F, copy->start_pos.data(), "step=0.0001");
 
 	fractal_editor = TwNewBar("FractalEditor");
 
@@ -521,6 +535,16 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	TwAddVarRW(fractal_editor, "Fractal Shift", TW_TYPE_DIR3F, p + 3, "step=0.0001");
 	TwAddVarRW(fractal_editor, "Fractal Color", TW_TYPE_DIR3F, p + 6, "step=0.005");
 
+	//TwAddButton(stats, "Info1.1", NULL, NULL, string);
+	
+	confirmation_box = TwNewBar("confirm");
+
+	TwAddVarRW(confirmation_box, "OK", TW_TYPE_BOOLCPP, &copy->txt, "");
+	TwAddVarRW(confirmation_box, "Cancel", TW_TYPE_BOOLCPP, &copy->desc, "");
+
+	TwDefine(" GLOBAL fontscaling=2 ");
+
+	TwDefine("confirm visible=false size='300 100' color='255 50 0' alpha=255 label='Are you sure?'");
 
 	TwDefine(" GLOBAL fontsize=3 ");
 	TwDefine("LevelEditor visible=false size='420 250' color='0 80 230' alpha=210 label='Level editor' valueswidth=200");
