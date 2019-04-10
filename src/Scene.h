@@ -105,7 +105,7 @@ public:
   void StartNewGame();
   void StartNextLevel();
   void StartSingle(int level);
-  void StartLevelEditor();
+  void StartLevelEditor(int level);
   void ResetLevel();
   void ResetCheats();
   void Synchronize();
@@ -135,6 +135,8 @@ public:
   void Cheat_Planet();
   void Cheat_Zoom();
   void Cheat_Param(int param);
+
+  void ExitEditor();
 
   Eigen::Vector3f MouseRayCast(int mousex, int mousey, float min_dist = MIN_DIST);
   Eigen::Vector3f RayMarch(const Eigen::Vector3f& pt, const Eigen::Vector3f& ray, float min_dist = MIN_DIST);

@@ -1,5 +1,6 @@
 #include "Overlays.h"
 #include "Overlays.h"
+#include "Overlays.h"
 /* This file is part of the Marble Marcher (https://github.com/HackerPoet/MarbleMarcher).
 * Copyright(C) 2018 CodeParade
 * 
@@ -47,23 +48,28 @@ Overlays::Overlays(sf::Font* _font, sf::Font* _font_mono, Scene* scene) :
   arrow_spr.setTexture(arrow_tex);
   arrow_spr.setOrigin(arrow_spr.getLocalBounds().width / 2, arrow_spr.getLocalBounds().height / 2);
 
-
-  std::vector<std::string> names = scene->levels.getLevelNames();
-  std::vector<std::string> desc = scene->levels.getLevelDesc();
-  std::vector<int> ids = scene->levels.getLevelIds();
-
-
-  level_menu.SetPosition(40, 40);
-
-  level_menu.AddButton("Back To Main Menu");
-
-  for (int i = 0; i < scene->levels.GetLevelNum(); i++)
-  {
-	  level_menu.AddLevelButton(ids[i], names[i], desc[i], "TODO:best time");
-  }
-
-  level_menu.AddButton("Create New Level");
+  ReloadLevelMenu(scene);
+ 
   level_menu.AddFonts(_font, _font_mono);
+}
+
+void Overlays::ReloadLevelMenu(Scene* scene)
+{
+	std::vector<std::string> names = scene->levels.getLevelNames();
+	std::vector<std::string> desc = scene->levels.getLevelDesc();
+	std::vector<int> ids = scene->levels.getLevelIds();
+
+	level_menu.ClearAll();
+	level_menu.SetPosition(40, 40);
+
+	level_menu.AddButton("Back To Main Menu");
+
+	for (int i = 0; i < scene->levels.GetLevelNum(); i++)
+	{
+		level_menu.AddLevelButton(ids[i], names[i], desc[i], "--:--");
+	}
+
+	level_menu.AddButton("Create New Level");
 }
 
 Overlays::Texts Overlays::GetOption(Texts from, Texts to) {
@@ -84,7 +90,7 @@ void Overlays::UpdateMenu(float mouse_x, float mouse_y) {
   MakeText("Controls", 80, 370, 60, sf::Color::White, all_text[CONTROLS]);
   MakeText("Screen Saver", 80, 440, 60, sf::Color::White, all_text[SCREEN_SAVER]);
   MakeText("Exit", 80, 510, 60, sf::Color::White, all_text[EXIT]);
-  MakeText("\xA9""2019 CodeParade 1.1.2, Community Edition with AntTweakBar\nMusic by PettyTheft", 16, 652, 32, sf::Color::White, all_text[CREDITS], true);
+  MakeText("\xA9""2019 CodeParade 1.3.0 beta, Community Edition \nMusic by PettyTheft", 16, 652, 32, sf::Color::White, all_text[CREDITS], true);
   all_text[TITLE].setLineSpacing(0.76f);
   all_text[CREDITS].setLineSpacing(0.9f);
 
@@ -395,11 +401,12 @@ void Overlays::UpdateHover(Texts from, Texts to, float mouse_x, float mouse_y) {
 }
 
 
-static bool UNLOCK = false;
 Scene *scene_ptr;
 
 extern bool confirmed = false;
 extern bool canceled = false;
+int music_id = 0;
+bool music_play = false;
 
 void TW_CALL Confirm(void *data)
 {
@@ -421,10 +428,22 @@ void TW_CALL FlagSet(void *data)
 	scene_ptr->cur_ed_mode = Scene::EditorMode::PLACE_FLAG;
 }
 
+void TW_CALL PlayMusic(void *data)
+{
+	scene_ptr->levels.StopAllMusic();
+	if (music_play)
+	{
+		scene_ptr->levels.GetMusicByID(music_id)->play();
+	}
+}
+
 void TW_CALL SaveLevel(void *data)
 {
 	Level* copy = &scene_ptr->level_copy;
 	int lvlid = scene_ptr->GetLevel();
+
+	std::vector<std::string> music_list = scene_ptr->levels.GetMusicNames();
+	copy->use_music = music_list[music_id];
 	if (lvlid < 0)
 		lvlid = time(NULL);
 	copy->SaveToFile(std::string(level_folder) + "/" + ConvertSpaces2_(copy->txt) + ".lvl", lvlid, copy->link_level);
@@ -439,18 +458,6 @@ void TW_CALL SaveLevel(void *data)
 	}
 }
 
-void TW_CALL Callback(void *clientData)
-{
-	//bool **UNLOCK = (bool**)(clientData);
-
-	UNLOCK = true;
-}
-
-bool Overlays::GetUnlock()
-{
-	return UNLOCK;
-	UNLOCK = !UNLOCK;
-}
 
 void TW_CALL CopyStdStringToClient(std::string& destinationClientString, const std::string& sourceLibraryString)
 {
@@ -497,8 +504,6 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	TwAddVarRW(settings, "Target FPS", TW_TYPE_FLOAT, target_fps, "min=24 max=144 step=1 group='Gameplay settings'");
 	TwAddVarRW(settings, "Camera size", TW_TYPE_FLOAT, &scene->camera_size, "min=0 max=10 step=0.001 group='Gameplay settings'");
 	TwAddVarRW(settings, "Camera speed(Free mode)", TW_TYPE_FLOAT, &scene->free_camera_speed, "min=0 max=10 step=0.001 group='Gameplay settings'");
-	TwAddButton(settings, "UnlockEverything", Callback, NULL,
-		" label='--> Unlock Everything, kek'  help='Set all levels to completed.' ");
 
 	int barPos1[2] = { 16, 250 };
 
@@ -523,12 +528,32 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 
 	TwAddVarRW(level_editor, "Flag Position", TW_TYPE_DIR3F, copy->end_pos.data(), "step=0.0001");
 	TwAddVarRW(level_editor, "Marble Position", TW_TYPE_DIR3F, copy->start_pos.data(), "step=0.0001");
+	TwAddVarRW(level_editor, "Marble Radius(Scale)", TW_TYPE_FLOAT, &copy->marble_rad, "min=0 max=10 step=0.001 ");
+
+	std::vector<std::string> music_list = scene->levels.GetMusicNames();
+	TwEnumVal *music_enums = new TwEnumVal[music_list.size()];
+	for (int i = 0; i < music_list.size(); i++)
+	{
+		TwEnumVal enumval;
+		enumval.Label = music_list[i].c_str();
+		enumval.Value = i;
+		music_enums[i] = enumval;
+	}
+
+	TwType Level_music = TwDefineEnum("Level music", music_enums, music_list.size());
+	TwAddVarRW(level_editor, "Level music", Level_music, &music_id, "");
+
+	TwAddButton(level_editor, "Play", PlayMusic, NULL, " label='Play/Stop current music'  ");
+
+	TwAddVarRW(level_editor, "Sun direction", TW_TYPE_DIR3F, copy->light_dir.data(), "group='Level parameters'");
+	TwAddVarRW(level_editor, "Sun color", TW_TYPE_DIR3F, copy->light_col.data(), "group='Level parameters'");
+	TwAddVarRW(level_editor, "Background color", TW_TYPE_DIR3F, copy->light_col.data(), "group='Level parameters'");
 
 	fractal_editor = TwNewBar("FractalEditor");
 
 
 	float *p = copy->params.data();
-	TwAddVarRW(fractal_editor, "Fractal Iterations", TW_TYPE_INT32, &scene->Fractal_Iterations, "min=1 max=20 step=1 group='Fractal parameters'");
+	TwAddVarRW(fractal_editor, "Fractal Iterations", TW_TYPE_INT32, &scene->Fractal_Iterations, "min=1 max=20 step=1");
 	TwAddVarRW(fractal_editor, "Fractal Scale", TW_TYPE_FLOAT, p, "min=0 max=5 step=0.0001");
 	TwAddVarRW(fractal_editor, "Fractal Angle1", TW_TYPE_FLOAT, p + 1, "min=-10 max=10 step=0.0001 ");
 	TwAddVarRW(fractal_editor, "Fractal Angle2", TW_TYPE_FLOAT, p + 2, "min=-10 max=10 step=0.0001  ");
@@ -648,6 +673,7 @@ void Overlays::SetTWBARResolution(int Width, int Height)
 
 Menu::Menu()
 {
+	inside_edit = 0;
 	buff_hover.loadFromFile(menu_hover_wav);
 	sound_hover.setBuffer(buff_hover);
 	buff_click.loadFromFile(menu_click_wav);
@@ -665,6 +691,9 @@ Menu::Menu()
 	edit_tex.setSmooth(true);
 	edit_spr.setTexture(edit_tex);
 	edit_spr.setOrigin(edit_spr.getLocalBounds().width / 2, edit_spr.getLocalBounds().height / 2);
+
+	rectangle.setSize(sf::Vector2f(100, 10));
+	rectangle.setFillColor(sf::Color(0, 0, 0, 128));
 }
 
 void Menu::AddFonts(sf::Font* a, sf::Font* b)
@@ -685,7 +714,7 @@ void Menu::SetScale(float scale)
 	text.setLetterSpacing(0.8f);
 	text.setOutlineThickness(3.0f * draw_scale);
 	text.setOutlineColor(sf::Color::Black);
-	edit_spr.setScale(draw_scale*0.25f, draw_scale*0.25f);
+	edit_spr.setScale(draw_scale*0.5f, draw_scale*0.5f);
 }
 
 void Menu::AddButton(std::string text)
@@ -783,41 +812,69 @@ void Menu::SetText(std::string str, float x, float y, float size, const sf::Colo
 	text.setFillColor(color);
 }
 
+bool Menu::IsEdit()
+{
+	return inside_edit;
+}
+
 void Menu::RenderMenu(sf::RenderWindow & window)
 {
 	w_size_x = window.getSize().x;
 	w_size_y = window.getSize().y;
-	
+	inside_edit = false;
+	sf::Vector2i mouse= sf::Mouse::getPosition();
 	for (int i = 0; i < texts.size(); i++)
 	{
 		if ((GetElementYPosition(i))*draw_scale < w_size_y && (GetElementYPosition(i)+Element_Height+ Descr_Height)*draw_scale > 0)
 		{
 			bool is_active = active == i;
 
-			SetText(texts[i], menu_x, GetElementYPosition(i), 30, is_active ? sf::Color::Red : sf::Color::White, true);
-			window.draw(text);
+			float ycor = (GetElementYPosition(i) + 15) * draw_scale;
 
-			float xcor = (w_size_x/ draw_scale - 15 - 2.0f) * draw_scale;
-			float ycor = (GetElementYPosition(i) - 2.0f) * draw_scale;
 			switch (types[i])
 			{
 			case Button:
+				rectangle.setSize(sf::Vector2f(w_size_x*0.8f, (Element_Height) * draw_scale*0.95));
+				rectangle.setFillColor(sf::Color(0, 0, 0, 128));
+				rectangle.setPosition((menu_x - 5) * draw_scale, GetElementYPosition(i)* draw_scale);
+				window.draw(rectangle);
 				break;
 			case LevelButton:
+				rectangle.setSize(sf::Vector2f(w_size_x*0.8f, (Element_Height + Descr_Height) * draw_scale*0.95));
+				rectangle.setFillColor(sf::Color(0, 0, 0, 128));
+				rectangle.setPosition((menu_x - 5) * draw_scale, GetElementYPosition(i)* draw_scale);
+				window.draw(rectangle);
+
 				SetText(description[i], menu_x, GetElementYPosition(i)+Element_Height*0.6, 25, is_active ? sf::Color(160,220,160) : sf::Color(160, 160, 160), true);
 				window.draw(text);
 
-				SetText(bsttime[i], w_size_x*0.5, GetElementYPosition(i), 30, is_active ? sf::Color(0, 255, 0) : sf::Color(0, 255, 128), false);
+				SetText(bsttime[i], (menu_x - 5)  + w_size_x * 0.5f/draw_scale, GetElementYPosition(i), 30, is_active ? sf::Color(0, 255, 0) : sf::Color(0, 255, 128), false);
 				window.draw(text);
-				
-				edit_spr.setPosition(xcor,ycor);
+
+				edit_spr.setPosition((menu_x - 20)*draw_scale + w_size_x * 0.8f , ycor);
+				inside_edit = inside_edit || edit_spr.getGlobalBounds().contains(mouse.x, mouse.y);
 				window.draw(edit_spr);
 				break;
 			default:
 				break;
 			}
+
+			SetText(texts[i], menu_x, GetElementYPosition(i), 30, is_active ? sf::Color::Red : sf::Color::White, true);
+			window.draw(text);
 		}
 	}
+}
+
+void Menu::ClearAll()
+{
+	lvl_id.clear();
+	types.clear();
+	texts.clear();
+	description.clear();
+	bsttime.clear();
+	scroll_value = 0;
+	scroll_velocity = 0;
+	button_id = 1;
 }
 
 int Menu::GetElementYPosition(int i)

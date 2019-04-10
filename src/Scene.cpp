@@ -189,13 +189,14 @@ void Scene::StopAllMusic() {
   for (int i = 0; i < num_level_music; ++i) {
     music[i].stop();
   }
+  levels.StopAllMusic();
 }
 
 bool Scene::IsHighScore() const {
   if (cam_mode != GOAL) {
     return false;
   } else {
-    return final_time == high_scores.Get(cur_level);
+    //return final_time == high_scores.Get(cur_level);
   }
 }
 
@@ -203,8 +204,8 @@ void Scene::StartNewGame() {
   sum_time = 0;
   play_single = false;
   ResetCheats();
-  SetLevel(high_scores.GetStartLevel());
-  is_fullrun = high_scores.HasCompleted(num_levels - 1);
+  SetLevel(0);
+ // is_fullrun = high_scores.HasCompleted(num_levels - 1);
   HideObjects();
   SetMode(ORBIT);
 }
@@ -239,13 +240,23 @@ void Scene::StartSingle(int level) {
   SetMode(ORBIT);
 }
 
-void Scene::StartLevelEditor()
+
+
+void Scene::StartLevelEditor(int level)
 {
+	if (level < 0)
+	{
+		cur_level = -1;
+		level_copy = default_level;
+	}
+	else
+	{
+		cur_level = level;
+		level_copy = levels.GetLevel(level);
+	}
 	play_single = true;
 	is_fullrun = false;
 	ResetCheats();
-	cur_level = -1;
-	level_copy = default_level;
 	level_editor = true;
 	SetMode(ORBIT);
 	enable_cheats = true;
@@ -703,11 +714,10 @@ void Scene::Write(sf::Shader& shader) const {
 		  sf::Glsl::Vec3(flag_pos.x(), flag_pos.y(), flag_pos.z())
 	  );
   }
- 
-  shader.setUniform("iMarbleRad", marble_rad);
 
-  shader.setUniform("iFlagScale", level_copy.planet ? -marble_rad : marble_rad);
-  
+  shader.setUniform("iMarbleRad", level_copy.marble_rad);
+
+  shader.setUniform("iFlagScale", level_copy.planet ? -level_copy.marble_rad : level_copy.marble_rad);
 
   shader.setUniform("iFracScale", frac_params_smooth[0]);
   shader.setUniform("iFracAng1", frac_params_smooth[1]);
@@ -923,6 +933,11 @@ void Scene::Cheat_Zoom() {
 void Scene::Cheat_Param(int param) {
   if (!enable_cheats) { return; }
   param_mod = param;
+}
+
+void Scene::ExitEditor()
+{
+	level_editor = false;
 }
 
 

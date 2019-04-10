@@ -54,8 +54,10 @@ public:
 	int GetSelection();
 
 	void SetText(std::string str, float x, float y, float size, const sf::Color & color, bool mono);
-
+	bool IsEdit();
 	void RenderMenu(sf::RenderWindow& window);
+
+	void ClearAll();
 
 private:
 
@@ -72,6 +74,7 @@ private:
 	//menu position
 	int menu_x, menu_y;
 
+	bool inside_edit;
 	//y size of the menu
 	int menu_size;
 	int button_id;
@@ -98,6 +101,8 @@ private:
 
 	sf::Texture edit_tex;
 	sf::Sprite edit_spr;
+
+	sf::RectangleShape rectangle;
 };
 
 class Overlays {
@@ -134,9 +139,10 @@ public:
 
   Overlays(sf::Font* _font, sf::Font* _font_mono, Scene* scene);
 
+  void ReloadLevelMenu(Scene * scene);
+
   //Relative to 1280x720
   void SetScale(float scale) { draw_scale = scale;  level_menu.SetScale(scale); }
-  bool GetUnlock();
   void SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, bool *vsync, float *mouse_sensitivity, float *wheel_sensitivity, float *music_vol, float *target_fps);
   void SetTWBARResolution(int Width, int Height);
 

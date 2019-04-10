@@ -342,6 +342,7 @@ int main(int argc, char *argv[]) {
 					scene.SetMode(Scene::INTRO);
 					scene.SetExposure(1.0f);
 					credits_music.stop();
+					scene.levels.StopAllMusic();
 					menu_music.setVolume(GetVol());
 					menu_music.play();
 				}
@@ -372,6 +373,20 @@ int main(int argc, char *argv[]) {
 					}
 					else if (game_mode == PLAYING) {
 						PauseGame(window, scene);
+					}
+					else if (game_mode == LEVEL_EDITOR)
+					{
+						game_mode = LEVELS;
+						scene.ExitEditor();
+						scene.SetExposure(0.5f);
+						scene.SetMode(Scene::INTRO);
+						scene.StopAllMusic();
+						menu_music.setVolume(GetVol());
+						menu_music.play();
+						overlays.TWBAR_ENABLED = false;
+						TwDefine("LevelEditor visible=false");
+						TwDefine("FractalEditor visible=false");
+						overlays.ReloadLevelMenu(&scene);
 					}
 				}
 				else if (keycode == sf::Keyboard::R) {
@@ -467,6 +482,7 @@ int main(int argc, char *argv[]) {
 							game_mode = LEVELS;
 							overlays.GetLevelPage() = 0;
 							scene.SetExposure(0.5f);
+							overlays.ReloadLevelMenu(&scene);
 						}
 						else if (selected == Overlays::SCREEN_SAVER) {
 							game_mode = SCREEN_SAVER;
@@ -507,23 +523,39 @@ int main(int argc, char *argv[]) {
 							menu_music.stop();
 							scene.SetExposure(1.0f);
 							overlays.TWBAR_ENABLED = true;
-							TwDefine("LevelEditor visible=true position='100 100'");
-							TwDefine("FractalEditor visible=true position='100 500'");
+							TwDefine("LevelEditor visible=true position='30 100'");
+							TwDefine("FractalEditor visible=true position='30 400'");
 							TwDefine("Settings iconified=true");
 							TwDefine("Statistics iconified=true");
-							scene.StartLevelEditor();
+							scene.StartLevelEditor(-1);
 
 						}
 						else if (selected >= 0)
 						{
-							//play level
-							game_mode = PLAYING;
-							menu_music.stop();
-							scene.SetExposure(1.0f);
-							scene.levels.GetLevelMusic(selected)->setVolume(GetVol());
-							scene.levels.GetLevelMusic(selected)->play();
-							scene.StartSingle(selected);
-							LockMouse(window);
+							if (overlays.level_menu.IsEdit())
+							{
+								//edit level
+								game_mode = LEVEL_EDITOR;
+								menu_music.stop();
+								scene.SetExposure(1.0f);
+								overlays.TWBAR_ENABLED = true;
+								TwDefine("LevelEditor visible=true position='30 100'");
+								TwDefine("FractalEditor visible=true position='30 400'");
+								TwDefine("Settings iconified=true");
+								TwDefine("Statistics iconified=true");
+								scene.StartLevelEditor(selected);
+							}
+							else
+							{
+								//play level
+								game_mode = PLAYING;
+								menu_music.stop();
+								scene.SetExposure(1.0f);
+								scene.levels.GetLevelMusic(selected)->setVolume(GetVol());
+								scene.levels.GetLevelMusic(selected)->play();
+								scene.StartSingle(selected);
+								LockMouse(window);
+							}
 						}
 						/*
 						const Overlays::Texts selected = overlays.GetOption(Overlays::L0, Overlays::BACK2);
@@ -639,12 +671,6 @@ int main(int argc, char *argv[]) {
       scene.SetExposure(0.5f);
       credits_music.play();
     }
-
-
-	if (overlays.GetUnlock())
-	{
-		high_scores.UnlockEverything();
-	}
 
     //Main game update
     if (game_mode == MAIN_MENU) {
@@ -820,7 +846,7 @@ int main(int argc, char *argv[]) {
   menu_music.stop();
   scene.StopAllMusic();
   credits_music.stop();
-  high_scores.Save(save_file);
+  //high_scores.Save(save_file);
   game_settings.Save(settings_file);
 
 #ifdef _DEBUG

@@ -58,10 +58,24 @@ struct LevelF
 	float anim_3;            //Animation amount for offset_y parameter
 	float light_dir[3];	     //Sun light direction
 	float light_col[3];      //Sun light color
+	float background_col[3];
 
 	int level_id;	     	 //level identifier
 	int link_level;			 //Play what level after finish
 	char use_music[255];     //what track to use
+
+	float ground_force;
+	float air_force;
+	float ground_friction;
+	float air_friction;
+	float gravity;
+	float ground_ratio;
+
+	float gravity_dir[3];
+
+	//Advanced Animation
+	float FractalParamsAmp[9];
+	float FractalParamsFrq[9];
 };
 
 class Level {
@@ -110,6 +124,21 @@ public:
   int level_id;				 //level identifier
   int link_level;			 //Play what level after finish
   std::string use_music;     //what track to use
+
+  Eigen::Vector3f background_col;
+
+  float ground_force;
+  float air_force;
+  float ground_friction;
+  float air_friction;
+  float gravity;
+  float ground_ratio;
+
+  Eigen::Vector3f gravity_dir;
+
+  //Advanced Animation
+  FractalParams FractalParamsAmp;
+  FractalParams FractalParamsFrq;
 };
 
 extern Level all_levels[num_levels];
@@ -129,9 +158,14 @@ public:
 	std::vector<std::string> getLevelDesc();
 	std::vector<int> getLevelIds();
 	sf::Music* GetLevelMusic(int ID);
-	//std::vector<std::string> GetLevelList();
+
 	void ReloadLevel(int ID);
 	void LoadLevelFromFile(fs::path file);
+	sf::Music* GetMusicByID(int ID);
+
+	void StopAllMusic();
+
+	std::vector<std::string> GetMusicNames();
 
 private:
 	std::map<int, Level> level_map;

@@ -386,7 +386,7 @@ Level all_levels[num_levels] = {
     "Fatal Fissures"),                               //Description
 };
 
-Level default_level(2.f, 0.0f, 0.0f,                 //Scale, Angle1, Angle2
+Level default_level(1.5f, 0.0f, 0.0f,                 //Scale, Angle1, Angle2
 	Eigen::Vector3f(-1.f, -2.f, 0.f),				 //Offset
 	Eigen::Vector3f(1.f, 1.f, 1.f),				     //Color
 	0.035f,                                          //Marble Radius
@@ -436,11 +436,23 @@ Level::Level(float s, float a1, float a2,
   desc = " ";			
           
   light_dir = Eigen::Vector3f(-0.36, 0.8, 0.48);
-  light_col = Eigen::Vector3f(1, 1, 1);
+  light_col = Eigen::Vector3f(1.0, 0.95, 0.8);
 
   level_id = 0;				 
   link_level = 0;	
-  use_music = "level1.ogg";    
+  use_music = "level1.ogg"; 
+
+  ground_force = 0.008f;
+  air_force = 0.004f;
+  ground_friction = 0.99f;
+  air_friction = 0.995f;
+  gravity = 0.005f;
+  ground_ratio = 1.15f;
+  FractalParamsAmp = FractalParams();
+  FractalParamsFrq = FractalParams();
+
+  background_col = Eigen::Vector3f(0.6, 0.8, 1.0);
+  gravity_dir = Eigen::Vector3f(0, 0, -1.0);
 }
 
 void Level::LoadFromFile(fs::path path)
@@ -506,6 +518,18 @@ void Level::LoadLevelF(LevelF lvl)
 	level_id = lvl.level_id;				 //level identifier
 	link_level = lvl.link_level;			 //Play what level after finish
 	use_music = std::string(lvl.use_music);      //what track to use
+	
+	ground_force = lvl.ground_force;
+	air_force = lvl.air_force;
+	ground_friction = lvl.ground_friction;
+	air_friction = lvl.air_friction;
+	gravity = lvl.gravity;
+	ground_ratio = lvl.ground_ratio;
+	background_col = Eigen::Vector3f(lvl.background_col);
+	gravity_dir = Eigen::Vector3f(lvl.gravity_dir);
+
+	FractalParamsAmp = FractalParams(lvl.FractalParamsAmp);
+	FractalParamsFrq = FractalParams(lvl.FractalParamsFrq);
 }
 
 LevelF Level::GetLevelF()
@@ -539,6 +563,19 @@ LevelF Level::GetLevelF()
 	lvlF.level_id = level_id;				
 	lvlF.link_level = link_level;			 
 	
+	lvlF.ground_force = ground_force;
+	lvlF.air_force = air_force;
+	lvlF.ground_friction = ground_friction;
+	lvlF.air_friction = air_friction;
+	lvlF.gravity = gravity;
+	lvlF.ground_ratio = ground_ratio;
+
+	std::copy(background_col.data(), background_col.data() + 3, lvlF.background_col);
+	std::copy(gravity_dir.data(), gravity_dir.data() + 3, lvlF.gravity_dir);
+
+	std::copy(FractalParamsAmp.data(), FractalParamsAmp.data() + 9, lvlF.FractalParamsAmp);
+	std::copy(FractalParamsFrq.data(), FractalParamsFrq.data() + 9, lvlF.FractalParamsFrq);
+
 	return lvlF;
 }
 
@@ -614,3 +651,22 @@ void All_Levels::LoadLevelFromFile(fs::path file)
 	level_ids.push_back(cur_lvl.level_id);
 	level_num++;
 }
+
+sf::Music * All_Levels::GetMusicByID(int ID)
+{
+	return music_map[music_names[ID]];
+}
+
+void All_Levels::StopAllMusic()
+{
+	for (int i = 0; i < music_names.size(); i++)
+	{
+		music_map[music_names[i]]->stop();
+	}
+}
+
+std::vector<std::string> All_Levels::GetMusicNames()
+{
+	return music_names;
+}
+
