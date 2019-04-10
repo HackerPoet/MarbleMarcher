@@ -431,6 +431,7 @@ void TW_CALL FlagSet(void *data)
 void TW_CALL PlayMusic(void *data)
 {
 	scene_ptr->levels.StopAllMusic();
+	music_play = !music_play;
 	if (music_play)
 	{
 		scene_ptr->levels.GetMusicByID(music_id)->play();
