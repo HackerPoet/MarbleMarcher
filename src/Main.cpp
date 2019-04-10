@@ -588,16 +588,9 @@ int main(int argc, char *argv[]) {
 					}
 					if (game_mode == LEVEL_EDITOR)
 					{
-						if (scene.cur_ed_mode == Scene::EditorMode::PLACE_MARBLE)
+						if (scene.cur_ed_mode == Scene::EditorMode::PLACE_MARBLE
+							|| scene.cur_ed_mode == Scene::EditorMode::PLACE_FLAG)
 						{
-							Eigen::Vector3f marble_pos = scene.MouseRayCast(mouse_pos.x, mouse_pos.y);
-							scene.level_copy.start_pos = marble_pos;
-							scene.cur_ed_mode = Scene::EditorMode::DEFAULT;
-						}
-						else if(scene.cur_ed_mode == Scene::EditorMode::PLACE_FLAG)
-						{
-							Eigen::Vector3f flag_pos = scene.MouseRayCast(mouse_pos.x, mouse_pos.y);
-							scene.level_copy.end_pos = flag_pos;
 							scene.cur_ed_mode = Scene::EditorMode::DEFAULT;
 						}
 					}
@@ -616,6 +609,17 @@ int main(int argc, char *argv[]) {
 			}
 			else if (event.type == sf::Event::MouseMoved) {
 				mouse_pos = sf::Vector2i(event.mouseMove.x, event.mouseMove.y);
+
+				if (scene.cur_ed_mode == Scene::EditorMode::PLACE_MARBLE)
+				{
+					Eigen::Vector3f marble_pos = scene.MouseRayCast(mouse_pos.x, mouse_pos.y, scene.level_copy.marble_rad);
+					scene.level_copy.start_pos = marble_pos;
+				}
+				else if (scene.cur_ed_mode == Scene::EditorMode::PLACE_FLAG)
+				{
+					Eigen::Vector3f flag_pos = scene.MouseRayCast(mouse_pos.x, mouse_pos.y);
+					scene.level_copy.end_pos = flag_pos;
+				}
 			}
 			else if (event.type == sf::Event::MouseWheelScrolled) {
 				mouse_wheel += event.mouseWheelScroll.delta;

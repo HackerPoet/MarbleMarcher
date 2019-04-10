@@ -925,12 +925,8 @@ void Scene::Cheat_Param(int param) {
   param_mod = param;
 }
 
-#define MAX_DIST 20.f
-#define MAX_MARCHES 1000
-#define MIN_DIST 1e-4f
-#define FOCAL_DIST 1.73205080757
 
-Eigen::Vector3f Scene::MouseRayCast(int mousex, int mousey)
+Eigen::Vector3f Scene::MouseRayCast(int mousex, int mousey, float min_dist)
 {
 	Eigen::Vector2f screen_pos = Eigen::Vector2f((float)mousex / (float)WinX,1.f - (float)mousey/ (float)WinY);
 
@@ -947,14 +943,14 @@ Eigen::Vector3f Scene::MouseRayCast(int mousex, int mousey)
 	return RayMarch(Eigen::Vector3f(p[0], p[1], p[2]), Eigen::Vector3f(ray[0], ray[1], ray[2]));
 }
 
-Eigen::Vector3f Scene::RayMarch(const Eigen::Vector3f & pt, const Eigen::Vector3f & ray)
+Eigen::Vector3f Scene::RayMarch(const Eigen::Vector3f & pt, const Eigen::Vector3f & ray, float min_dist)
 {
 	float td = 0;
 	for (int i = 0; i < MAX_MARCHES && td < MAX_DIST; i++)
 	{
 		float de = DE(pt + td * ray);
 		td += de;
-		if (de < MIN_DIST)
+		if (de < min_dist)
 		{
 			break;
 		}

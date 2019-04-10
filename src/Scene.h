@@ -20,6 +20,12 @@
 #include <SFML/Graphics.hpp>
 #include <Eigen/Dense>
 
+
+#define MAX_DIST 20.f
+#define MAX_MARCHES 1000
+#define MIN_DIST 1e-4f
+#define FOCAL_DIST 1.73205080757
+
 class Scene {
 public:
   enum CamMode {
@@ -130,8 +136,8 @@ public:
   void Cheat_Zoom();
   void Cheat_Param(int param);
 
-  Eigen::Vector3f MouseRayCast(int mousex, int mousey);
-  Eigen::Vector3f RayMarch(const Eigen::Vector3f& pt, const Eigen::Vector3f& ray);
+  Eigen::Vector3f MouseRayCast(int mousex, int mousey, float min_dist = MIN_DIST);
+  Eigen::Vector3f RayMarch(const Eigen::Vector3f& pt, const Eigen::Vector3f& ray, float min_dist = MIN_DIST);
 
 protected:
   void SetLevel(int level);
