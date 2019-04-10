@@ -443,6 +443,7 @@ void TW_CALL SaveLevel(void *data)
 	int lvlid = scene_ptr->GetLevel();
 
 	std::vector<std::string> music_list = scene_ptr->levels.GetMusicNames();
+	std::vector<int> lvlnum = scene_ptr->levels.getLevelIds();
 	copy->use_music = music_list[music_id];
 	if (lvlid < 0)
 		lvlid = time(NULL);

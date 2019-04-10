@@ -635,10 +635,11 @@ sf::Music* All_Levels::GetLevelMusic(int ID)
 
 void All_Levels::ReloadLevel(int IDt)
 {
-	vector<fs::path> files = GetFilesInFolder(lvl_folder, "LVL");
+	vector<fs::path> files = GetFilesInFolder(lvl_folder, ".lvl");
 	Level cur_lvl;
-	cur_lvl.LoadFromFile(files[IDt]);
-	level_map[level_ids[IDt]] = cur_lvl;
+	int ID = level_id_map[IDt];
+	cur_lvl.LoadFromFile(files[ID]);
+	level_map[IDt] = cur_lvl;
 }
 
 void All_Levels::LoadLevelFromFile(fs::path file)
@@ -646,6 +647,7 @@ void All_Levels::LoadLevelFromFile(fs::path file)
 	Level cur_lvl;
 	cur_lvl.LoadFromFile(file);
 	level_map.insert(std::make_pair(cur_lvl.level_id, cur_lvl));
+	level_id_map.insert(std::make_pair(cur_lvl.level_id, level_num));
 	level_names.push_back(cur_lvl.txt);
 	level_descriptions.push_back(cur_lvl.desc);
 	level_ids.push_back(cur_lvl.level_id);

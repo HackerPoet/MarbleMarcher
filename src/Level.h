@@ -169,6 +169,7 @@ public:
 
 private:
 	std::map<int, Level> level_map;
+	std::map<int, int> level_id_map;
 	std::vector<std::string> level_names;
 	std::vector<std::string> level_descriptions;
 	std::vector<int> level_ids;
