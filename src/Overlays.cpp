@@ -1,6 +1,3 @@
-#include "Overlays.h"
-#include "Overlays.h"
-#include "Overlays.h"
 /* This file is part of the Marble Marcher (https://github.com/HackerPoet/MarbleMarcher).
 * Copyright(C) 2018 CodeParade
 * 
@@ -408,6 +405,7 @@ extern bool canceled = false;
 int music_id = 0;
 bool music_play = false;
 
+
 void TW_CALL Confirm(void *data)
 {
 	confirmed = true;
@@ -446,10 +444,11 @@ void TW_CALL SaveLevel(void *data)
 	std::vector<std::string> music_list = scene_ptr->levels.GetMusicNames();
 	std::vector<int> lvlnum = scene_ptr->levels.getLevelIds();
 	copy->use_music = music_list[music_id];
-	if (lvlid < 0)
+	bool same_level = scene_ptr->original_level_name == copy->txt;
+	if (lvlid < 0 || !same_level)
 		lvlid = time(NULL);
 	copy->SaveToFile(std::string(level_folder) + "/" + ConvertSpaces2_(copy->txt) + ".lvl", lvlid, copy->link_level);
-	if (scene_ptr->GetLevel() >= 0)
+	if (scene_ptr->GetLevel() >= 0 && same_level)
 	{
 		scene_ptr->levels.ReloadLevel(scene_ptr->GetLevel());
 	}
@@ -489,8 +488,6 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 
 	TwAddVarRW(settings, "VSYNC", TW_TYPE_BOOLCPP, vsync, "group='Graphics settings'");
 	TwAddVarRW(settings, "PBR", TW_TYPE_BOOLCPP, &scene->PBR_Enabled, "group='Graphics settings'");
-	TwAddVarRW(settings, "PBR roughness", TW_TYPE_FLOAT, &scene->PBR_ROUGHNESS, "min=0 max=1 step=0.001 group='Graphics settings'");
-	TwAddVarRW(settings, "PBR metallic", TW_TYPE_FLOAT, &scene->PBR_METALLIC, "min=0 max=1 step=0.001 group='Graphics settings'");
 	TwAddVarRW(settings, "Sun direction", TW_TYPE_DIR3F, scene->LIGHT_DIRECTION.data(), " group='Graphics settings'");
 	TwAddVarRW(settings, "Shadows", TW_TYPE_BOOLCPP, &scene->Shadows_Enabled, "group='Graphics settings'");
 	TwAddVarRW(settings, "Reflection and Refraction", TW_TYPE_BOOLCPP, &scene->Refl_Refr_Enabled, "group='Graphics settings'");
@@ -547,17 +544,32 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 
 	TwAddButton(level_editor, "Play", PlayMusic, NULL, " label='Play/Stop current music'  ");
 
+	std::vector<std::string> level_list = scene->levels.getLevelNames();
+	TwEnumVal *level_enums = new TwEnumVal[level_list.size()+1];
+	TwEnumVal enumval;
+	enumval.Label = "None";
+	enumval.Value = -1;
+	level_enums[0] = enumval;
+	for (int i = 0; i < level_list.size(); i++)
+	{
+		enumval.Label = level_list[i].c_str();
+		enumval.Value = i;
+		level_enums[i+1] = enumval;
+	}
+
+	TwType Levels = TwDefineEnum("levels", level_enums, level_list.size()+1);
+	TwAddVarRW(level_editor, "Play level after finish", Levels, &copy->link_level, "");
+
 	TwAddVarRW(level_editor, "Sun direction", TW_TYPE_DIR3F, copy->light_dir.data(), "group='Level parameters'");
 	TwAddVarRW(level_editor, "Sun color", TW_TYPE_DIR3F, copy->light_col.data(), "group='Level parameters'");
-	TwAddVarRW(level_editor, "Background color", TW_TYPE_DIR3F, copy->light_col.data(), "group='Level parameters'");
-
+	TwAddVarRW(level_editor, "Background color", TW_TYPE_DIR3F, copy->background_col.data(), "group='Level parameters'");
+	TwAddVarRW(level_editor, "Gravity strenght", TW_TYPE_FLOAT, &copy->gravity, "group='Level parameters'");
 	fractal_editor = TwNewBar("FractalEditor");
 
-
+	TwAddVarRW(fractal_editor, "PBR roughness", TW_TYPE_FLOAT, &copy->PBR_roughness, "min=0 max=1 step=0.001 ");
+	TwAddVarRW(fractal_editor, "PBR metallic", TW_TYPE_FLOAT, &copy->PBR_metal, "min=0 max=1 step=0.001");
 	float *p = copy->params.data();
-	TwAddVarRW(fractal_editor, "PBR metallic", TW_TYPE_FLOAT, &copy->PBR_metal, "min=0 max=1 step=0.01");
-	TwAddVarRW(fractal_editor, "PBR roughness", TW_TYPE_FLOAT, &copy->PBR_roughness, "min=0 max=1 step=0.01 ");
-	TwAddVarRW(fractal_editor, "Fractal Iterations", TW_TYPE_INT32, &scene->Fractal_Iterations, "min=1 max=20 step=1");
+	TwAddVarRW(fractal_editor, "Fractal Iterations", TW_TYPE_INT32, &copy->FractalIter, "min=1 max=20 step=1");
 	TwAddVarRW(fractal_editor, "Fractal Scale", TW_TYPE_FLOAT, p, "min=0 max=5 step=0.0001");
 	TwAddVarRW(fractal_editor, "Fractal Angle1", TW_TYPE_FLOAT, p + 1, "min=-10 max=10 step=0.0001 ");
 	TwAddVarRW(fractal_editor, "Fractal Angle2", TW_TYPE_FLOAT, p + 2, "min=-10 max=10 step=0.0001  ");
@@ -827,6 +839,7 @@ void Menu::RenderMenu(sf::RenderWindow & window)
 	w_size_y = window.getSize().y;
 	inside_edit = false;
 	sf::Vector2i mouse= sf::Mouse::getPosition();
+	sf::FloatRect bounds;
 	for (int i = 0; i < texts.size(); i++)
 	{
 		if ((GetElementYPosition(i))*draw_scale < w_size_y && (GetElementYPosition(i)+Element_Height+ Descr_Height)*draw_scale > 0)
@@ -856,9 +869,10 @@ void Menu::RenderMenu(sf::RenderWindow & window)
 				window.draw(text);
 
 				edit_spr.setPosition((menu_x - 20)*draw_scale + w_size_x * 0.8f , ycor);
-
-				
-				inside_edit = inside_edit || (mouse.x > ((menu_x - 20)*draw_scale + w_size_x * 0.8f));
+				bounds = edit_spr.getGlobalBounds();
+				bounds.width = edit_tex.getSize().x*draw_scale;
+				bounds.height = edit_tex.getSize().y*draw_scale;
+				inside_edit = inside_edit || bounds.contains(mouse.x, mouse.y);
 				window.draw(edit_spr);
 				break;
 			default:

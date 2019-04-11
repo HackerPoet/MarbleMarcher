@@ -300,6 +300,7 @@ int main(int argc, char *argv[]) {
   Overlays overlays(&font, &font_mono, &scene);
   overlays.SetScale(float(screen_size.width) / 1280.0f);
 
+  scene.StartDefault();
   overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);
 
   while (window.isOpen()) {
