@@ -254,6 +254,7 @@ void Scene::StartLevelEditor(int level)
 		cur_level = level;
 		level_copy = levels.GetLevel(level);
 	}
+	original_level_name = level_copy.txt;
 	play_single = true;
 	is_fullrun = false;
 	ResetCheats();
@@ -261,6 +262,12 @@ void Scene::StartLevelEditor(int level)
 	SetMode(ORBIT);
 	enable_cheats = true;
 	free_camera = true;
+}
+
+void Scene::StartDefault()
+{
+	cur_level = -1;
+	level_copy = default_level;
 }
 
 void Scene::ResetLevel() {

@@ -63,6 +63,7 @@ public:
   Eigen::Vector3f LIGHT_DIRECTION;
   float PBR_METALLIC;
   float PBR_ROUGHNESS;
+  std::string original_level_name;
 
   float           marble_rad;
   Eigen::Vector3f marble_pos;
@@ -106,6 +107,7 @@ public:
   void StartNextLevel();
   void StartSingle(int level);
   void StartLevelEditor(int level);
+  void StartDefault();
   void ResetLevel();
   void ResetCheats();
   void Synchronize();

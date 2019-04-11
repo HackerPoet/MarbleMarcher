@@ -647,7 +647,7 @@ void All_Levels::LoadLevelFromFile(fs::path file)
 	Level cur_lvl;
 	cur_lvl.LoadFromFile(file);
 	level_map.insert(std::make_pair(cur_lvl.level_id, cur_lvl));
-	level_id_map.insert(std::make_pair(cur_lvl.level_id, level_num));
+	level_id_map.insert(std::make_pair(level_num, cur_lvl.level_id));
 	level_names.push_back(cur_lvl.txt);
 	level_descriptions.push_back(cur_lvl.desc);
 	level_ids.push_back(cur_lvl.level_id);
