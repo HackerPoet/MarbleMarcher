@@ -18,7 +18,6 @@
 #define AMBIENT_OCCLUSION_COLOR_DELTA vec3(0.7)
 #define AMBIENT_OCCLUSION_STRENGTH 0.008
 #define ANTIALIASING_SAMPLES 1
-#define BACKGROUND_COLOR vec3(0.6,0.8,1.0)
 #define COL col_scene
 #define DE de_scene
 #define DIFFUSE_ENABLED 0
@@ -26,7 +25,6 @@
 #define FILTERING_ENABLE 0
 #define FOCAL_DIST 1.73205080757
 #define FOG_ENABLED 0
-#define LIGHT_COLOR vec3(1.0,0.95,0.8)
 #define MAX_DIST 30.0
 #define MAX_MARCHES 512
 #define MIN_DIST 1e-5
@@ -64,6 +62,8 @@ uniform float CAMERA_SIZE;
 uniform int FRACTAL_ITER;
 uniform bool REFL_REFR_ENABLED;
 uniform int MARBLE_MODE;
+uniform vec3 BACKGROUND_COLOR;
+uniform vec3 LIGHT_COLOR;
 
 float FOVperPixel;
 float s1, c1, s2, c2;

@@ -205,4 +205,5 @@ private:
   bool            hyper_speed;
   bool            disable_motion;
   bool            zoom_to_scale;
+  float			  gravity;
 };

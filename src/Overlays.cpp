@@ -447,15 +447,13 @@ void TW_CALL SaveLevel(void *data)
 	bool same_level = scene_ptr->original_level_name == copy->txt;
 	if (lvlid < 0 || !same_level)
 		lvlid = time(NULL);
+	copy->level_id = lvlid;
 	copy->SaveToFile(std::string(level_folder) + "/" + ConvertSpaces2_(copy->txt) + ".lvl", lvlid, copy->link_level);
-	if (scene_ptr->GetLevel() >= 0 && same_level)
+	scene_ptr->levels.ReloadLevels();
+	if (!(scene_ptr->GetLevel() >= 0 && same_level))
 	{
-		scene_ptr->levels.ReloadLevel(scene_ptr->GetLevel());
-	}
-	else
-	{
-		scene_ptr->levels.LoadLevelFromFile(std::filesystem::path(std::string(level_folder) + "/" + ConvertSpaces2_(copy->txt) + ".lvl"));
 		scene_ptr->WriteLVL(lvlid);
+		scene_ptr->original_level_name = copy->txt;
 	}
 }
 
@@ -558,12 +556,12 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	}
 
 	TwType Levels = TwDefineEnum("levels", level_enums, level_list.size()+1);
-	TwAddVarRW(level_editor, "Play level after finish", Levels, &copy->link_level, "");
+	TwAddVarRW(level_editor, "Play level after finish(TODO)", Levels, &copy->link_level, "");
 
 	TwAddVarRW(level_editor, "Sun direction", TW_TYPE_DIR3F, copy->light_dir.data(), "group='Level parameters'");
 	TwAddVarRW(level_editor, "Sun color", TW_TYPE_DIR3F, copy->light_col.data(), "group='Level parameters'");
 	TwAddVarRW(level_editor, "Background color", TW_TYPE_DIR3F, copy->background_col.data(), "group='Level parameters'");
-	TwAddVarRW(level_editor, "Gravity strenght", TW_TYPE_FLOAT, &copy->gravity, "group='Level parameters'");
+	TwAddVarRW(level_editor, "Gravity strenght", TW_TYPE_FLOAT, &copy->gravity, "min=0 max=0.5 step=0.0001 group='Level parameters'");
 	fractal_editor = TwNewBar("FractalEditor");
 
 	TwAddVarRW(fractal_editor, "PBR roughness", TW_TYPE_FLOAT, &copy->PBR_roughness, "min=0 max=1 step=0.001 ");
@@ -847,7 +845,7 @@ void Menu::RenderMenu(sf::RenderWindow & window)
 			bool is_active = active == i;
 
 			float ycor = (GetElementYPosition(i) + 15) * draw_scale;
-			const sf::FloatRect bounds((menu_x - 20)*draw_scale + w_size_x * 0.8f, ycor, 20 * draw_scale, 20 * draw_scale);
+			sf::FloatRect bounds;
 			switch (types[i])
 			{
 			case Button:
@@ -869,9 +867,11 @@ void Menu::RenderMenu(sf::RenderWindow & window)
 				window.draw(text);
 
 				edit_spr.setPosition((menu_x - 20)*draw_scale + w_size_x * 0.8f , ycor);
+
 				bounds = edit_spr.getGlobalBounds();
 				bounds.width = edit_tex.getSize().x*draw_scale;
 				bounds.height = edit_tex.getSize().y*draw_scale;
+
 				inside_edit = inside_edit || bounds.contains(mouse.x, mouse.y);
 				window.draw(edit_spr);
 				break;

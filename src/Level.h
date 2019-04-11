@@ -159,7 +159,8 @@ public:
 	std::vector<int> getLevelIds();
 	sf::Music* GetLevelMusic(int ID);
 
-	void ReloadLevel(int ID);
+	void ReloadLevels();
+
 	void LoadLevelFromFile(fs::path file);
 	sf::Music* GetMusicByID(int ID);
 

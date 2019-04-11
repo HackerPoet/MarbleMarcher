@@ -439,7 +439,7 @@ Level::Level(float s, float a1, float a2,
   light_col = Eigen::Vector3f(1.0, 0.95, 0.8);
 
   level_id = 0;				 
-  link_level = 0;	
+  link_level = -1;	
   use_music = "level1.ogg"; 
 
   ground_force = 0.008f;
@@ -633,13 +633,14 @@ sf::Music* All_Levels::GetLevelMusic(int ID)
 	return music_map[level_map[ID].use_music];
 }
 
-void All_Levels::ReloadLevel(int IDt)
+void All_Levels::ReloadLevels()
 {
-	vector<fs::path> files = GetFilesInFolder(lvl_folder, ".lvl");
-	Level cur_lvl;
-	int ID = level_id_map[IDt];
-	cur_lvl.LoadFromFile(files[ID]);
-	level_map[IDt] = cur_lvl;
+	level_map.clear();
+	level_id_map.clear();
+	level_names.clear();
+	level_descriptions.clear();
+	level_ids.clear();
+	LoadLevelsFromFolder(lvl_folder);
 }
 
 void All_Levels::LoadLevelFromFile(fs::path file)

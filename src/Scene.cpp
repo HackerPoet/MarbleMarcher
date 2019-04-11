@@ -38,7 +38,6 @@ static const int frame_deorbit = 800;
 static const int frame_countdown = frame_deorbit + 3*60;
 static const float default_zoom = 15.0f;
 static const int fractal_iters = 16;
-static const float gravity = 0.005f;
 static const float ground_ratio = 1.15f;
 static const int mus_switches[num_level_music] = {9, 15, 21, 24};
 static const int num_levels_midpoint = 15;
@@ -82,7 +81,8 @@ Scene::Scene(sf::Music* level_music) :
 	PBR_ROUGHNESS(0.4),
 	camera_size(0.035),
 	cur_ed_mode(DEFAULT),
-	level_editor(false)
+	level_editor(false),
+	gravity(0.005f)
 {
   ResetCheats();
   frac_params.setOnes();
@@ -312,6 +312,7 @@ void Scene::Synchronize()
 
 void Scene::UpdateCamera(float dx, float dy, float dz, bool speedup) {
   //Camera update depends on current mode
+  gravity = level_copy.gravity;
   const int iters = speedup ? 5 : 1;
   if (cam_mode == INTRO) {
     UpdateIntro(false);
@@ -737,6 +738,9 @@ void Scene::Write(sf::Shader& shader) const {
 	  shader.setUniform("PBR_ROUGHNESS", PBR_ROUGHNESS);
   }
 
+  shader.setUniform("BACKGROUND_COLOR", sf::Glsl::Vec3(level_copy.background_col[0], level_copy.background_col[1], level_copy.background_col[2]));
+  shader.setUniform("LIGHT_COLOR", sf::Glsl::Vec3(level_copy.light_col[0], level_copy.light_col[1], level_copy.light_col[2]));
+
   shader.setUniform("iMarbleRad", level_copy.marble_rad);
 
   shader.setUniform("iFlagScale", level_copy.planet ? -level_copy.marble_rad : level_copy.marble_rad);
@@ -751,7 +755,7 @@ void Scene::Write(sf::Shader& shader) const {
 
 
   shader.setUniform("SHADOWS_ENABLED", Shadows_Enabled);
-  shader.setUniform("CAMERA_SIZE", camera_size);
+  shader.setUniform("CAMERA_SIZE", camera_size*level_copy.marble_rad/0.035f);
   shader.setUniform("FRACTAL_ITER", Fractal_Iterations);
   shader.setUniform("REFL_REFR_ENABLED", Refl_Refr_Enabled);
   shader.setUniform("MARBLE_MODE", MarbleType);

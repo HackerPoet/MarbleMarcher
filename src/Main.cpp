@@ -286,12 +286,12 @@ int main(int argc, char *argv[]) {
   mouse_pos = sf::Vector2i(0, 0);
   mouse_prev_pos = sf::Vector2i(0, 0);
 
-  //temporary code
-  for (int i = 0; i < 24; i++)
+  //temporary level generation code
+  /*for (int i = 0; i < 24; i++)
   {
 	  all_levels[i].desc = "Official Level by Codeparade";
 	  all_levels[i].SaveToFile(std::string(level_folder) + "/" + ConvertSpaces2_(all_levels[i].txt)+".lvl", i, (i<24)?(i+1):-1);
-  }
+  }*/
 
   scene.levels.LoadLevelsFromFolder(level_folder);
   scene.levels.LoadMusicFromFolder(music_folder);
@@ -524,8 +524,8 @@ int main(int argc, char *argv[]) {
 							menu_music.stop();
 							scene.SetExposure(1.0f);
 							overlays.TWBAR_ENABLED = true;
-							TwDefine("LevelEditor visible=true position='30 100'");
-							TwDefine("FractalEditor visible=true position='30 400'");
+							TwDefine("LevelEditor visible=true position='20 20'");
+							TwDefine("FractalEditor visible=true position='20 500'");
 							TwDefine("Settings iconified=true");
 							TwDefine("Statistics iconified=true");
 							scene.StartLevelEditor(-1);
@@ -540,8 +540,8 @@ int main(int argc, char *argv[]) {
 								menu_music.stop();
 								scene.SetExposure(1.0f);
 								overlays.TWBAR_ENABLED = true;
-								TwDefine("LevelEditor visible=true position='30 100'");
-								TwDefine("FractalEditor visible=true position='30 400'");
+								TwDefine("LevelEditor visible=true position='20 20'");
+								TwDefine("FractalEditor visible=true position='20 500'");
 								TwDefine("Settings iconified=true");
 								TwDefine("Statistics iconified=true");
 								scene.StartLevelEditor(selected);
@@ -698,10 +698,12 @@ int main(int argc, char *argv[]) {
 	  //Apply forces to marble and camera
 	  scene.UpdateMarble(force_lr, force_ud);
 
+
+	  scene.free_camera_speed *= 1 + mouse_wheel * 0.05;
       //Collect mouse input
 	  if (overlays.TWBAR_ENABLED)
 	  {
-		 
+		  
 		  sf::Vector2i mouse_delta = sf::Vector2i(0, 0);
 		  window.setMouseCursorVisible(true);
 		  if (mouse_clicked)
