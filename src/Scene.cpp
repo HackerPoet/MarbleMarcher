@@ -260,7 +260,7 @@ void Scene::StartLevelEditor(int level)
 	ResetCheats();
 	level_editor = true;
 	SetMode(ORBIT);
-	enable_cheats = true;
+	enable_cheats = false;
 	free_camera = true;
 }
 
