@@ -555,6 +555,8 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 
 
 	float *p = copy->params.data();
+	TwAddVarRW(fractal_editor, "PBR metallic", TW_TYPE_FLOAT, &copy->PBR_metal, "min=0 max=1 step=0.01");
+	TwAddVarRW(fractal_editor, "PBR roughness", TW_TYPE_FLOAT, &copy->PBR_roughness, "min=0 max=1 step=0.01 ");
 	TwAddVarRW(fractal_editor, "Fractal Iterations", TW_TYPE_INT32, &scene->Fractal_Iterations, "min=1 max=20 step=1");
 	TwAddVarRW(fractal_editor, "Fractal Scale", TW_TYPE_FLOAT, p, "min=0 max=5 step=0.0001");
 	TwAddVarRW(fractal_editor, "Fractal Angle1", TW_TYPE_FLOAT, p + 1, "min=-10 max=10 step=0.0001 ");
@@ -574,8 +576,8 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	TwDefine("confirm visible=false size='300 100' color='255 50 0' alpha=255 label='Are you sure?'");
 
 	TwDefine(" GLOBAL fontsize=3 ");
-	TwDefine("LevelEditor visible=false size='420 250' color='0 80 230' alpha=210 label='Level editor' valueswidth=200");
-	TwDefine("FractalEditor visible=false size='420 250' color='0 120 200' alpha=210 label='Fractal editor' valueswidth=200");
+	TwDefine("LevelEditor visible=false size='420 350' color='0 80 230' alpha=210 label='Level editor' valueswidth=200");
+	TwDefine("FractalEditor visible=false size='420 350' color='0 120 200' alpha=210 label='Fractal editor' valueswidth=200");
 	TwDefine("Settings color='255 128 0' alpha=210 size='420 350' valueswidth=200");
 	TwDefine("Statistics color='0 128 255' alpha=210 size='420 160' valueswidth=200");
 }
@@ -832,7 +834,7 @@ void Menu::RenderMenu(sf::RenderWindow & window)
 			bool is_active = active == i;
 
 			float ycor = (GetElementYPosition(i) + 15) * draw_scale;
-
+			const sf::FloatRect bounds((menu_x - 20)*draw_scale + w_size_x * 0.8f, ycor, 20 * draw_scale, 20 * draw_scale);
 			switch (types[i])
 			{
 			case Button:
@@ -854,7 +856,9 @@ void Menu::RenderMenu(sf::RenderWindow & window)
 				window.draw(text);
 
 				edit_spr.setPosition((menu_x - 20)*draw_scale + w_size_x * 0.8f , ycor);
-				inside_edit = inside_edit || edit_spr.getGlobalBounds().contains(mouse.x, mouse.y);
+
+				
+				inside_edit = inside_edit || (mouse.x > ((menu_x - 20)*draw_scale + w_size_x * 0.8f));
 				window.draw(edit_spr);
 				break;
 			default:

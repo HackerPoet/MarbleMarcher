@@ -715,6 +715,21 @@ void Scene::Write(sf::Shader& shader) const {
 	  );
   }
 
+  if (cam_mode != INTRO)
+  {
+	  shader.setUniform("LIGHT_DIRECTION", sf::Glsl::Vec3(level_copy.light_dir[0], level_copy.light_dir[1], level_copy.light_dir[2]));
+	  shader.setUniform("PBR_ENABLED", PBR_Enabled);
+	  shader.setUniform("PBR_METALLIC", level_copy.PBR_metal);
+	  shader.setUniform("PBR_ROUGHNESS", level_copy.PBR_roughness);
+  }
+  else
+  {
+	  shader.setUniform("LIGHT_DIRECTION", sf::Glsl::Vec3(LIGHT_DIRECTION[0], LIGHT_DIRECTION[1], LIGHT_DIRECTION[2]));
+	  shader.setUniform("PBR_ENABLED", PBR_Enabled);
+	  shader.setUniform("PBR_METALLIC", PBR_METALLIC);
+	  shader.setUniform("PBR_ROUGHNESS", PBR_ROUGHNESS);
+  }
+
   shader.setUniform("iMarbleRad", level_copy.marble_rad);
 
   shader.setUniform("iFlagScale", level_copy.planet ? -level_copy.marble_rad : level_copy.marble_rad);
@@ -728,10 +743,6 @@ void Scene::Write(sf::Shader& shader) const {
   shader.setUniform("iExposure", exposure);
 
 
-  shader.setUniform("LIGHT_DIRECTION", sf::Glsl::Vec3(LIGHT_DIRECTION[0], LIGHT_DIRECTION[1], LIGHT_DIRECTION[2]));
-  shader.setUniform("PBR_ENABLED", PBR_Enabled);
-  shader.setUniform("PBR_METALLIC", PBR_METALLIC);
-  shader.setUniform("PBR_ROUGHNESS", PBR_ROUGHNESS);
   shader.setUniform("SHADOWS_ENABLED", Shadows_Enabled);
   shader.setUniform("CAMERA_SIZE", camera_size);
   shader.setUniform("FRACTAL_ITER", Fractal_Iterations);
