@@ -20,9 +20,7 @@ There is currently no further major development planned for this game. Please su
 ### MacOS
 On macOS these can be conveniently installed using [Homebrew](https://brew.sh):
 
-`brew install eigen sfml`
-
-(Note that SFML might require a newer version than the one from Homebrew, in which case a manual installation is required)
+`brew install cmake eigen sfml`
 
 Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
 
@@ -35,7 +33,7 @@ Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
 ## Building
 ### MacOS
 * `mkdir build && cd build`
-* `cmake ..`
+* `cmake -DCMAKE_CXX_FLAGS="-I/usr/local/include" ..`
     * If you use `vcpkg`, add the flag `-DCMAKE_TOOLCHAIN_FILE=[path/to/vcpkg]/scripts/buildsystems/vcpkg.cmake`
 * `cd ..`
 * `cmake --build build`
