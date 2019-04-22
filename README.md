@@ -105,6 +105,7 @@ Simply run `./macOSBuild.sh`. This will generate the full Application bundle tha
 #### Manual
 * `mkdir build && cd build`
 * `cmake ..`
+* `cmake -DCMAKE_CXX_FLAGS="-I/usr/local/include" ..`
     * If you use `vcpkg`, add the flag `-DCMAKE_TOOLCHAIN_FILE=[path/to/vcpkg]/scripts/buildsystems/vcpkg.cmake`
 * `cd ..`
 * `cmake --build build`
