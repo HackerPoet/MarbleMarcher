@@ -32,7 +32,7 @@ All credit goes to [HackerPoet](https://github.com/HackerPoet) (aka [CodeParade]
   - [Compiling on Windows](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#compiling-on-windows)
 - [Launching](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#launching)
   - [macOS](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#macos-2)
-  - [Other OSes](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#windows/linux/anything-else)
+  - [Other OSes](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#windowslinuxanything-else)
 - [Other](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#other)
   - [Shortcuts](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#shortcuts)
 
