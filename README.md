@@ -134,7 +134,7 @@ Alternatively, one can use the platform-dependent build system, for example `Mak
 This requires you to install wget, mingw-w64, and git (which you probably already have) either with HomeBrew (recommended) or otherwise. Theoretically, you should be able to just run `winMacOSBuild.sh`. There are no manual instructions because due to issues I had to just compile the thing manually which is annoying and has too many steps.
 
 ### Compiling on Windows
-Windows compilation should work just fine now. It's relatively easy to do without help, but in case you'd like it, [here are some configuring and compiling instructions](https://www.reddit.com/r/Marblemarcher/comments/bamqyh/how_to_configure_and_compile_source_for_windows/).
+Windows compilation should work just fine now. It's relatively easy to do without help, but in case you'd like them, [here are some configuring and compiling instructions](https://www.reddit.com/r/Marblemarcher/comments/bamqyh/how_to_configure_and_compile_source_for_windows/).
 
 ## Launching
 ### macOS
