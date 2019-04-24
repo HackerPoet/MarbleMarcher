@@ -39,6 +39,9 @@ All credit goes to [HackerPoet](https://github.com/HackerPoet) (aka [CodeParade]
 ## Changes
 - numerous miscellaneous fixes have been applied
 - easier compilation for macOS
+- feasible Windows compilation
+- README.md overhaul
+- new rendering engine
 - ingame statistics added (marble speed, ground/air state, ...). Press `o` to toggle.
 - AntTweakBar editor added. Press `F4` to toggle.
 
