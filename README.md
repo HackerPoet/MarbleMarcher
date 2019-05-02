@@ -78,7 +78,7 @@ Though Marble Marcher CE is a largely finished game, there are still several imp
   - recording/replay functionality
   - debug info screen
   - cheat: unlock all levels
-  - add creation of macOS `.dng` for easy distribution.
+  - add creation of macOS `.dmg` for easy distribution.
 
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
