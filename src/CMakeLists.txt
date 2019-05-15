@@ -12,3 +12,6 @@ add_library(MarbleMarcherSources
   SelectRes.h
   Settings.h
 )
+target_link_libraries(MarbleMarcherSources
+  ${MarbleMarcherDepTargets}
+)
