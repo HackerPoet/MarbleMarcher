@@ -28,6 +28,12 @@ extern Settings game_settings;
 const int Element_Height = 50;
 const int Descr_Height = 25;
 
+class Object
+{
+public:
+
+};
+
 //Generalized menu overlay 
 class Menu
 {
@@ -47,6 +53,7 @@ public:
 	void AddButton(std::string text);
 	void AddLevelButton(int LVL_ID, std::string name, std::string desc, std::string best_time);
 
+	void UpdateState(sf::Vector2f mouse, bool all_keys[]);
 	void UpdateMenu(int px, int py, int scroll);
 
 	int WhichActive();
