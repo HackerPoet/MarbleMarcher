@@ -4,15 +4,32 @@
 #include <SFML/OpenGL.hpp>
 #include <map>
 
+struct ColorFloat
+{
+	float r, g, b, a;
+	ColorFloat(float red = 0.f, float green = 0.f, float blue = 0.f, float alpha = 255.f);
+
+	void operator=(sf::Color a);
+};
+
+ColorFloat operator+(ColorFloat a, ColorFloat b);
+
+ColorFloat operator-(ColorFloat a, ColorFloat b);
+
+ColorFloat operator*(ColorFloat a, float b);
+
+sf::Color ToColor(ColorFloat a);
+ColorFloat ToColorF(sf::Color a);
+
 //the object parameters
 struct State
 {
 	sf::Vector2f position = sf::Vector2f(0,0);
 	sf::Vector2f size = sf::Vector2f(0.1f, 0.1f);
 	float border_thickness = 0.f;
-	sf::Color color_main = sf::Color::Black;
-	sf::Color color_second = sf::Color::White;
-	sf::Color color_border = sf::Color(128,128,128);
+	ColorFloat color_main = ToColorF(sf::Color::Black);
+	ColorFloat color_second = ToColorF(sf::Color::White);
+	ColorFloat color_border = ColorFloat(128,128,128);
 };
 
 //interpolate between states for animation effects

@@ -307,6 +307,9 @@ int main(int argc, char *argv[]) {
 
   Box test(200,200,500,500,sf::Color::Blue);
   test.hoverstate.color_main = sf::Color::Red;
+  test.hoverstate.color_border = sf::Color::Blue;
+  test.activestate.color_main = sf::Color::Green;
+  test.hoverstate.border_thickness = 20;
 
   while (window.isOpen()) {
     sf::Event event;

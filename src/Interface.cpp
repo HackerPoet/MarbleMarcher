@@ -2,7 +2,48 @@
 
 std::map<int, Object*> global_objects;
 int obj_id = 0;
-float animation_sharpness = 0.1f;
+float animation_sharpness = 2.f;
+
+
+ColorFloat operator+(ColorFloat a, ColorFloat b)
+{
+	ColorFloat c;
+	c.r = a.r + b.r;
+	c.g = a.g + b.g;
+	c.b = a.b + b.b;
+	c.a = a.a + b.a;
+	return c;
+}
+
+ColorFloat operator-(ColorFloat a, ColorFloat b)
+{
+	ColorFloat c;
+	c.r = a.r - b.r;
+	c.g = a.g - b.g;
+	c.b = a.b - b.b;
+	c.a = a.a - b.a;
+	return c;
+}
+
+ColorFloat operator*(ColorFloat a, float b)
+{
+	ColorFloat c;
+	c.r = a.r * b;
+	c.g = a.g * b;
+	c.b = a.b * b;
+	c.a = a.a * b;
+	return c;
+}
+
+sf::Color ToColor(ColorFloat a)
+{
+	return sf::Color(a.r, a.g, a.b, a.a);
+}
+
+ColorFloat ToColorF(sf::Color a)
+{
+	return ColorFloat(a.r, a.g, a.b, a.a);
+}
 
 State interpolate(State a, State b, float t)
 {
@@ -181,9 +222,9 @@ void Box::Draw(sf::RenderWindow * window)
 	//update the box itself
 	rect.setPosition(curstate.position);
 	rect.setSize(curstate.size);
-	rect.setFillColor(curstate.color_main);
-	rect.setOutlineColor(curstate.color_border);
+	rect.setFillColor(ToColor(curstate.color_main));
 	rect.setOutlineThickness(curstate.border_thickness);
+	rect.setOutlineColor(ToColor(curstate.color_border));
 	window->draw(rect);
 
 	float line_height = 0;
@@ -227,7 +268,7 @@ Box::Box(float x, float y, float dx, float dy, sf::Color color_main): cur_shift_
 	defaultstate.position.y = y;
 	defaultstate.size.x = dx;
 	defaultstate.size.y = dy;
-	defaultstate.color_main = color_main;
+	defaultstate.color_main = ToColorF(color_main);
 	clone_states();
 }
 
@@ -237,4 +278,14 @@ void UpdateAllObjects(sf::RenderWindow * window, sf::Vector2i mouse, bool RMB, b
 	{
 		obj.second->Update(window, mouse, RMB, LMB, all_keys, dt);
 	}
+}
+
+ColorFloat::ColorFloat(float red, float green, float blue, float alpha): r(red), g(green), b(blue), a(alpha)
+{
+
+}
+
+void ColorFloat::operator=(sf::Color a)
+{
+	*this = ToColorF(a);
 }
