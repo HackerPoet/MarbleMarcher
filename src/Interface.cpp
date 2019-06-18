@@ -2,7 +2,7 @@
 
 std::map<int, Object*> global_objects;
 int obj_id = 0;
-float animation_sharpness = 2.f;
+float animation_sharpness = 4.f;
 
 
 ColorFloat operator+(ColorFloat a, ColorFloat b)
@@ -53,55 +53,10 @@ State interpolate(State a, State b, float t)
 	C.size.x = a.size.x*(1.f - t) + b.size.x*t;
 	C.size.y = a.size.y*(1.f - t) + b.size.y*t;
 	C.border_thickness = a.border_thickness*(1.f - t) + b.border_thickness*t;
-	C.color_main.r = a.color_main.r*(1.f - t) + b.color_main.r*t;
-	C.color_main.g = a.color_main.g*(1.f - t) + b.color_main.g*t;
-	C.color_main.b = a.color_main.b*(1.f - t) + b.color_main.b*t;
-	C.color_second.r = a.color_second.r*(1.f - t) + b.color_second.r*t;
-	C.color_second.g = a.color_second.g*(1.f - t) + b.color_second.g*t;
-	C.color_second.b = a.color_second.b*(1.f - t) + b.color_second.b*t;
-	C.color_border.r = a.color_border.r*(1.f - t) + b.color_border.r*t;
-	C.color_border.g = a.color_border.g*(1.f - t) + b.color_border.g*t;
-	C.color_border.b = a.color_border.b*(1.f - t) + b.color_border.b*t;
-	return C;
-}
-
-State operator+(State a, State b)
-{
-	State C;
-	C.position.x = a.position.x+ b.position.x;
-	C.position.y = a.position.y + b.position.y;
-	C.size.x = a.size.x + b.size.x;
-	C.size.y = a.size.y+ b.size.y;
-	C.border_thickness = a.border_thickness + b.border_thickness;
-	C.color_main.r = a.color_main.r + b.color_main.r;
-	C.color_main.g = a.color_main.g + b.color_main.g;
-	C.color_main.b = a.color_main.b* + b.color_main.b;
-	C.color_second.r = a.color_second.r + b.color_second.r;
-	C.color_second.g = a.color_second.g + b.color_second.g;
-	C.color_second.b = a.color_second.b + b.color_second.b;
-	C.color_border.r = a.color_border.r + b.color_border.r;
-	C.color_border.g = a.color_border.g + b.color_border.g;
-	C.color_border.b = a.color_border.b + b.color_border.b;
-	return C;
-}
-
-State operator*(State a, float b)
-{
-	State C;
-	C.position.x = a.position.x * b;
-	C.position.y = a.position.y * b;
-	C.size.x = a.size.x * b;
-	C.size.y = a.size.y * b;
-	C.border_thickness = a.border_thickness * b;
-	C.color_main.r = a.color_main.r * b;
-	C.color_main.g = a.color_main.g * b;
-	C.color_main.b = a.color_main.b * b;
-	C.color_second.r = a.color_second.r * b;
-	C.color_second.g = a.color_second.g * b;
-	C.color_second.b = a.color_second.b * b;
-	C.color_border.r = a.color_border.r * b;
-	C.color_border.g = a.color_border.g * b;
-	C.color_border.b = a.color_border.b * b;
+	C.margin = a.margin*(1.f - t) + b.margin*t;
+	C.color_main = a.color_main*(1.f - t) + b.color_main*t;
+	C.color_second = a.color_second*(1.f - t) + b.color_second*t;
+	C.color_border = a.color_border*(1.f - t) + b.color_border*t;
 	return C;
 }
 
@@ -131,6 +86,14 @@ void Object::SetBorderColor(sf::Color color)
 
 void Object::SetBorderWidth(float S)
 {
+}
+
+void Object::SetMargin(float x)
+{
+	defaultstate.margin = x;
+	curstate.margin = x;
+	activestate.margin = x;
+	hoverstate.margin = x;
 }
 
 void Object::SetCallbackFunction(void(*fun)(void *))
@@ -215,6 +178,9 @@ Object::~Object()
 
 void Box::AddObject(Object * something, Allign a)
 {
+	objects[something->id] = something;
+	object_alligns[something->id] = a;
+	object_ids.push_back(something->id);
 }
 
 void Box::Draw(sf::RenderWindow * window)
@@ -228,41 +194,58 @@ void Box::Draw(sf::RenderWindow * window)
 	window->draw(rect);
 
 	float line_height = 0;
+	float cur_shift_x1 = curstate.margin, cur_shift_x2 = curstate.margin;
+	float cur_shift_y = curstate.margin;
+
 	//update all the stuff inside the box
 	for (auto &obj : objects)
 	{
 		Allign A = object_alligns[obj.first];
-		line_height = std::max(obj.second->curstate.size.y, line_height);
-		float space_left = defaultstate.size.y - cur_shift_x1 - cur_shift_x2;
-		float obj_width = obj.second->curstate.size.x;
-		if (space_left > obj_width)
+		bool not_placed = true; 
+		int tries = 0;
+		while (not_placed && tries < 3) //try to place the object somewhere
 		{
-			switch (A)
+			float space_left = defaultstate.size.x - cur_shift_x1 - cur_shift_x2;
+			float obj_width = obj.second->curstate.size.x;
+
+			if (space_left > obj_width)
 			{
-			case LEFT:
-				cur_shift_x1 += obj_width;
-				obj.second->SetPosition(curstate.position.x + cur_shift_x1, curstate.position.y + cur_shift_y);
-				break;
-			case CENTER:
-				obj.second->SetPosition(curstate.position.x + defaultstate.size.x * 0.5f - obj_width * 0.5f, curstate.position.y + cur_shift_y);
-				cur_shift_y += line_height;
-				line_height = 0;
-				break;
-			case RIGHT:
-				cur_shift_x2 += obj_width;
-				obj.second->SetPosition(curstate.position.x + defaultstate.size.x - obj_width - cur_shift_x1, curstate.position.y + cur_shift_y);
-				break;
+				not_placed = false;
+				switch (A)
+				{
+				case LEFT:
+					obj.second->SetPosition(curstate.position.x + cur_shift_x1, curstate.position.y + cur_shift_y);
+					cur_shift_x1 += obj_width + curstate.margin;
+					break;
+				case CENTER:
+					obj.second->SetPosition(curstate.position.x + defaultstate.size.x * 0.5f - obj_width * 0.5f, curstate.position.y + cur_shift_y);
+					cur_shift_y += line_height + curstate.margin;
+					line_height = 0;
+					cur_shift_x1 = curstate.margin;
+					cur_shift_x2 = curstate.margin;
+					break;
+				case RIGHT:
+					obj.second->SetPosition(curstate.position.x + defaultstate.size.x - obj_width - cur_shift_x2, curstate.position.y + cur_shift_y);
+					cur_shift_x2 += obj_width + curstate.margin;
+					break;
+				}
 			}
+			else
+			{
+				cur_shift_y += line_height + curstate.margin;
+				line_height = 0;
+				cur_shift_x1 = curstate.margin;
+				cur_shift_x2 = curstate.margin;
+				tries++;
+			}
+
+			
 		}
-		else
-		{
-			cur_shift_y += line_height;
-			line_height = 0;
-		}	
+		line_height = std::max(obj.second->curstate.size.y, line_height);
 	}
 }
 
-Box::Box(float x, float y, float dx, float dy, sf::Color color_main): cur_shift_x1(0.f), cur_shift_x2(0.f), cur_shift_y(0.f)
+Box::Box(float x, float y, float dx, float dy, sf::Color color_main)
 {
 	defaultstate.position.x = x;
 	defaultstate.position.y = y;

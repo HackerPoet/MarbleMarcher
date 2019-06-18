@@ -27,6 +27,7 @@ struct State
 	sf::Vector2f position = sf::Vector2f(0,0);
 	sf::Vector2f size = sf::Vector2f(0.1f, 0.1f);
 	float border_thickness = 0.f;
+	float margin = 0.f;
 	ColorFloat color_main = ToColorF(sf::Color::Black);
 	ColorFloat color_second = ToColorF(sf::Color::White);
 	ColorFloat color_border = ColorFloat(128,128,128);
@@ -51,6 +52,7 @@ public:
 	void SetBackgroundColor(sf::Color color);
 	void SetBorderColor(sf::Color color);
 	void SetBorderWidth(float S);
+	void SetMargin(float x);
 
 	void SetCallbackFunction(void(*fun)(void*));
 	void SetHoverFunction(void(*fun)(void*));
@@ -97,12 +99,9 @@ private:
 
 	//objects inside the box
 	std::map<int, Object*> objects;
-	std::vector<Allign> object_alligns;
+	std::map<int, Allign> object_alligns;
 	std::vector<int> object_ids;
-	float cur_shift_x1, cur_shift_x2; //left and right shifts
-	float cur_shift_y;
 	
-
 };
 
 /*

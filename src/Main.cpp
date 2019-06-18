@@ -305,11 +305,15 @@ int main(int argc, char *argv[]) {
   scene.StartDefault();
   overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);
 
-  Box test(200,200,500,500,sf::Color::Blue);
-  test.hoverstate.color_main = sf::Color::Red;
-  test.hoverstate.color_border = sf::Color::Blue;
-  test.activestate.color_main = sf::Color::Green;
-  test.hoverstate.border_thickness = 20;
+  Box test(200,200,500,500,sf::Color(0,0,0,128));
+  Box sbox(0, 0, 240, 100, sf::Color(128, 128, 128,240));
+  Box sbox2(0, 0, 240, 150, sf::Color(0, 64, 128,240));
+  test.hoverstate.border_thickness = 5;
+  test.AddObject(&sbox, Box::LEFT);
+  test.AddObject(&sbox2, Box::CENTER);
+  test.SetMargin(20);
+  sbox2.hoverstate.color_main = sf::Color(230,40,20, 200);
+  
 
   while (window.isOpen()) {
     sf::Event event;
