@@ -28,11 +28,6 @@ extern Settings game_settings;
 const int Element_Height = 50;
 const int Descr_Height = 25;
 
-class Object
-{
-public:
-
-};
 
 //Generalized menu overlay 
 class Menu

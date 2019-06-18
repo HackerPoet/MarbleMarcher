@@ -32,6 +32,8 @@
 #include <thread>
 #include <mutex>
 
+#include<Interface.h>
+
 #ifdef _WIN32
 #include <Windows.h>
 #define ERROR_MSG(x) MessageBox(nullptr, TEXT(x), TEXT("ERROR"), MB_OK);
@@ -302,6 +304,9 @@ int main(int argc, char *argv[]) {
 
   scene.StartDefault();
   overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);
+
+  Box test(200,200,500,500,sf::Color::Blue);
+  test.hoverstate.color_main = sf::Color::Red;
 
   while (window.isOpen()) {
     sf::Event event;
@@ -823,9 +828,12 @@ int main(int argc, char *argv[]) {
       overlays.DrawFPS(window, int(smooth_fps + 0.5f));
     }
 
+	overlays.DrawAntTweakBar();
+	UpdateAllObjects(&window, mouse_pos, mouse_clicked, mouse_clicked, all_keys, 1/smooth_fps);
+
     if (!skip_frame) {
       //Finally display to the screen
-	  overlays.DrawAntTweakBar();
+	 
 	  if(overlays.TWBAR_ENABLED)
 		scene.Synchronize();
       window.display();

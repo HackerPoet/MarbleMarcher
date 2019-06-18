@@ -1,34 +1,62 @@
 #pragma once
+#include <SFML/Audio.hpp>
+#include <SFML/Graphics.hpp>
+#include <SFML/OpenGL.hpp>
+#include <map>
 
 //the object parameters
-class State
+struct State
 {
-public:
-	sf::Vector2f position;
-	sf::Vector2f size;
-	sf::Vector2f color_main;
-	sf::Vector2f color_second;
-	sf::Vector2f border_color;
-	sf::Vector2f position_cur;
-	sf::Vector2f size_cur;
+	sf::Vector2f position = sf::Vector2f(0,0);
+	sf::Vector2f size = sf::Vector2f(0.1f, 0.1f);
+	float border_thickness = 0.f;
+	sf::Color color_main = sf::Color::Black;
+	sf::Color color_second = sf::Color::White;
+	sf::Color color_border = sf::Color(128,128,128);
 };
+
+//interpolate between states for animation effects
+State interpolate(State a, State b, float t);
+
+void UpdateAllObjects(sf::RenderWindow * window, sf::Vector2i mouse, bool RMB, bool LMB, bool all_keys[], float dt);
 
 //the object base class
 class Object
 {
 public:
-	virtual void SetPosition(float x, float y);
-	virtual void SetSize(float x, float y);
-	virtual void Draw(sf::RenderWindow *window);
-	virtual void Update(sf::Vector2f mouse, bool all_keys[], float time);
-	void SetCallbackFunction(void (*fun)(void*));
+	enum States
+	{
+		DEFAULT, ONHOVER, ACTIVE
+	};
 
-private:
-	
+	void SetPosition(float x, float y);
+	void SetSize(float x, float y);
+	void SetBackgroundColor(sf::Color color);
+	void SetBorderColor(sf::Color color);
+	void SetBorderWidth(float S);
 
-	sf::Vecror2i window_size;
-	void(*callbk)(void*);
-protected:
+	void SetCallbackFunction(void(*fun)(void*));
+	void SetHoverFunction(void(*fun)(void*));
+
+	void clone_states();
+
+	virtual void Draw(sf::RenderWindow * window);
+
+	void Update(sf::RenderWindow * window, sf::Vector2i mouse, bool RMB, bool LMB, bool all_keys[], float dt);
+
+	Object();
+	~Object();
+
+	State curstate;
+	State activestate;
+	State hoverstate;
+	State defaultstate;
+	States curmode;
+
+	int id;
+
+	void(*callback)(void*);
+	void(*hoverfn)(void*);
 
 };
 
@@ -36,21 +64,31 @@ protected:
 class Box: public Object
 {
 public:
-	enum Align
+	enum Allign
 	{
 		LEFT, CENTER, RIGHT
 	};
-	void SetMargin(float S);
-	void AddObject(Object* something, Align a = LEFT);
-	void SetBackgroundColor(sf::Color color);
-	void SetBorderColor(sf::Color color);
-	void SetBorderWidth(float S);
+	void AddObject(Object* something, Allign a = LEFT);
 
-	void SetSize(float x, float y);
-	void SetPosition(float x, float y);
 	void Draw(sf::RenderWindow *window);
+
+	Box(float x, float y, float dx, float dy, sf::Color color_main);
+
+private:
+
+	sf::RectangleShape rect;
+
+	//objects inside the box
+	std::map<int, Object*> objects;
+	std::vector<Allign> object_alligns;
+	std::vector<int> object_ids;
+	float cur_shift_x1, cur_shift_x2; //left and right shifts
+	float cur_shift_y;
+	
+
 };
 
+/*
 class Text : public Object
 {
 public:
@@ -69,3 +107,9 @@ class Image : public Object
 	virtual void SetSize(float x, float y);
 	virtual void Draw(sf::RenderWindow *window);
 };
+
+class Menu : public Box
+{
+
+};
+*/
