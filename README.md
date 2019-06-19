@@ -28,8 +28,8 @@ All credit goes to [HackerPoet](https://github.com/HackerPoet) (aka [CodeParade]
 - [Building](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#building)
   - [macOS](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#macos-1)
   - [Arch Linux](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#arch-linux-1)
-  - [Cross-Compile for Windows (macOS)](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#cross-compile-for-windows-on-macos)
   - [Compiling on Windows](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#compiling-on-windows)
+  - [Cross-Compile for Windows (macOS)](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#cross-compile-for-windows-on-macos)
 - [Launching](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#launching)
   - [macOS](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#macos-2)
   - [Other OSes](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#windowslinuxanything-else)
@@ -130,11 +130,11 @@ Alternatively, one can use the platform-dependent build system, for example `Mak
 * `cmake --build build`
 * `cp build/MarbleMarcher ./`
 
-### Cross-Compile for Windows on macOS
-This requires you to install wget, mingw-w64, and git (which you probably already have) either with HomeBrew (recommended) or otherwise. Theoretically, you should be able to just run `winMacOSBuild.sh`. There are no manual instructions because due to issues I had to just compile the thing manually which is annoying and has too many steps.
-
 ### Compiling on Windows
 Windows compilation should work just fine now. It's relatively easy to do without help, but in case you'd like them, [here are some configuring and compiling instructions](https://www.reddit.com/r/Marblemarcher/comments/bamqyh/how_to_configure_and_compile_source_for_windows/).
+
+### Cross-Compile for Windows on macOS
+This requires you to install wget, mingw-w64, and git (which you probably already have) either with HomeBrew (recommended) or otherwise. Theoretically, you should be able to just run `winMacOSBuild.sh`. There are no manual instructions because due to issues I had to just compile the thing manually which is annoying and has too many steps.
 
 ## Launching
 ### macOS
