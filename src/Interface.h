@@ -28,8 +28,9 @@ struct State
 	sf::Vector2f size = sf::Vector2f(0.1f, 0.1f);
 	float border_thickness = 0.f;
 	float margin = 0.f;
+	float font_size = 1.f;
 	ColorFloat color_main = ToColorF(sf::Color::Black);
-	ColorFloat color_second = ToColorF(sf::Color::White);
+	ColorFloat color_second = ToColorF(sf::Color::Transparent);
 	ColorFloat color_border = ColorFloat(128,128,128);
 };
 
@@ -106,18 +107,17 @@ private:
 	
 };
 
-/*
-class Text : public Object
+
+class Text: public Object
 {
 public:
-	void SetFontSize(float rel_size);
-	void UseFont(sf::Font font);
-
-	void SetPosition(float x, float y);
 	void Draw(sf::RenderWindow *window);
+	sf::Text text;
+
+	Text(std::string text, sf::Font &f, float size, sf::Color col);
 };
 
-class Image : public Object
+/*class Image : public Object
 {
 	void LoadFromFile(std::string filename);
 

@@ -54,6 +54,7 @@ State interpolate(State a, State b, float t)
 	C.size.y = a.size.y*(1.f - t) + b.size.y*t;
 	C.border_thickness = a.border_thickness*(1.f - t) + b.border_thickness*t;
 	C.margin = a.margin*(1.f - t) + b.margin*t;
+	C.font_size = a.font_size*(1.f - t) + b.font_size*t;
 	C.color_main = a.color_main*(1.f - t) + b.color_main*t;
 	C.color_second = a.color_second*(1.f - t) + b.color_second*t;
 	C.color_border = a.color_border*(1.f - t) + b.color_border*t;
@@ -211,11 +212,12 @@ void Box::Draw(sf::RenderWindow * window)
 		bool not_placed = true; 
 		int tries = 0;
 		obj.second->used_view = boxView;
+		line_height = std::max(obj.second->curstate.size.y, line_height);
 		while (not_placed && tries < 3) //try to place the object somewhere
 		{
 			float space_left = defaultstate.size.x - cur_shift_x1 - cur_shift_x2;
 			float obj_width = obj.second->curstate.size.x;
-
+			
 			if (space_left > obj_width)
 			{
 				not_placed = false;
@@ -246,10 +248,7 @@ void Box::Draw(sf::RenderWindow * window)
 				cur_shift_x2 = curstate.margin;
 				tries++;
 			}
-
-			
 		}
-		line_height = std::max(obj.second->curstate.size.y, line_height);
 	}
 }
 
@@ -279,4 +278,27 @@ ColorFloat::ColorFloat(float red, float green, float blue, float alpha): r(red),
 void ColorFloat::operator=(sf::Color a)
 {
 	*this = ToColorF(a);
+}
+
+void Text::Draw(sf::RenderWindow * window)
+{
+	text.setPosition(curstate.position);
+	text.setCharacterSize(curstate.font_size);
+	text.setFillColor(ToColor(curstate.color_main));
+	text.setOutlineThickness(curstate.border_thickness);
+	text.setOutlineColor(ToColor(curstate.color_border));
+
+	window->draw(text);
+
+	SetSize(text.getLocalBounds().width, text.getLocalBounds().height);
+}
+
+Text::Text(std::string str, sf::Font & f, float size, sf::Color col)
+{
+	text.setString(str);
+	text.setFont(f);
+	defaultstate.font_size = size;
+	defaultstate.color_main = col;
+
+	clone_states();
 }
