@@ -72,6 +72,8 @@ public:
 	State defaultstate;
 	States curmode;
 
+	sf::View used_view;
+
 	int id;
 
 	void(*callback)(void*);
@@ -94,8 +96,8 @@ public:
 	Box(float x, float y, float dx, float dy, sf::Color color_main);
 
 private:
-
 	sf::RectangleShape rect;
+	sf::View boxView;
 
 	//objects inside the box
 	std::map<int, Object*> objects;

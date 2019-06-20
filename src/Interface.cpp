@@ -120,6 +120,7 @@ void Object::Draw(sf::RenderWindow * window)
 
 void Object::Update(sf::RenderWindow * window, sf::Vector2i mouse, bool RMB, bool LMB, bool all_keys[], float dt)
 {
+	window->setView(used_view);
 	//callback stuff
 	sf::Vector2f worldPos = window->mapPixelToCoords(mouse);
 	sf::FloatRect obj(curstate.position.x, curstate.position.y, curstate.size.x, curstate.size.y);
@@ -161,11 +162,13 @@ void Object::Update(sf::RenderWindow * window, sf::Vector2i mouse, bool RMB, boo
 		break;
 	}
 
+	
 	Draw(window);
 }
 
 Object::Object() : callback(NULL), hoverfn(NULL), curmode(DEFAULT)
 {
+	used_view = sf::View(sf::FloatRect(0, 0, 1600, 900));
 	id = obj_id;
 	obj_id++;
 	global_objects[id] = this;//add it to the global list
@@ -193,6 +196,10 @@ void Box::Draw(sf::RenderWindow * window)
 	rect.setOutlineColor(ToColor(curstate.color_border));
 	window->draw(rect);
 
+	sf::Vector2f default_size = sf::Vector2f(1600, 900);
+	boxView.reset(sf::FloatRect(curstate.position, curstate.size));
+	boxView.setViewport(sf::FloatRect(curstate.position.x/ default_size.x, curstate.position.y / default_size.y, curstate.size.x / default_size.x, curstate.size.y / default_size.y));
+
 	float line_height = 0;
 	float cur_shift_x1 = curstate.margin, cur_shift_x2 = curstate.margin;
 	float cur_shift_y = curstate.margin;
@@ -203,6 +210,7 @@ void Box::Draw(sf::RenderWindow * window)
 		Allign A = object_alligns[obj.first];
 		bool not_placed = true; 
 		int tries = 0;
+		obj.second->used_view = boxView;
 		while (not_placed && tries < 3) //try to place the object somewhere
 		{
 			float space_left = defaultstate.size.x - cur_shift_x1 - cur_shift_x2;

@@ -258,7 +258,7 @@ int main(int argc, char *argv[]) {
     renderTexture.setSmooth(false);
   }
 
-  
+  sf::View default_view = window.getDefaultView();
 
   //Create the fractal scene
   Scene scene(level_music);
@@ -275,8 +275,6 @@ int main(int argc, char *argv[]) {
   sf::RectangleShape rect_scrshot;
   rect_scrshot.setSize(sres_res);
   rect_scrshot.setPosition(0, 0);
-
-  
   
   menu_music.setVolume(GetVol());
   menu_music.play();
@@ -307,7 +305,7 @@ int main(int argc, char *argv[]) {
 
   Box test(200,200,500,500,sf::Color(0,0,0,128));
   Box sbox(0, 0, 240, 100, sf::Color(128, 128, 128,240));
-  Box sbox2(0, 0, 240, 150, sf::Color(0, 64, 128,240));
+  Box sbox2(0, 0, 240, 1500, sf::Color(0, 64, 128,240));
   test.hoverstate.border_thickness = 5;
   test.AddObject(&sbox, Box::LEFT);
   test.AddObject(&sbox2, Box::CENTER);
@@ -339,7 +337,8 @@ int main(int argc, char *argv[]) {
 			overlays.SetTWBARResolution(event.size.width, event.size.height);
 			overlays.SetScale( std::max(float(screen_size.width), float(screen_size.height))/ 1280.0f);
 			sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
-			window.setView(sf::View(visibleArea));
+			default_view = sf::View(visibleArea);
+			window.setView(default_view);
 			scene.SetWindowResolution(window.getSize().x, window.getSize().y);
 		}
 
@@ -835,14 +834,15 @@ int main(int argc, char *argv[]) {
       overlays.DrawFPS(window, int(smooth_fps + 0.5f));
     }
 
-	overlays.DrawAntTweakBar();
-	UpdateAllObjects(&window, mouse_pos, mouse_clicked, mouse_clicked, all_keys, 1/smooth_fps);
 
     if (!skip_frame) {
       //Finally display to the screen
 	 
 	  if(overlays.TWBAR_ENABLED)
 		scene.Synchronize();
+	  overlays.DrawAntTweakBar();
+	  UpdateAllObjects(&window, mouse_pos, mouse_clicked, mouse_clicked, all_keys, 1 / smooth_fps);
+	  window.setView(default_view);
       window.display();
 
       //If V-Sync is running higher than desired fps, slow down!
