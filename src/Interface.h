@@ -29,6 +29,7 @@ struct State
 	float border_thickness = 0.f;
 	float margin = 0.f;
 	float font_size = 1.f;
+	float scroll = 0.f;
 	ColorFloat color_main = ToColorF(sf::Color::Black);
 	ColorFloat color_second = ToColorF(sf::Color::Transparent);
 	ColorFloat color_border = ColorFloat(128,128,128);
@@ -54,12 +55,14 @@ public:
 	void SetBorderColor(sf::Color color);
 	void SetBorderWidth(float S);
 	void SetMargin(float x);
+	void SetScroll(float x);
 
 	void SetCallbackFunction(void(*fun)(void*));
 	void SetHoverFunction(void(*fun)(void*));
 
 	void clone_states();
 
+	virtual void KeyboardAction(bool all_keys[]);
 	virtual void Draw(sf::RenderWindow * window);
 
 	void Update(sf::RenderWindow * window, sf::Vector2i mouse, bool RMB, bool LMB, bool all_keys[], float dt);
@@ -95,9 +98,11 @@ public:
 	void Draw(sf::RenderWindow *window);
 
 	Box(float x, float y, float dx, float dy, sf::Color color_main);
+	Box();
 
 private:
 	sf::RectangleShape rect;
+	sf::RectangleShape scroll1, scroll2;
 	sf::View boxView;
 
 	//objects inside the box
@@ -115,19 +120,35 @@ public:
 	sf::Text text;
 
 	Text(std::string text, sf::Font &f, float size, sf::Color col);
+	Text(sf::Text t);
 };
 
-/*class Image : public Object
+class Window: public Box
 {
-	void LoadFromFile(std::string filename);
+public:
+	std::unique_ptr<Box> Bar, Inside, Scroll, Scroll_Slide;
+	std::unique_ptr<Text> Title;
 
-	virtual void SetPosition(float x, float y);
-	virtual void SetSize(float x, float y);
-	virtual void Draw(sf::RenderWindow *window);
+	sf::Vector2f prev_mouse;
+
+	Window(float x, float y, float dx, float dy, sf::Color color_main, sf::Text title);
 };
 
 class Menu : public Box
 {
 
 };
+
+
+
+/*
+
+class Image : public Object
+{
+	Image();
+
+
+	void Draw(sf::RenderWindow *window);
+};
+
 */
