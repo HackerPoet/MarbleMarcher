@@ -3,6 +3,8 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 #include <map>
+#include <algorithm>
+#include <iterator>
 
 struct ColorFloat
 {
@@ -20,6 +22,20 @@ ColorFloat operator*(ColorFloat a, float b);
 
 sf::Color ToColor(ColorFloat a);
 ColorFloat ToColorF(sf::Color a);
+
+
+struct InputState
+{
+	bool keys[sf::Keyboard::KeyCount];
+	bool mouse[3];
+	sf::Vector2f mouse_pos;
+	sf::Vector2f mouse_speed;
+	float time, dt;
+
+	InputState();
+	InputState(bool keys[sf::Keyboard::KeyCount], bool mouse[3], sf::Vector2f mouse_pos, sf::Vector2f mouse_speed);
+};
+
 
 //the object parameters
 struct State
@@ -57,15 +73,15 @@ public:
 	void SetMargin(float x);
 	void SetScroll(float x);
 
-	void SetCallbackFunction(void(*fun)(void*));
-	void SetHoverFunction(void(*fun)(void*));
+	void SetCallbackFunction(void(*fun)(InputState & state));
+	void SetHoverFunction(void(*fun)(InputState & state));
 
 	void clone_states();
 
-	virtual void KeyboardAction(bool all_keys[]);
+	virtual void KeyboardAction(InputState & state);
 	virtual void Draw(sf::RenderWindow * window);
 
-	void Update(sf::RenderWindow * window, sf::Vector2i mouse, bool RMB, bool LMB, bool all_keys[], float dt);
+	void Update(sf::RenderWindow * window, InputState& state);
 
 	Object();
 	~Object();
@@ -80,8 +96,8 @@ public:
 
 	int id;
 
-	void(*callback)(void*);
-	void(*hoverfn)(void*);
+	void(*callback)(InputState & state);
+	void(*hoverfn)(InputState & state);
 
 };
 

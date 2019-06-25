@@ -103,12 +103,12 @@ void Object::SetScroll(float x)
 	hoverstate.scroll = x;
 }
 
-void Object::SetCallbackFunction(void(*fun)(void *))
+void Object::SetCallbackFunction(void(*fun)(InputState & state))
 {
 	callback = fun;
 }
 
-void Object::SetHoverFunction(void(*fun)(void *))
+void Object::SetHoverFunction(void(*fun)(InputState & state))
 {
 	hoverfn = fun;
 }
@@ -120,7 +120,7 @@ void Object::clone_states()
 	hoverstate = defaultstate;
 }
 
-void Object::KeyboardAction(bool all_keys[])
+void Object::KeyboardAction(InputState& state)
 {
 }
 
@@ -129,26 +129,26 @@ void Object::Draw(sf::RenderWindow * window)
 	//nothing to draw
 }
 
-void Object::Update(sf::RenderWindow * window, sf::Vector2i mouse, bool RMB, bool LMB, bool all_keys[], float dt)
+void Object::Update(sf::RenderWindow * window, InputState& state)
 {
 	window->setView(used_view);
 	//callback stuff
-	sf::Vector2f worldPos = window->mapPixelToCoords(mouse);
+	sf::Vector2f worldPos = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y));
 	sf::FloatRect obj(curstate.position.x, curstate.position.y, curstate.size.x, curstate.size.y);
 
 	//if mouse is inside the object 
 	if (obj.contains(worldPos))
 	{
-		if (RMB || LMB) //if click
+		if (state.mouse[0] || state.mouse[1]) //if click
 		{
-			if(callback != NULL)
-				(*callback)((void*)&worldPos); //run callback with WorldPos info
+			if (callback != NULL)
+				(*callback)(state); //run callback with WorldPos info
 			curmode = ACTIVE;
 		}
 		else // if hover
 		{
 			if (hoverfn != NULL)
-				(*hoverfn)((void*)&worldPos); //run callback with WorldPos info
+				(*hoverfn)(state); //run callback with WorldPos info
 			curmode = ONHOVER;
 		}
 	}
@@ -157,13 +157,13 @@ void Object::Update(sf::RenderWindow * window, sf::Vector2i mouse, bool RMB, boo
 		curmode = DEFAULT;
 	}
 
-	float t = 1.f - exp(-animation_sharpness*dt);
+	float t = 1.f - exp(-animation_sharpness * state.dt);
 
 	//animation
 	switch (curmode)
 	{
 	case DEFAULT:
-		curstate = interpolate(curstate, defaultstate, t); 
+		curstate = interpolate(curstate, defaultstate, t);
 		break;
 	case ACTIVE:
 		curstate = interpolate(curstate, activestate, t);
@@ -173,11 +173,12 @@ void Object::Update(sf::RenderWindow * window, sf::Vector2i mouse, bool RMB, boo
 		break;
 	}
 
-	KeyboardAction(all_keys);
+	KeyboardAction(state);
 	Draw(window);
 }
 
-Object::Object() : callback(NULL), hoverfn(NULL), curmode(DEFAULT)
+
+Object::Object() : callback(nullptr), hoverfn(nullptr), curmode(DEFAULT)
 {
 	used_view = sf::View(sf::FloatRect(0, 0, 1600, 900));
 	id = obj_id;
@@ -277,11 +278,11 @@ Box::Box()
 
 }
 
-void UpdateAllObjects(sf::RenderWindow * window, sf::Vector2i mouse, bool RMB, bool LMB, bool all_keys[], float dt)
+void UpdateAllObjects(sf::RenderWindow * window, InputState& state)
 {
 	for (auto &obj : global_objects)
 	{
-		obj.second->Update(window, mouse, RMB, LMB, all_keys, dt);
+		obj.second->Update(window, state);
 	}
 }
 
@@ -349,4 +350,17 @@ Window::Window(float x, float y, float dx, float dy, sf::Color color_main, sf::T
 
 	//use lambda funtion
 	Scroll_Slide.get()->SetCallbackFunction();
+}
+
+InputState::InputState(): mouse_pos(sf::Vector2f(0,0)), mouse_speed(sf::Vector2f(0, 0))
+{
+	std::fill(keys, keys + sf::Keyboard::KeyCount - 1, false);
+	std::fill(mouse, mouse + 2, false);
+}
+
+InputState::InputState(bool a[sf::Keyboard::KeyCount], bool b[3], sf::Vector2f c, sf::Vector2f d):
+	mouse_pos(c), mouse_speed(d)
+{
+	std::copy(a, a + sf::Keyboard::KeyCount - 1, keys);
+	std::copy(b, b + 2, mouse);
 }
