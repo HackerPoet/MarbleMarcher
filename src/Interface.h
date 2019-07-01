@@ -78,6 +78,8 @@ public:
 	void SetMargin(float x);
 	void SetScroll(float x);
 
+	void Move(sf::Vector2f dx);
+
 	void SetDefaultFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun);
 	void SetCallbackFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun);
 	void SetHoverFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun);

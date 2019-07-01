@@ -118,6 +118,14 @@ void Object::SetScroll(float x)
 	hoverstate.scroll = x;
 }
 
+void Object::Move(sf::Vector2f dx)
+{
+	defaultstate.position += dx;
+	curstate.position += dx;
+	activestate.position += dx;
+	hoverstate.position += dx;
+}
+
 void Object::SetDefaultFunction(std::function<void(sf::RenderWindow * window, InputState&state)> fun)
 {
 	defaultfn = fun;
@@ -151,6 +159,9 @@ void Object::Update(sf::RenderWindow * window, InputState& state)
 	//callback stuff
 	sf::Vector2f worldPos = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y));
 	sf::FloatRect obj(curstate.position.x, curstate.position.y, curstate.size.x, curstate.size.y);
+
+	state.mouse_speed = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y)) -
+						window->mapPixelToCoords(sf::Vector2i(state.mouse_prev.x, state.mouse_prev.y));
 
 	curmode = DEFAULT;
 	//if mouse is inside the object 
@@ -381,13 +392,16 @@ Window::Window(float x, float y, float dx, float dy, sf::Color color_main, std::
 	//use lambda funtion
 	Scroll_Slide.get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
 	{
-		if (parent->dmouse.y != 0)
-		{
-			float scroll_a = parent->Scroll.get()->defaultstate.scroll - parent->dmouse.y;
-			float scroll_b = parent->Inside.get()->defaultstate.scroll + parent->dmouse.y;
-			parent->Inside.get()->SetScroll(scroll_b);
-			parent->Scroll.get()->SetScroll(scroll_a);
-		}
+		float scroll_a = parent->Scroll.get()->defaultstate.scroll + state.mouse_speed.y;
+		float scroll_b = parent->Inside.get()->defaultstate.scroll - state.mouse_speed.y;
+		parent->Inside.get()->SetScroll(scroll_b);
+		parent->Scroll.get()->SetScroll(scroll_a);
+	});
+
+	//drag callback
+	Bar.get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
+	{
+		parent->Move(state.mouse_speed);
 	});
 	    
 	this->SetHoverFunction([parent = this](sf::RenderWindow * window, InputState & state)
@@ -401,10 +415,6 @@ Window::Window(float x, float y, float dx, float dy, sf::Color color_main, std::
 			parent->Inside.get()->SetScroll(scroll_b);
 			parent->Scroll.get()->SetScroll(scroll_a);
 		}
-
-		//update mouse
-		parent->dmouse = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y)) -
-					   	 window->mapPixelToCoords(sf::Vector2i(state.mouse_prev.x, state.mouse_prev.y));
 	});
 
 	//add this to the global map to update it automatically

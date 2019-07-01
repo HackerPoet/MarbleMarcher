@@ -850,7 +850,7 @@ int main(int argc, char *argv[]) {
 
 
 	//new interface render stuff
-	io_state.mouse_speed = sf::Vector2f((float)(mouse_pos.x - mouse_prev_pos.x) * smooth_fps, (float)(mouse_pos.y - mouse_prev_pos.y) * smooth_fps);
+
 	io_state.dt = 1.f / smooth_fps;
 	io_state.time += io_state.dt;
 	UpdateAllObjects(&window, io_state);
