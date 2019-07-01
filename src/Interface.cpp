@@ -3,7 +3,7 @@
 std::map<int, Object*> global_objects;
 int obj_id = 0;
 float animation_sharpness = 4.f;
-
+float action_dt = 0.2;
 
 sf::FloatRect overlap(sf::FloatRect a, sf::FloatRect b)
 {
@@ -116,6 +116,14 @@ void Object::SetScroll(float x)
 	defaultstate.scroll = x;
 	activestate.scroll = x;
 	hoverstate.scroll = x;
+	curstate.scroll = x;
+}
+
+void Object::ApplyScroll(float x)
+{
+	defaultstate.scroll = x;
+	activestate.scroll = x;
+	hoverstate.scroll = x;
 }
 
 void Object::Move(sf::Vector2f dx)
@@ -180,11 +188,16 @@ void Object::Update(sf::RenderWindow * window, InputState& state)
 			curmode = ONHOVER;
 		}
 	}
-	else
+	else curmode = DEFAULT;
+
+	if (action_time < 0.f)
 	{
 		if (defaultfn != NULL)
 			defaultfn(window, state); //run callback with state info
-		curmode = DEFAULT;
+	}
+	else
+	{
+		action_time -= state.dt;
 	}
 
 	float t = 1.f - exp(-animation_sharpness * state.dt);
@@ -207,7 +220,7 @@ void Object::Update(sf::RenderWindow * window, InputState& state)
 }
 
 
-Object::Object() : callback(NULL), hoverfn(NULL), defaultfn(NULL), curmode(DEFAULT)
+Object::Object() : callback(NULL), hoverfn(NULL), defaultfn(NULL), curmode(DEFAULT), action_time(0.2)
 {
 	used_view = sf::View(sf::FloatRect(0, 0, 1600, 900));
 }
@@ -366,6 +379,14 @@ void Window::Add(Object * something, Allign a)
 	Inside.get()->AddObject(something, a);
 }
 
+void Window::ScrollBy(float dx)
+{
+	float scroll_a = this->Scroll.get()->defaultstate.scroll + dx;
+	float scroll_b = this->Inside.get()->defaultstate.scroll - dx;
+	this->Inside.get()->ApplyScroll(scroll_b);
+	this->Scroll.get()->SetScroll(scroll_a);
+}
+
 Window::Window(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font)
 {
 	defaultstate.position.x = x;
@@ -392,10 +413,7 @@ Window::Window(float x, float y, float dx, float dy, sf::Color color_main, std::
 	//use lambda funtion
 	Scroll_Slide.get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
 	{
-		float scroll_a = parent->Scroll.get()->defaultstate.scroll + state.mouse_speed.y;
-		float scroll_b = parent->Inside.get()->defaultstate.scroll - state.mouse_speed.y;
-		parent->Inside.get()->SetScroll(scroll_b);
-		parent->Scroll.get()->SetScroll(scroll_a);
+		parent->ScrollBy(state.mouse_speed.y);
 	});
 
 	//drag callback
@@ -410,10 +428,7 @@ Window::Window(float x, float y, float dx, float dy, sf::Color color_main, std::
 		if (state.wheel != 0.f)
 		{
 			float ds = 20.f;
-			float scroll_a = parent->Scroll.get()->defaultstate.scroll + state.wheel*ds;
-			float scroll_b = parent->Inside.get()->defaultstate.scroll - state.wheel*ds;
-			parent->Inside.get()->SetScroll(scroll_b);
-			parent->Scroll.get()->SetScroll(scroll_a);
+			parent->ScrollBy(state.wheel*ds);
 		}
 	});
 
@@ -434,4 +449,104 @@ InputState::InputState(bool a[sf::Keyboard::KeyCount], bool b[3], sf::Vector2f c
 {
 	std::copy(a, a + sf::Keyboard::KeyCount - 1, keys);
 	std::copy(b, b + 2, mouse);
+}
+
+void MenuBox::Add(Object * something, Allign a)
+{
+	Inside.get()->AddObject(something, a);
+}
+
+void MenuBox::Cursor(int d)
+{
+	if (d == -1) // up
+	{
+		if (cursor_id > 0)
+		{
+			cursor_id--;
+			Inside.get()->objects[cursor_id].second->curmode = ONHOVER;
+		}
+	}
+	else if(d == 1)
+	{
+		if (cursor_id < Inside.get()->objects.size() - 1)
+		{
+			cursor_id++;
+			Inside.get()->objects[cursor_id].second->curmode = ONHOVER;
+		}
+	}
+}
+
+void MenuBox::ScrollBy(float dx)
+{
+	float scroll_a = this->Scroll.get()->defaultstate.scroll + dx;
+	float scroll_b = this->Inside.get()->defaultstate.scroll - dx;
+	this->Inside.get()->ApplyScroll(scroll_b);
+	this->Scroll.get()->SetScroll(scroll_a);
+}
+
+MenuBox::MenuBox(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font): cursor_id(0)
+{
+	defaultstate.position.x = x;
+	defaultstate.position.y = y;
+	defaultstate.size.x = dx;
+	defaultstate.size.y = dy;
+	defaultstate.color_main = ToColorF(color_main);
+	clone_states();
+
+	Scroll.reset(new Box(0, 0, 30, dy - 30, sf::Color(150, 150, 150, 128)));
+	Scroll_Slide.reset(new Box(0, 0, 27, 60, sf::Color(255, 150, 0, 128)));
+	Scroll_Slide.get()->hoverstate.color_main = sf::Color(255, 50, 0, 128);
+	Scroll_Slide.get()->activestate.color_main = sf::Color(255, 100, 100, 255);
+	Inside.reset(new Box(0, 0, dx - 30, dy - 30, sf::Color(100, 100, 100, 128)));
+	
+	this->AddObject(Inside.get(), Box::LEFT);
+	this->AddObject(Scroll.get(), Box::RIGHT);
+	Scroll.get()->AddObject(Scroll_Slide.get(), Box::CENTER);
+
+	//use lambda funtion
+	Scroll_Slide.get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
+	{
+		parent->ScrollBy(state.mouse_speed.y);
+	});
+
+	this->SetHoverFunction([parent = this](sf::RenderWindow * window, InputState & state)
+	{
+		//wheel scroll 
+		if (state.wheel != 0.f)
+		{
+			float ds = 20.f;
+			parent->ScrollBy(state.wheel*ds);
+		}
+	});
+
+
+	this->SetDefaultFunction([parent = this](sf::RenderWindow * window, InputState & state)
+	{
+		bool A = false;
+
+		if (state.keys[sf::Keyboard::Up])
+		{
+			parent->Cursor(-1);
+			A = 1;
+		}
+
+		if (state.keys[sf::Keyboard::Down])
+		{
+			parent->Cursor(1);
+			A = 1;
+		}
+
+		if (state.keys[sf::Keyboard::Enter])
+		{
+			//run the callback function of the chosen object
+			parent->Inside.get()->objects[parent->cursor_id].second->callback(window, state);
+			A = 1;
+		}
+
+		if(A) parent->action_time = action_dt;
+	});
+	//add this to the global map to update it automatically
+	id = obj_id;
+	obj_id++;
+	global_objects[id] = this;//add it to the global list
 }

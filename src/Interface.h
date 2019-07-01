@@ -76,7 +76,9 @@ public:
 	void SetBorderColor(sf::Color color);
 	void SetBorderWidth(float S);
 	void SetMargin(float x);
+
 	void SetScroll(float x);
+	void ApplyScroll(float x);
 
 	void Move(sf::Vector2f dx);
 
@@ -104,6 +106,9 @@ public:
 	int id;
 
 	std::function<void(sf::RenderWindow * window, InputState & state)> callback, hoverfn, defaultfn;
+
+	//operation time limiter
+	float action_time;
 };
 
 //a box to add stuff in
@@ -121,14 +126,13 @@ public:
 	Box(float x, float y, float dx, float dy, sf::Color color_main);
 	Box();
 
+	std::vector< std::pair<Allign, Object*>> objects;
 private:
 	sf::RectangleShape rect;
 	sf::RectangleShape scroll1, scroll2;
 	sf::View boxView;
 
 	//objects inside the box
-	std::vector< std::pair<Allign, Object*>> objects;
-	
 };
 
 
@@ -149,9 +153,28 @@ public:
 	std::unique_ptr<Text> Title;
 
 	sf::Vector2f dmouse;
+
 	void Add(Object* something, Allign a = LEFT);
+	void ScrollBy(float dx);
+
 	Window(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font);
 };
+
+class MenuBox : public Box
+{
+public:
+	std::unique_ptr<Box> Inside, Scroll, Scroll_Slide;
+	int cursor_id;
+
+	sf::Vector2f dmouse;
+
+	void Add(Object* something, Allign a = LEFT);
+	void Cursor(int d);
+	void ScrollBy(float dx);
+
+	MenuBox(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font);
+};
+
 
 /*
 

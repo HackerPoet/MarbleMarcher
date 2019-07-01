@@ -311,6 +311,10 @@ int main(int argc, char *argv[]) {
   
   test.Add(&sbox, Box::CENTER);
   test.Add(&sbox2, Box::CENTER);
+  test.Add(&sbox, Box::CENTER);
+  test.Add(&sbox2, Box::CENTER);
+  test.Add(&sbox, Box::CENTER);
+  test.Add(&sbox2, Box::CENTER);
   sbox2.hoverstate.color_main = sf::Color(230,40,20, 200);
   sbox2.AddObject(&button, Box::CENTER);
   button.hoverstate.font_size = 40;
