@@ -3,8 +3,10 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 #include <map>
+#include <stack>
 #include <algorithm>
 #include <iterator>
+#include <functional>
 
 struct ColorFloat
 {
@@ -26,11 +28,14 @@ ColorFloat ToColorF(sf::Color a);
 
 struct InputState
 {
-	bool keys[sf::Keyboard::KeyCount];
-	bool mouse[3];
-	sf::Vector2f mouse_pos;
-	sf::Vector2f mouse_speed;
-	float time, dt;
+	bool keys[sf::Keyboard::KeyCount] = { false };
+	bool mouse[3] = { false };
+	float wheel = 0.f;
+	sf::Vector2f mouse_pos = sf::Vector2f(0,0);
+	sf::Vector2f mouse_prev = sf::Vector2f(0, 0);
+	sf::Vector2f mouse_speed = sf::Vector2f(0, 0);
+	sf::Vector2f window_size = sf::Vector2f(0, 0);
+	float time = 0, dt = 0;
 
 	InputState();
 	InputState(bool keys[sf::Keyboard::KeyCount], bool mouse[3], sf::Vector2f mouse_pos, sf::Vector2f mouse_speed);
@@ -54,7 +59,7 @@ struct State
 //interpolate between states for animation effects
 State interpolate(State a, State b, float t);
 
-void UpdateAllObjects(sf::RenderWindow * window, sf::Vector2i mouse, bool RMB, bool LMB, bool all_keys[], float dt);
+void UpdateAllObjects(sf::RenderWindow * window, InputState& state);
 
 //the object base class
 class Object
@@ -73,13 +78,13 @@ public:
 	void SetMargin(float x);
 	void SetScroll(float x);
 
-	void SetCallbackFunction(void(*fun)(InputState & state));
-	void SetHoverFunction(void(*fun)(InputState & state));
+	void SetDefaultFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun);
+	void SetCallbackFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun);
+	void SetHoverFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun);
 
 	void clone_states();
 
-	virtual void KeyboardAction(InputState & state);
-	virtual void Draw(sf::RenderWindow * window);
+	virtual void Draw(sf::RenderWindow * window, InputState& state);
 
 	void Update(sf::RenderWindow * window, InputState& state);
 
@@ -96,9 +101,7 @@ public:
 
 	int id;
 
-	void(*callback)(InputState & state);
-	void(*hoverfn)(InputState & state);
-
+	std::function<void(sf::RenderWindow * window, InputState & state)> callback, hoverfn, defaultfn;
 };
 
 //a box to add stuff in
@@ -111,7 +114,7 @@ public:
 	};
 	void AddObject(Object* something, Allign a = LEFT);
 
-	void Draw(sf::RenderWindow *window);
+	void Draw(sf::RenderWindow *window, InputState& state);
 
 	Box(float x, float y, float dx, float dy, sf::Color color_main);
 	Box();
@@ -122,9 +125,7 @@ private:
 	sf::View boxView;
 
 	//objects inside the box
-	std::map<int, Object*> objects;
-	std::map<int, Allign> object_alligns;
-	std::vector<int> object_ids;
+	std::vector< std::pair<Allign, Object*>> objects;
 	
 };
 
@@ -132,7 +133,7 @@ private:
 class Text: public Object
 {
 public:
-	void Draw(sf::RenderWindow *window);
+	void Draw(sf::RenderWindow *window, InputState& state);
 	sf::Text text;
 
 	Text(std::string text, sf::Font &f, float size, sf::Color col);
@@ -145,17 +146,10 @@ public:
 	std::unique_ptr<Box> Bar, Inside, Scroll, Scroll_Slide;
 	std::unique_ptr<Text> Title;
 
-	sf::Vector2f prev_mouse;
-
-	Window(float x, float y, float dx, float dy, sf::Color color_main, sf::Text title);
+	sf::Vector2f dmouse;
+	void Add(Object* something, Allign a = LEFT);
+	Window(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font);
 };
-
-class Menu : public Box
-{
-
-};
-
-
 
 /*
 

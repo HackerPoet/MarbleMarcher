@@ -74,6 +74,7 @@ static sf::Vector2i mouse_pos, mouse_prev_pos;
 static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
 static bool mouse_clicked = false;
 static bool show_cheats = false;
+static InputState io_state;
 extern GameMode game_mode = MAIN_MENU;
 
 //Graphics settings
@@ -303,25 +304,26 @@ int main(int argc, char *argv[]) {
   scene.StartDefault();
   overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);
 
-  Box test(200,200,500,500,sf::Color(0,0,0,128));
+  Window test(200, 200, 500, 500, sf::Color(0, 0, 0, 128), "Ah, yes, a window", font);
+  Text button("button", font, 30, sf::Color::White);
   Box sbox(0, 0, 420, 200, sf::Color(128, 128, 128,240));
   Box sbox2(0, 0, 240, 40, sf::Color(0, 64, 128,240));
-  Text button("button", font, 30, sf::Color::White);
-  test.hoverstate.border_thickness = 5;
-  test.AddObject(&sbox, Box::CENTER);
-  test.AddObject(&sbox2, Box::CENTER);
-  test.SetMargin(10);
+  
+  test.Add(&sbox, Box::CENTER);
+  test.Add(&sbox2, Box::CENTER);
   sbox2.hoverstate.color_main = sf::Color(230,40,20, 200);
   sbox2.AddObject(&button, Box::CENTER);
   button.hoverstate.font_size = 40;
   
-
+  io_state.window_size = sf::Vector2f(window.getSize().x, window.getSize().y);
+  
   while (window.isOpen()) {
     sf::Event event;
 	
 	float mouse_wheel = 0.0f;
 	mouse_prev_pos = mouse_pos;
-	
+	io_state.mouse_prev = sf::Vector2f(mouse_prev_pos.x, mouse_prev_pos.y);
+	io_state.wheel = mouse_wheel;
 	while (window.pollEvent(event)) 
 	{
 		bool handled = overlays.TwManageEvent(event);
@@ -342,6 +344,7 @@ int main(int argc, char *argv[]) {
 			sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
 			default_view = sf::View(visibleArea);
 			window.setView(default_view);
+			io_state.window_size = sf::Vector2f(window.getSize().x, window.getSize().y);
 			scene.SetWindowResolution(window.getSize().x, window.getSize().y);
 		}
 
@@ -470,16 +473,19 @@ int main(int argc, char *argv[]) {
 					scene.Cheat_Param(int(keycode) - int(sf::Keyboard::Num1));
 				}
 				all_keys[keycode] = true;
+				io_state.keys[keycode] = true;
 			}
 			else if (event.type == sf::Event::KeyReleased) {
 				const sf::Keyboard::Key keycode = event.key.code;
 				if (event.key.code < 0 || event.key.code >= sf::Keyboard::KeyCount) { continue; }
 				all_keys[keycode] = false;
+				io_state.keys[keycode] = false;
 			}
 			else if (event.type == sf::Event::MouseButtonPressed) {
 				if (event.mouseButton.button == sf::Mouse::Left) {
 					mouse_pos = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
 					mouse_clicked = true;
+					io_state.mouse[0] = true;
 					if (game_mode == MAIN_MENU) {
 						const Overlays::Texts selected = overlays.GetOption(Overlays::PLAY, Overlays::EXIT);
 						if (selected == Overlays::PLAY) {
@@ -643,6 +649,7 @@ int main(int argc, char *argv[]) {
 					}
 				}
 				else if (event.mouseButton.button == sf::Mouse::Right) {
+					io_state.mouse[2] = true;
 					if (game_mode == PLAYING) {
 						scene.ResetLevel();
 					}
@@ -650,13 +657,17 @@ int main(int argc, char *argv[]) {
 			}
 			else if (event.type == sf::Event::MouseButtonReleased) {
 				if (event.mouseButton.button == sf::Mouse::Left) {
+					io_state.mouse[0] = false;
 					mouse_pos = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
 					mouse_clicked = false;
+				}
+				else if (event.mouseButton.button == sf::Mouse::Right) {
+					io_state.mouse[2] = false;
 				}
 			}
 			else if (event.type == sf::Event::MouseMoved) {
 				mouse_pos = sf::Vector2i(event.mouseMove.x, event.mouseMove.y);
-
+				io_state.mouse_pos = sf::Vector2f(mouse_pos.x, mouse_pos.y);
 				if (scene.cur_ed_mode == Scene::EditorMode::PLACE_MARBLE)
 				{
 					Eigen::Vector3f marble_pos = scene.MouseRayCast(mouse_pos.x, mouse_pos.y, scene.level_copy.marble_rad);
@@ -670,10 +681,10 @@ int main(int argc, char *argv[]) {
 			}
 			else if (event.type == sf::Event::MouseWheelScrolled) {
 				mouse_wheel += event.mouseWheelScroll.delta;
+				io_state.wheel = mouse_wheel;
 			}
 		}
 	}
-
     //Check if the game was beat
     if (scene.GetMode() == Scene::FINAL && game_mode != CREDITS) {
       game_mode = CREDITS;
@@ -838,14 +849,20 @@ int main(int argc, char *argv[]) {
     }
 
 
+	//new interface render stuff
+	io_state.mouse_speed = sf::Vector2f((float)(mouse_pos.x - mouse_prev_pos.x) * smooth_fps, (float)(mouse_pos.y - mouse_prev_pos.y) * smooth_fps);
+	io_state.dt = 1.f / smooth_fps;
+	io_state.time += io_state.dt;
+	UpdateAllObjects(&window, io_state);
+	window.setView(default_view);
+
     if (!skip_frame) {
       //Finally display to the screen
 	 
 	  if(overlays.TWBAR_ENABLED)
 		scene.Synchronize();
 	  overlays.DrawAntTweakBar();
-	  UpdateAllObjects(&window, mouse_pos, mouse_clicked, mouse_clicked, all_keys, 1 / smooth_fps);
-	  window.setView(default_view);
+	  
       window.display();
 
       //If V-Sync is running higher than desired fps, slow down!

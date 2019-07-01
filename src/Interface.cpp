@@ -5,6 +5,17 @@ int obj_id = 0;
 float animation_sharpness = 4.f;
 
 
+sf::FloatRect overlap(sf::FloatRect a, sf::FloatRect b)
+{
+	sf::FloatRect c;
+	c.top = std::max(a.top, b.top);
+	c.left = std::max(a.left, b.left);
+	c.height = std::max(std::min(a.top + a.height, b.top + b.height) - c.top, 0.f);
+	c.width = std::max(std::min(a.left + a.width, b.left + b.width) - c.left, 0.f);
+
+	return c;
+}
+
 ColorFloat operator+(ColorFloat a, ColorFloat b)
 {
 	ColorFloat c;
@@ -83,10 +94,14 @@ void Object::SetBackgroundColor(sf::Color color)
 
 void Object::SetBorderColor(sf::Color color)
 {
+	
 }
 
 void Object::SetBorderWidth(float S)
 {
+	defaultstate.border_thickness = S;
+	activestate.border_thickness = S;
+	hoverstate.border_thickness = S;
 }
 
 void Object::SetMargin(float x)
@@ -103,12 +118,17 @@ void Object::SetScroll(float x)
 	hoverstate.scroll = x;
 }
 
-void Object::SetCallbackFunction(void(*fun)(InputState & state))
+void Object::SetDefaultFunction(std::function<void(sf::RenderWindow * window, InputState&state)> fun)
+{
+	defaultfn = fun;
+}
+
+void Object::SetCallbackFunction(std::function<void(sf::RenderWindow * window, InputState&state)> fun)
 {
 	callback = fun;
 }
 
-void Object::SetHoverFunction(void(*fun)(InputState & state))
+void Object::SetHoverFunction(std::function<void(sf::RenderWindow * window, InputState&state)> fun)
 {
 	hoverfn = fun;
 }
@@ -120,11 +140,7 @@ void Object::clone_states()
 	hoverstate = defaultstate;
 }
 
-void Object::KeyboardAction(InputState& state)
-{
-}
-
-void Object::Draw(sf::RenderWindow * window)
+void Object::Draw(sf::RenderWindow * window, InputState& state)
 {
 	//nothing to draw
 }
@@ -136,24 +152,27 @@ void Object::Update(sf::RenderWindow * window, InputState& state)
 	sf::Vector2f worldPos = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y));
 	sf::FloatRect obj(curstate.position.x, curstate.position.y, curstate.size.x, curstate.size.y);
 
+	curmode = DEFAULT;
 	//if mouse is inside the object 
 	if (obj.contains(worldPos))
 	{
-		if (state.mouse[0] || state.mouse[1]) //if click
+		if (state.mouse[0] || state.mouse[2]) //if click
 		{
 			if (callback != NULL)
-				(*callback)(state); //run callback with WorldPos info
+				callback(window, state); //run callback with state info
 			curmode = ACTIVE;
 		}
 		else // if hover
 		{
 			if (hoverfn != NULL)
-				(*hoverfn)(state); //run callback with WorldPos info
+				hoverfn(window, state); //run callback with state info
 			curmode = ONHOVER;
 		}
 	}
 	else
 	{
+		if (defaultfn != NULL)
+			defaultfn(window, state); //run callback with state info
 		curmode = DEFAULT;
 	}
 
@@ -173,17 +192,13 @@ void Object::Update(sf::RenderWindow * window, InputState& state)
 		break;
 	}
 
-	KeyboardAction(state);
-	Draw(window);
+	Draw(window, state);
 }
 
 
-Object::Object() : callback(nullptr), hoverfn(nullptr), curmode(DEFAULT)
+Object::Object() : callback(NULL), hoverfn(NULL), defaultfn(NULL), curmode(DEFAULT)
 {
 	used_view = sf::View(sf::FloatRect(0, 0, 1600, 900));
-	id = obj_id;
-	obj_id++;
-	global_objects[id] = this;//add it to the global list
 }
 
 Object::~Object()
@@ -193,12 +208,10 @@ Object::~Object()
 
 void Box::AddObject(Object * something, Allign a)
 {
-	objects[something->id] = something;
-	object_alligns[something->id] = a;
-	object_ids.push_back(something->id);
+	objects.push_back(std::pair<Allign,Object*>(a,something));
 }
 
-void Box::Draw(sf::RenderWindow * window)
+void Box::Draw(sf::RenderWindow * window, InputState& state)
 {
 	//update the box itself
 	rect.setPosition(curstate.position);
@@ -207,58 +220,68 @@ void Box::Draw(sf::RenderWindow * window)
 	rect.setOutlineThickness(curstate.border_thickness);
 	rect.setOutlineColor(ToColor(curstate.color_border));
 	window->draw(rect);
-
+	
 	sf::Vector2f default_size = sf::Vector2f(1600, 900);
-	boxView.reset(sf::FloatRect(curstate.position, curstate.size));
-	boxView.setViewport(sf::FloatRect(curstate.position.x/ default_size.x, curstate.position.y / default_size.y, curstate.size.x / default_size.x, curstate.size.y / default_size.y));
+	sf::FloatRect global_view = sf::FloatRect(window->getView().getCenter() - window->getView().getSize()*0.5f, window->getView().getSize());
+	sf::FloatRect this_view = overlap(global_view, sf::FloatRect(curstate.position, curstate.size));
+	boxView.reset(this_view);
+	sf::FloatRect global_viewport = window->getView().getViewport();
+	sf::FloatRect local_viewport = sf::FloatRect(curstate.position.x / default_size.x, curstate.position.y / default_size.y, curstate.size.x / default_size.x, curstate.size.y / default_size.y);
+	sf::FloatRect this_viewport = overlap(global_viewport, local_viewport);
+	boxView.setViewport(this_viewport);
 
-	float line_height = 0;
-	float cur_shift_x1 = curstate.margin, cur_shift_x2 = curstate.margin;
-	float cur_shift_y = curstate.margin + curstate.scroll;
-
-	//update all the stuff inside the box
-	for (auto &obj : objects)
+	if (this_viewport.width > 0.f && this_viewport.height > 0.f)
 	{
-		Allign A = object_alligns[obj.first];
-		bool not_placed = true; 
-		int tries = 0;
-		obj.second->used_view = boxView;
-		line_height = std::max(obj.second->curstate.size.y, line_height);
-		while (not_placed && tries < 3) //try to place the object somewhere
+		float line_height = 0;
+		float cur_shift_x1 = curstate.margin, cur_shift_x2 = curstate.margin;
+		float cur_shift_y = curstate.margin + curstate.scroll;
+
+		//update all the stuff inside the box
+		for (auto &obj : objects)
 		{
-			float space_left = defaultstate.size.x - cur_shift_x1 - cur_shift_x2;
-			float obj_width = obj.second->curstate.size.x;
-			
-			if (space_left > obj_width)
+			Allign A = obj.first;
+			bool not_placed = true;
+			int tries = 0;
+			obj.second->used_view = boxView;
+			line_height = std::max(obj.second->curstate.size.y, line_height);
+			while (not_placed && tries < 3) //try to place the object somewhere
 			{
-				not_placed = false;
-				switch (A)
+				float space_left = defaultstate.size.x - cur_shift_x1 - cur_shift_x2;
+				float obj_width = obj.second->curstate.size.x;
+
+				if (space_left >= obj_width)
 				{
-				case LEFT:
-					obj.second->SetPosition(curstate.position.x + cur_shift_x1, curstate.position.y + cur_shift_y);
-					cur_shift_x1 += obj_width + curstate.margin;
-					break;
-				case CENTER:
-					obj.second->SetPosition(curstate.position.x + defaultstate.size.x * 0.5f - obj_width * 0.5f, curstate.position.y + cur_shift_y);
+					not_placed = false;
+					switch (A)
+					{
+					case LEFT:
+						obj.second->SetPosition(curstate.position.x + cur_shift_x1, curstate.position.y + cur_shift_y);
+						cur_shift_x1 += obj_width + curstate.margin;
+						break;
+					case CENTER:
+						obj.second->SetPosition(curstate.position.x + defaultstate.size.x * 0.5f - obj_width * 0.5f, curstate.position.y + cur_shift_y);
+						cur_shift_y += line_height + curstate.margin;
+						line_height = 0;
+						cur_shift_x1 = curstate.margin;
+						cur_shift_x2 = curstate.margin;
+						break;
+					case RIGHT:
+						obj.second->SetPosition(curstate.position.x + defaultstate.size.x - obj_width - cur_shift_x2, curstate.position.y + cur_shift_y);
+						cur_shift_x2 += obj_width + curstate.margin;
+						break;
+					}
+				}
+				else
+				{
 					cur_shift_y += line_height + curstate.margin;
 					line_height = 0;
 					cur_shift_x1 = curstate.margin;
 					cur_shift_x2 = curstate.margin;
-					break;
-				case RIGHT:
-					obj.second->SetPosition(curstate.position.x + defaultstate.size.x - obj_width - cur_shift_x2, curstate.position.y + cur_shift_y);
-					cur_shift_x2 += obj_width + curstate.margin;
-					break;
+					tries++;
 				}
 			}
-			else
-			{
-				cur_shift_y += line_height + curstate.margin;
-				line_height = 0;
-				cur_shift_x1 = curstate.margin;
-				cur_shift_x2 = curstate.margin;
-				tries++;
-			}
+
+			obj.second->Update(window, state);
 		}
 	}
 }
@@ -296,7 +319,7 @@ void ColorFloat::operator=(sf::Color a)
 	*this = ToColorF(a);
 }
 
-void Text::Draw(sf::RenderWindow * window)
+void Text::Draw(sf::RenderWindow * window, InputState& state)
 {
 	text.setPosition(curstate.position);
 	text.setCharacterSize(curstate.font_size);
@@ -327,7 +350,12 @@ Text::Text(sf::Text t)
 	clone_states();
 }
 
-Window::Window(float x, float y, float dx, float dy, sf::Color color_main, sf::Text title)
+void Window::Add(Object * something, Allign a)
+{
+	Inside.get()->AddObject(something, a);
+}
+
+Window::Window(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font)
 {
 	defaultstate.position.x = x;
 	defaultstate.position.y = y;
@@ -337,10 +365,12 @@ Window::Window(float x, float y, float dx, float dy, sf::Color color_main, sf::T
 	clone_states();
 
 	Bar.reset(new Box(0, 0, dx, 30, sf::Color(0, 100, 200, 128)));
-	Inside.reset(new Box(0, 0, dx-30, dy-30, sf::Color(0, 100, 100, 128))); 
-	Scroll.reset(new Box(0, 0, 30, dy - 30, sf::Color(0, 100, 100, 128)));
-	Scroll_Slide.reset(new Box(0, 0, 30, 30, sf::Color(200, 100, 0, 128)));
-	Title.reset(new Text(title));
+	Scroll.reset(new Box(0, 0, 30, dy - 30, sf::Color(150, 150, 150, 128)));
+	Scroll_Slide.reset(new Box(0, 0, 27, 60, sf::Color(255, 150, 0, 128)));
+	Scroll_Slide.get()->hoverstate.color_main = sf::Color(255, 50, 0, 128);
+	Scroll_Slide.get()->activestate.color_main = sf::Color(255, 100, 100, 255);
+	Inside.reset(new Box(0, 0, dx - 30, dy - 30, sf::Color(100, 100, 100, 128)));
+	Title.reset(new Text(title, font, 25, sf::Color::White));
 
 	this->AddObject(Bar.get(), Box::CENTER);
 	this->AddObject(Inside.get(), Box::LEFT);
@@ -349,7 +379,38 @@ Window::Window(float x, float y, float dx, float dy, sf::Color color_main, sf::T
 	Scroll.get()->AddObject(Scroll_Slide.get(), Box::CENTER);
 
 	//use lambda funtion
-	Scroll_Slide.get()->SetCallbackFunction();
+	Scroll_Slide.get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
+	{
+		if (parent->dmouse.y != 0)
+		{
+			float scroll_a = parent->Scroll.get()->defaultstate.scroll - parent->dmouse.y;
+			float scroll_b = parent->Inside.get()->defaultstate.scroll + parent->dmouse.y;
+			parent->Inside.get()->SetScroll(scroll_b);
+			parent->Scroll.get()->SetScroll(scroll_a);
+		}
+	});
+	    
+	this->SetHoverFunction([parent = this](sf::RenderWindow * window, InputState & state)
+	{
+		//wheel scroll 
+		if (state.wheel != 0.f)
+		{
+			float ds = 20.f;
+			float scroll_a = parent->Scroll.get()->defaultstate.scroll + state.wheel*ds;
+			float scroll_b = parent->Inside.get()->defaultstate.scroll - state.wheel*ds;
+			parent->Inside.get()->SetScroll(scroll_b);
+			parent->Scroll.get()->SetScroll(scroll_a);
+		}
+
+		//update mouse
+		parent->dmouse = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y)) -
+					   	 window->mapPixelToCoords(sf::Vector2i(state.mouse_prev.x, state.mouse_prev.y));
+	});
+
+	//add this to the global map to update it automatically
+	id = obj_id;
+	obj_id++;
+	global_objects[id] = this;//add it to the global list
 }
 
 InputState::InputState(): mouse_pos(sf::Vector2f(0,0)), mouse_speed(sf::Vector2f(0, 0))
