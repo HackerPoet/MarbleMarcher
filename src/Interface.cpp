@@ -235,6 +235,11 @@ void Box::AddObject(Object * something, Allign a)
 	objects.push_back(std::pair<Allign,Object*>(a,something));
 }
 
+void Box::SetBackground(const sf::Texture * texture)
+{
+	rect.setTexture(texture);
+}
+
 void Box::Draw(sf::RenderWindow * window, InputState& state)
 {
 	//update the box itself

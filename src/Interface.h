@@ -120,7 +120,7 @@ public:
 		LEFT, CENTER, RIGHT
 	};
 	void AddObject(Object* something, Allign a = LEFT);
-
+	void SetBackground(const sf::Texture *texture);
 	void Draw(sf::RenderWindow *window, InputState& state);
 
 	Box(float x, float y, float dx, float dy, sf::Color color_main);
@@ -174,16 +174,3 @@ public:
 
 	MenuBox(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font);
 };
-
-
-/*
-
-class Image : public Object
-{
-	Image();
-
-
-	void Draw(sf::RenderWindow *window);
-};
-
-*/
