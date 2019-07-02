@@ -8,6 +8,16 @@
 #include <iterator>
 #include <functional>
 
+
+//default interface parameters
+auto default_main_color = sf::Color(128, 128, 128, 128);
+auto default_hover_main_color = sf::Color(200, 128, 128, 128);
+auto default_active_main_color = sf::Color(255, 128, 128, 255);
+auto default_margin = 5;
+
+float animation_sharpness = 4.f;
+float action_dt = 0.2;
+
 struct ColorFloat
 {
 	float r, g, b, a;
@@ -95,6 +105,15 @@ public:
 	Object();
 	~Object();
 
+	Object(Object& A);
+	Object(Object&& A);
+
+	virtual void operator=(Object& A);
+	virtual void operator=(Object&& A);
+
+	void copy(Object& A);
+	void copy(Object&& A);
+
 	State curstate;
 	State activestate;
 	State hoverstate;
@@ -102,9 +121,7 @@ public:
 	States curmode;
 
 	sf::View used_view;
-
 	int id;
-
 	std::function<void(sf::RenderWindow * window, InputState & state)> callback, hoverfn, defaultfn;
 
 	//operation time limiter
@@ -119,20 +136,26 @@ public:
 	{
 		LEFT, CENTER, RIGHT
 	};
-	void AddObject(Object* something, Allign a = LEFT);
+	void AddObject(Object & something, Allign a = LEFT);
 	void SetBackground(const sf::Texture *texture);
 	void Draw(sf::RenderWindow *window, InputState& state);
 
-	Box(float x, float y, float dx, float dy, sf::Color color_main);
+	Box(float dx, float dy, float x = 0, float y = 0, sf::Color color_main = default_main_color);
 	Box();
 
-	std::vector< std::pair<Allign, Object*>> objects;
-private:
-	sf::RectangleShape rect;
-	sf::RectangleShape scroll1, scroll2;
-	sf::View boxView;
+	Box(Box& A);
+	Box(Box&& A);
+
+	void operator=(Box& A);
+	void operator=(Box&& A);
 
 	//objects inside the box
+	std::vector< std::pair<Allign, Object> > objects;
+
+private:
+
+	sf::RectangleShape rect;
+	sf::View boxView;
 };
 
 
@@ -144,6 +167,12 @@ public:
 
 	Text(std::string text, sf::Font &f, float size, sf::Color col);
 	Text(sf::Text t);
+
+	Text(Box& A);
+	Text(Box&& A);
+
+	void operator=(Text& A);
+	void operator=(Text&& A);
 };
 
 class Window: public Box

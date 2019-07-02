@@ -2,8 +2,7 @@
 
 std::map<int, Object*> global_objects;
 int obj_id = 0;
-float animation_sharpness = 4.f;
-float action_dt = 0.2;
+
 
 sf::FloatRect overlap(sf::FloatRect a, sf::FloatRect b)
 {
@@ -230,9 +229,59 @@ Object::~Object()
 	global_objects.erase(id);
 }
 
-void Box::AddObject(Object * something, Allign a)
+Object::Object(Object & A)
 {
-	objects.push_back(std::pair<Allign,Object*>(a,something));
+	*this = A;
+}
+
+Object::Object(Object && A)
+{
+	*this = A;
+}
+
+void Object::operator=(Object & A)
+{
+	copy(A);
+}
+
+void Object::operator=(Object && A)
+{
+	copy(A);
+}
+
+void Object::copy(Object & A)
+{
+	curstate = A.curstate;
+	activestate = A.activestate;
+	hoverstate = A.hoverstate;
+	defaultstate = A.defaultstate;
+	curmode = A.curmode;
+	used_view = A.used_view;
+	id = A.id;
+	callback = A.callback;
+	hoverfn = A.hoverfn;
+	defaultfn = A.defaultfn;
+	action_time = A.action_time;
+}
+
+void Object::copy(Object && A)
+{
+	std::swap(curstate, A.curstate);
+	std::swap(activestate, A.activestate);
+	std::swap(hoverstate, A.hoverstate);
+	std::swap(defaultstate, A.defaultstate);
+	std::swap(curmode, A.curmode);
+	std::swap(used_view, A.used_view);
+	std::swap(id, A.id);
+	std::swap(callback, A.callback);
+	std::swap(hoverfn, A.hoverfn);
+	std::swap(defaultfn, A.defaultfn);
+	std::swap(action_time, A.action_time);
+}
+
+void Box::AddObject(Object & something, Allign a)
+{
+	objects.push_back(std::pair<Allign,Object>(a,something));
 }
 
 void Box::SetBackground(const sf::Texture * texture)
@@ -271,12 +320,12 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 			Allign A = obj.first;
 			bool not_placed = true;
 			int tries = 0;
-			obj.second->used_view = boxView;
-			line_height = std::max(obj.second->curstate.size.y, line_height);
+			obj.second.used_view = boxView;
+			line_height = std::max(obj.second.curstate.size.y, line_height);
 			while (not_placed && tries < 3) //try to place the object somewhere
 			{
 				float space_left = defaultstate.size.x - cur_shift_x1 - cur_shift_x2;
-				float obj_width = obj.second->curstate.size.x;
+				float obj_width = obj.second.curstate.size.x;
 
 				if (space_left >= obj_width)
 				{
@@ -284,18 +333,18 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 					switch (A)
 					{
 					case LEFT:
-						obj.second->SetPosition(curstate.position.x + cur_shift_x1, curstate.position.y + cur_shift_y);
+						obj.second.SetPosition(curstate.position.x + cur_shift_x1, curstate.position.y + cur_shift_y);
 						cur_shift_x1 += obj_width + curstate.margin;
 						break;
 					case CENTER:
-						obj.second->SetPosition(curstate.position.x + defaultstate.size.x * 0.5f - obj_width * 0.5f, curstate.position.y + cur_shift_y);
+						obj.second.SetPosition(curstate.position.x + defaultstate.size.x * 0.5f - obj_width * 0.5f, curstate.position.y + cur_shift_y);
 						cur_shift_y += line_height + curstate.margin;
 						line_height = 0;
 						cur_shift_x1 = curstate.margin;
 						cur_shift_x2 = curstate.margin;
 						break;
 					case RIGHT:
-						obj.second->SetPosition(curstate.position.x + defaultstate.size.x - obj_width - cur_shift_x2, curstate.position.y + cur_shift_y);
+						obj.second.SetPosition(curstate.position.x + defaultstate.size.x - obj_width - cur_shift_x2, curstate.position.y + cur_shift_y);
 						cur_shift_x2 += obj_width + curstate.margin;
 						break;
 					}
@@ -310,7 +359,7 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 				}
 			}
 
-			obj.second->Update(window, state);
+			obj.second.Update(window, state);
 		}
 	}
 }
@@ -328,6 +377,34 @@ Box::Box(float x, float y, float dx, float dy, sf::Color color_main)
 Box::Box()
 {
 
+}
+
+Box::Box(Box & A)
+{
+	*this = A;
+}
+
+Box::Box(Box && A)
+{
+	*this = A;
+}
+
+void Box::operator=(Box & A)
+{
+	copy(A);
+
+	objects = A.objects;
+	rect = A.rect;
+	boxView = A.boxView;
+}
+
+void Box::operator=(Box && A)
+{
+	copy(A);
+
+	std::swap(objects, A.objects);
+	std::swap(rect, A.rect);
+	std::swap(boxView, A.boxView);
 }
 
 void UpdateAllObjects(sf::RenderWindow * window, InputState& state)
@@ -377,6 +454,30 @@ Text::Text(sf::Text t)
 	defaultstate.font_size = t.getCharacterSize();
 	defaultstate.color_main = t.getFillColor();
 	clone_states();
+}
+
+Text::Text(Box & A)
+{
+	*this = A;
+}
+
+Text::Text(Box && A)
+{
+	*this = A;
+}
+
+void Text::operator=(Text & A)
+{
+	copy(A);
+
+	text = A.text;
+}
+
+void Text::operator=(Text && A)
+{
+	copy(A);
+
+	std::swap(text, A.text);
 }
 
 void Window::Add(Object * something, Allign a)
