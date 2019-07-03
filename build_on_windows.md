@@ -1,6 +1,4 @@
-Since my last post [(here)](https://www.reddit.com/r/Marblemarcher/comments/atpq47/how_to_configure_source_for_windows_with_cmake/), a fair amount of development has taken place. You can now configure *and* compile without errors using only CMake! You'll still need to do some moderate configuration, but it's a relatively effortless process compared to what it used to be.
-
-This tutorial (the command line parts) can also be accomplished with Git Bash.
+This is a short and easy tutorial for building Marble Marcher: Community Edition on Windows. The online version of the tutorial can be found [here](https://www.reddit.com/r/Marblemarcher/comments/bamqyh/how_to_configure_and_compile_source_for_windows/). (both this and the one on Reddit are kept up-to-date with each other) This tutorial (the command line parts) can also be followed with Git Bash, though you'll need a developer CMD in administrator mode for at least one process.
 
 1. Make sure you have [CMake](https://cmake.org/), [OpenAL](https://www.openal.org/), and [Visual Studio 2019](https://visualstudio.microsoft.com/vs/) (in addition to the 2015 and/or 2017 VS build tools, if one does not work, try installing the other) installed.
 2. Download the CE edition to a folder of your choice and unzip it: [https://github.com/WAUthethird/Marble-Marcher-Community-Edition](https://github.com/WAUthethird/Marble-Marcher-Community-Edition)
@@ -12,4 +10,4 @@ This tutorial (the command line parts) can also be accomplished with Git Bash.
 8. Open the resulting .sln file in Visual Studio and build the solution.
 
 You're done!
-If this did not work for you, please open an issue on the repository.
+If this did not work for you, please open an issue in the repository, or comment on the online Reddit post linked above.
