@@ -32,7 +32,7 @@
 #include <thread>
 #include <mutex>
 
-#include<Interface.h>
+#include<Gamemodes.h>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -303,24 +303,11 @@ int main(int argc, char *argv[]) {
 
   scene.StartDefault();
   overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);
-
-  Window test(200, 200, 500, 500, sf::Color(0, 0, 0, 128), "Ah, yes, a window", font);
-  Text button("button", font, 30, sf::Color::White);
-  Box sbox(0, 0, 420, 200, sf::Color(128, 128, 128,240));
-  Box sbox2(0, 0, 240, 40, sf::Color(0, 64, 128,240));
-  
-  test.Add(&sbox, Box::CENTER);
-  test.Add(&sbox2, Box::CENTER);
-  test.Add(&sbox, Box::CENTER);
-  test.Add(&sbox2, Box::CENTER);
-  test.Add(&sbox, Box::CENTER);
-  test.Add(&sbox2, Box::CENTER);
-  sbox2.hoverstate.color_main = sf::Color(230,40,20, 200);
-  sbox2.AddObject(&button, Box::CENTER);
-  button.hoverstate.font_size = 40;
   
   io_state.window_size = sf::Vector2f(window.getSize().x, window.getSize().y);
   
+  OpenTestWindow(font);
+
   while (window.isOpen()) {
     sf::Event event;
 	

@@ -1,8 +1,20 @@
 #include <Interface.h>
 
-std::map<int, Object*> global_objects;
+std::map<int, std::unique_ptr<Object>> global_objects;
+std::map<int, int> z_value; //rendering order
+std::vector<int> del;
 int obj_id = 0;
 
+sf::Color default_main_color = sf::Color(128, 128, 128, 128);
+sf::Color default_hover_main_color = sf::Color(200, 128, 128, 128);
+sf::Color default_active_main_color = sf::Color(255, 128, 128, 255);
+float default_margin =0;
+sf::View default_view = sf::View(sf::FloatRect(0, 0, 1600, 900));
+
+float animation_sharpness = 4.f;
+float action_dt = 0.2;
+
+static const std::string close_png = "images/clear.png";
 
 sf::FloatRect overlap(sf::FloatRect a, sf::FloatRect b)
 {
@@ -11,7 +23,6 @@ sf::FloatRect overlap(sf::FloatRect a, sf::FloatRect b)
 	c.left = std::max(a.left, b.left);
 	c.height = std::max(std::min(a.top + a.height, b.top + b.height) - c.top, 0.f);
 	c.width = std::max(std::min(a.left + a.width, b.left + b.width) - c.left, 0.f);
-
 	return c;
 }
 
@@ -55,6 +66,37 @@ ColorFloat ToColorF(sf::Color a)
 	return ColorFloat(a.r, a.g, a.b, a.a);
 }
 
+void AddGlobalObject(Object & a)
+{
+	global_objects[obj_id] = std::unique_ptr<Object>(a.GetCopy());//add a copy to the global list
+	global_objects[obj_id].get()->id = obj_id;
+	obj_id++;
+}
+
+void RemoveGlobalObject(int id)
+{
+	global_objects.erase(id);
+}
+
+void Add2DeleteQueue(int id)
+{
+	del.push_back(id);
+}
+
+void UpdateAllObjects(sf::RenderWindow * window, InputState& state)
+{
+	for (auto &id : del)
+	{
+		RemoveGlobalObject(id);
+	}
+	del.clear();
+	for (auto &obj : global_objects)
+	{
+		obj.second->Update(window, state);
+	}
+}
+
+
 State interpolate(State a, State b, float t)
 {
 	State C;
@@ -87,6 +129,20 @@ void Object::SetSize(float x, float y)
 	hoverstate.size = sf::Vector2f(x, y);
 }
 
+void Object::SetHeigth(float x)
+{
+	defaultstate.size.y = x;
+	activestate.size.y = x;
+	hoverstate.size.y = x;
+}
+
+void Object::SetWidth(float x)
+{
+	defaultstate.size.x = x;
+	activestate.size.x = x;
+	hoverstate.size.x = x;
+}
+
 void Object::SetBackgroundColor(sf::Color color)
 {
 }
@@ -108,6 +164,13 @@ void Object::SetMargin(float x)
 	defaultstate.margin = x;
 	activestate.margin = x;
 	hoverstate.margin = x;
+}
+
+void Object::SetInsideSize(float x)
+{
+	defaultstate.inside_size = x;
+	activestate.inside_size = x;
+	hoverstate.inside_size = x;
 }
 
 void Object::SetScroll(float x)
@@ -219,14 +282,18 @@ void Object::Update(sf::RenderWindow * window, InputState& state)
 }
 
 
-Object::Object() : callback(NULL), hoverfn(NULL), defaultfn(NULL), curmode(DEFAULT), action_time(0.2)
+Object::Object() : callback(NULL), hoverfn(NULL), defaultfn(NULL), curmode(DEFAULT), action_time(0.2), obj_allign(LEFT)
 {
-	used_view = sf::View(sf::FloatRect(0, 0, 1600, 900));
+	curstate.color_main = default_main_color;
+	activestate.color_main = default_active_main_color;
+	hoverstate.color_main = default_hover_main_color;
+	defaultstate.color_main = default_main_color;
+
+	used_view = default_view;
 }
 
 Object::~Object()
 {
-	global_objects.erase(id);
 }
 
 Object::Object(Object & A)
@@ -237,6 +304,11 @@ Object::Object(Object & A)
 Object::Object(Object && A)
 {
 	*this = A;
+}
+
+Object::Object(Object * A)
+{
+	*this = *A;
 }
 
 void Object::operator=(Object & A)
@@ -257,11 +329,12 @@ void Object::copy(Object & A)
 	defaultstate = A.defaultstate;
 	curmode = A.curmode;
 	used_view = A.used_view;
+	obj_allign = A.obj_allign;
 	id = A.id;
-	callback = A.callback;
-	hoverfn = A.hoverfn;
-	defaultfn = A.defaultfn;
 	action_time = A.action_time;
+
+	for (auto &element : A.objects)
+		AddObject(element.get(), element.get()->obj_allign);
 }
 
 void Object::copy(Object && A)
@@ -272,21 +345,28 @@ void Object::copy(Object && A)
 	std::swap(defaultstate, A.defaultstate);
 	std::swap(curmode, A.curmode);
 	std::swap(used_view, A.used_view);
+	std::swap(obj_allign, A.obj_allign);
 	std::swap(id, A.id);
-	std::swap(callback, A.callback);
-	std::swap(hoverfn, A.hoverfn);
-	std::swap(defaultfn, A.defaultfn);
 	std::swap(action_time, A.action_time);
+	std::swap(objects, A.objects);
 }
 
-void Box::AddObject(Object & something, Allign a)
+Object * Object::GetCopy()
 {
-	objects.push_back(std::pair<Allign,Object>(a,something));
+	return new Object(*this);
 }
 
-void Box::SetBackground(const sf::Texture * texture)
+void Object::AddObject(Object * something, Allign a)
 {
-	rect.setTexture(texture);
+	something->obj_allign = a;
+	objects.push_back(std::unique_ptr<Object>(something->GetCopy()));
+	this->SetInsideSize(defaultstate.inside_size + something->defaultstate.size.y);
+}
+
+void Box::SetBackground(const sf::Texture & texture)
+{
+	image = texture;
+	rect.setTexture(&image);
 }
 
 void Box::Draw(sf::RenderWindow * window, InputState& state)
@@ -317,15 +397,15 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 		//update all the stuff inside the box
 		for (auto &obj : objects)
 		{
-			Allign A = obj.first;
+			Allign A = obj.get()->obj_allign;
 			bool not_placed = true;
 			int tries = 0;
-			obj.second.used_view = boxView;
-			line_height = std::max(obj.second.curstate.size.y, line_height);
-			while (not_placed && tries < 3) //try to place the object somewhere
+			obj.get()->used_view = boxView;
+			line_height = std::max(obj.get()->curstate.size.y, line_height);
+			while (not_placed && tries < 2) //try to place the object somewhere
 			{
 				float space_left = defaultstate.size.x - cur_shift_x1 - cur_shift_x2;
-				float obj_width = obj.second.curstate.size.x;
+				float obj_width = obj.get()->curstate.size.x;
 
 				if (space_left >= obj_width)
 				{
@@ -333,18 +413,18 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 					switch (A)
 					{
 					case LEFT:
-						obj.second.SetPosition(curstate.position.x + cur_shift_x1, curstate.position.y + cur_shift_y);
+						obj.get()->SetPosition(curstate.position.x + cur_shift_x1, curstate.position.y + cur_shift_y);
 						cur_shift_x1 += obj_width + curstate.margin;
 						break;
 					case CENTER:
-						obj.second.SetPosition(curstate.position.x + defaultstate.size.x * 0.5f - obj_width * 0.5f, curstate.position.y + cur_shift_y);
+						obj.get()->SetPosition(curstate.position.x + defaultstate.size.x * 0.5f - obj_width * 0.5f, curstate.position.y + cur_shift_y);
 						cur_shift_y += line_height + curstate.margin;
 						line_height = 0;
 						cur_shift_x1 = curstate.margin;
 						cur_shift_x2 = curstate.margin;
 						break;
 					case RIGHT:
-						obj.second.SetPosition(curstate.position.x + defaultstate.size.x - obj_width - cur_shift_x2, curstate.position.y + cur_shift_y);
+						obj.get()->SetPosition(curstate.position.x + defaultstate.size.x - obj_width - cur_shift_x2, curstate.position.y + cur_shift_y);
 						cur_shift_x2 += obj_width + curstate.margin;
 						break;
 					}
@@ -359,8 +439,9 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 				}
 			}
 
-			obj.second.Update(window, state);
+			obj.get()->Update(window, state);
 		}
+		this->SetInsideSize(cur_shift_y - curstate.scroll - curstate.margin);
 	}
 }
 
@@ -393,26 +474,23 @@ void Box::operator=(Box & A)
 {
 	copy(A);
 
-	objects = A.objects;
 	rect = A.rect;
 	boxView = A.boxView;
+	SetBackground(A.image);
 }
 
 void Box::operator=(Box && A)
 {
 	copy(A);
 
-	std::swap(objects, A.objects);
+	std::swap(image, A.image);
 	std::swap(rect, A.rect);
 	std::swap(boxView, A.boxView);
 }
 
-void UpdateAllObjects(sf::RenderWindow * window, InputState& state)
+Object * Box::GetCopy()
 {
-	for (auto &obj : global_objects)
-	{
-		obj.second->Update(window, state);
-	}
+	return static_cast<Object*>(new Box(*this));
 }
 
 ColorFloat::ColorFloat(float red, float green, float blue, float alpha): r(red), g(green), b(blue), a(alpha)
@@ -456,12 +534,13 @@ Text::Text(sf::Text t)
 	clone_states();
 }
 
-Text::Text(Box & A)
+
+Text::Text(Text & A)
 {
 	*this = A;
 }
 
-Text::Text(Box && A)
+Text::Text(Text && A)
 {
 	*this = A;
 }
@@ -480,17 +559,38 @@ void Text::operator=(Text && A)
 	std::swap(text, A.text);
 }
 
-void Window::Add(Object * something, Allign a)
+Object * Text::GetCopy()
 {
-	Inside.get()->AddObject(something, a);
+	return static_cast<Object*>(new Text(*this));
+}
+
+void Window::Add(Object* something, Allign a)
+{
+	objects[1].get()->AddObject(something, a);
+
+	//update the slider
+	float inside_size = this->objects[1].get()->defaultstate.inside_size;
+	float height = this->objects[2].get()->defaultstate.size.y;
+	float height_1 = height - 2 * this->objects[2].get()->defaultstate.margin;
+	float new_h = std::min(height_1 * (height / inside_size), height_1);
+	this->objects[2].get()->objects[0].get()->SetHeigth(new_h);
 }
 
 void Window::ScrollBy(float dx)
 {
-	float scroll_a = this->Scroll.get()->defaultstate.scroll + dx;
-	float scroll_b = this->Inside.get()->defaultstate.scroll - dx;
-	this->Inside.get()->ApplyScroll(scroll_b);
-	this->Scroll.get()->SetScroll(scroll_a);
+	float inside_size = this->objects[1].get()->defaultstate.inside_size;
+	float cur_scroll = -this->objects[1].get()->defaultstate.scroll + dx;
+	if (cur_scroll <= inside_size && cur_scroll >= 0)
+	{
+		this->objects[1].get()->ApplyScroll(-cur_scroll);
+
+		float height_1 = this->objects[2].get()->defaultstate.size.y - 2 * this->objects[2].get()->defaultstate.margin;
+		float height_2 = this->objects[2].get()->objects[0].get()->defaultstate.size.y;
+		float max_slide_scroll = height_1 - height_2;
+		//relative scroll
+		float scroll_a = max_slide_scroll * cur_scroll / inside_size;
+		this->objects[2].get()->SetScroll(scroll_a);
+	}
 }
 
 Window::Window(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font)
@@ -502,32 +602,60 @@ Window::Window(float x, float y, float dx, float dy, sf::Color color_main, std::
 	defaultstate.color_main = ToColorF(color_main);
 	clone_states();
 
-	Bar.reset(new Box(0, 0, dx, 30, sf::Color(0, 100, 200, 128)));
-	Scroll.reset(new Box(0, 0, 30, dy - 30, sf::Color(150, 150, 150, 128)));
-	Scroll_Slide.reset(new Box(0, 0, 27, 60, sf::Color(255, 150, 0, 128)));
-	Scroll_Slide.get()->hoverstate.color_main = sf::Color(255, 50, 0, 128);
-	Scroll_Slide.get()->activestate.color_main = sf::Color(255, 100, 100, 255);
-	Inside.reset(new Box(0, 0, dx - 30, dy - 30, sf::Color(100, 100, 100, 128)));
-	Title.reset(new Text(title, font, 25, sf::Color::White));
+	Box Bar(0, 0, dx, 30, sf::Color(0, 100, 200, 128)), 
+		CloseBx(0, 0, 30, 30, sf::Color(255, 255, 255, 255)),
+		Inside(0, 0, dx - 30, dy - 30, sf::Color(100, 100, 100, 128)),
+		Scroll(0, 0, 30, dy - 30, sf::Color(150, 150, 150, 128)),
+		Scroll_Slide(0, 0, 27, 60, sf::Color(255, 150, 0, 128));
+	Text Title(title, font, 25, sf::Color::White);
 
-	this->AddObject(Bar.get(), Box::CENTER);
-	this->AddObject(Inside.get(), Box::LEFT);
-	this->AddObject(Scroll.get(), Box::RIGHT);
-	Bar.get()->AddObject(Title.get(), Box::LEFT);
-	Scroll.get()->AddObject(Scroll_Slide.get(), Box::CENTER);
+	Scroll_Slide.hoverstate.color_main = sf::Color(255, 50, 0, 128);
+	Scroll_Slide.activestate.color_main = sf::Color(255, 100, 100, 255);
 
+	sf::Image close; close.loadFromFile(close_png);
+	sf::Texture closetxt; closetxt.loadFromImage(close);
+	CloseBx.SetBackground(closetxt);
+
+	Bar.AddObject(&Title, Box::LEFT);
+	Bar.AddObject(&CloseBx, Box::RIGHT);
+	Scroll.AddObject(&Scroll_Slide, Box::CENTER);
+	this->AddObject(&Bar, Box::CENTER);
+	this->AddObject(&Inside, Box::LEFT);
+	this->AddObject(&Scroll, Box::RIGHT);
+
+	CreateCallbacks();
+}
+
+Window::Window(Window & A)
+{
+	*this = A;
+}
+
+Window::Window(Window && A)
+{
+	*this = A;
+}
+
+void Window::CreateCallbacks()
+{
 	//use lambda funtion
-	Scroll_Slide.get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
+	this->objects[2].get()->objects[0].get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
 	{
 		parent->ScrollBy(state.mouse_speed.y);
 	});
 
+	//use lambda funtion
+	this->objects[0].get()->objects[1].get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
+	{
+		Add2DeleteQueue(parent->id);
+	});
+
 	//drag callback
-	Bar.get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
+	this->objects[0].get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
 	{
 		parent->Move(state.mouse_speed);
 	});
-	    
+
 	this->SetHoverFunction([parent = this](sf::RenderWindow * window, InputState & state)
 	{
 		//wheel scroll 
@@ -537,11 +665,23 @@ Window::Window(float x, float y, float dx, float dy, sf::Color color_main, std::
 			parent->ScrollBy(state.wheel*ds);
 		}
 	});
+}
 
-	//add this to the global map to update it automatically
-	id = obj_id;
-	obj_id++;
-	global_objects[id] = this;//add it to the global list
+void Window::operator=(Window & A)
+{
+	Box::operator=(A);
+	CreateCallbacks();
+}
+
+void Window::operator=(Window && A)
+{
+	Box::operator=(A);
+	CreateCallbacks();
+}
+
+Object * Window::GetCopy()
+{
+	return static_cast<Object*>(new Window(*this));
 }
 
 InputState::InputState(): mouse_pos(sf::Vector2f(0,0)), mouse_speed(sf::Vector2f(0, 0))
@@ -569,7 +709,7 @@ void MenuBox::Cursor(int d)
 		if (cursor_id > 0)
 		{
 			cursor_id--;
-			Inside.get()->objects[cursor_id].second->curmode = ONHOVER;
+			Inside.get()->objects[cursor_id].get()->curmode = ONHOVER;
 		}
 	}
 	else if(d == 1)
@@ -577,7 +717,7 @@ void MenuBox::Cursor(int d)
 		if (cursor_id < Inside.get()->objects.size() - 1)
 		{
 			cursor_id++;
-			Inside.get()->objects[cursor_id].second->curmode = ONHOVER;
+			Inside.get()->objects[cursor_id].get()->curmode = ONHOVER;
 		}
 	}
 }
@@ -599,18 +739,35 @@ MenuBox::MenuBox(float x, float y, float dx, float dy, sf::Color color_main, std
 	defaultstate.color_main = ToColorF(color_main);
 	clone_states();
 
-	Scroll.reset(new Box(0, 0, 30, dy - 30, sf::Color(150, 150, 150, 128)));
-	Scroll_Slide.reset(new Box(0, 0, 27, 60, sf::Color(255, 150, 0, 128)));
-	Scroll_Slide.get()->hoverstate.color_main = sf::Color(255, 50, 0, 128);
-	Scroll_Slide.get()->activestate.color_main = sf::Color(255, 100, 100, 255);
-	Inside.reset(new Box(0, 0, dx - 30, dy - 30, sf::Color(100, 100, 100, 128)));
-	
-	this->AddObject(Inside.get(), Box::LEFT);
-	this->AddObject(Scroll.get(), Box::RIGHT);
-	Scroll.get()->AddObject(Scroll_Slide.get(), Box::CENTER);
+	Box Inside(0, 0, dx - 30, dy - 30, sf::Color(100, 100, 100, 128)),
+		Scroll(0, 0, 30, dy - 30, sf::Color(150, 150, 150, 128)),
+		Scroll_Slide(0, 0, 27, 60, sf::Color(255, 150, 0, 128));
+	Text Title(title, font, 25, sf::Color::White);
 
+	Scroll_Slide.hoverstate.color_main = sf::Color(255, 50, 0, 128);
+	Scroll_Slide.activestate.color_main = sf::Color(255, 100, 100, 255);
+
+	Scroll.AddObject(&Scroll_Slide, Box::CENTER);
+	this->AddObject(&Inside, Box::LEFT);
+	this->AddObject(&Scroll, Box::RIGHT);
+
+	CreateCallbacks();
+}
+
+MenuBox::MenuBox(MenuBox & A)
+{
+	*this = A;
+}
+
+MenuBox::MenuBox(MenuBox && A)
+{
+	*this = A;
+}
+
+void MenuBox::CreateCallbacks()
+{
 	//use lambda funtion
-	Scroll_Slide.get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
+	this->objects[1].get()->objects[0].get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
 	{
 		parent->ScrollBy(state.mouse_speed.y);
 	});
@@ -624,7 +781,6 @@ MenuBox::MenuBox(float x, float y, float dx, float dy, sf::Color color_main, std
 			parent->ScrollBy(state.wheel*ds);
 		}
 	});
-
 
 	this->SetDefaultFunction([parent = this](sf::RenderWindow * window, InputState & state)
 	{
@@ -645,14 +801,27 @@ MenuBox::MenuBox(float x, float y, float dx, float dy, sf::Color color_main, std
 		if (state.keys[sf::Keyboard::Enter])
 		{
 			//run the callback function of the chosen object
-			parent->Inside.get()->objects[parent->cursor_id].second->callback(window, state);
+			parent->Inside.get()->objects[parent->cursor_id].get()->callback(window, state);
 			A = 1;
 		}
 
-		if(A) parent->action_time = action_dt;
+		if (A) parent->action_time = action_dt;
 	});
-	//add this to the global map to update it automatically
-	id = obj_id;
-	obj_id++;
-	global_objects[id] = this;//add it to the global list
+}
+
+void MenuBox::operator=(MenuBox & A)
+{
+	Box::operator=(A);
+	CreateCallbacks();
+}
+
+void MenuBox::operator=(MenuBox && A)
+{
+	Box::operator=(A);
+	CreateCallbacks();
+}
+
+Object * MenuBox::GetCopy()
+{
+	return static_cast<Object*>(new MenuBox(*this));
 }

@@ -25,6 +25,7 @@
 
 extern Settings game_settings;
 
+
 const int Element_Height = 50;
 const int Descr_Height = 25;
 

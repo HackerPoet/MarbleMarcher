@@ -8,15 +8,15 @@
 #include <iterator>
 #include <functional>
 
-
 //default interface parameters
-auto default_main_color = sf::Color(128, 128, 128, 128);
-auto default_hover_main_color = sf::Color(200, 128, 128, 128);
-auto default_active_main_color = sf::Color(255, 128, 128, 255);
-auto default_margin = 5;
+extern sf::Color default_main_color;
+extern sf::Color default_hover_main_color;
+extern sf::Color default_active_main_color;
+extern float default_margin;
+extern sf::View default_view ;
 
-float animation_sharpness = 4.f;
-float action_dt = 0.2;
+extern float animation_sharpness;
+extern float action_dt;
 
 struct ColorFloat
 {
@@ -58,9 +58,10 @@ struct State
 	sf::Vector2f position = sf::Vector2f(0,0);
 	sf::Vector2f size = sf::Vector2f(0.1f, 0.1f);
 	float border_thickness = 0.f;
-	float margin = 0.f;
+	float margin = default_margin;
 	float font_size = 1.f;
 	float scroll = 0.f;
+	float inside_size = 0.f;
 	ColorFloat color_main = ToColorF(sf::Color::Black);
 	ColorFloat color_second = ToColorF(sf::Color::Transparent);
 	ColorFloat color_border = ColorFloat(128,128,128);
@@ -80,16 +81,22 @@ public:
 		DEFAULT, ONHOVER, ACTIVE
 	};
 
+	enum Allign
+	{
+		LEFT, CENTER, RIGHT
+	};
+
+	void ApplyScroll(float x);
 	void SetPosition(float x, float y);
 	void SetSize(float x, float y);
+	void SetHeigth(float x);
+	void SetWidth(float x);
 	void SetBackgroundColor(sf::Color color);
 	void SetBorderColor(sf::Color color);
 	void SetBorderWidth(float S);
 	void SetMargin(float x);
-
+	void SetInsideSize(float x);
 	void SetScroll(float x);
-	void ApplyScroll(float x);
-
 	void Move(sf::Vector2f dx);
 
 	void SetDefaultFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun);
@@ -99,14 +106,15 @@ public:
 	void clone_states();
 
 	virtual void Draw(sf::RenderWindow * window, InputState& state);
-
+	virtual void AddObject(Object* a, Allign b);
 	void Update(sf::RenderWindow * window, InputState& state);
-
+	
 	Object();
 	~Object();
 
 	Object(Object& A);
 	Object(Object&& A);
+	Object(Object* A);
 
 	virtual void operator=(Object& A);
 	virtual void operator=(Object&& A);
@@ -114,30 +122,34 @@ public:
 	void copy(Object& A);
 	void copy(Object&& A);
 
+	virtual Object* GetCopy();
+
 	State curstate;
 	State activestate;
 	State hoverstate;
 	State defaultstate;
 	States curmode;
 
+	Allign obj_allign;
+
 	sf::View used_view;
-	int id;
+	
 	std::function<void(sf::RenderWindow * window, InputState & state)> callback, hoverfn, defaultfn;
+
+	//objects inside this object
+	std::vector<std::unique_ptr<Object>> objects;
 
 	//operation time limiter
 	float action_time;
+
+	int id;
 };
 
 //a box to add stuff in
 class Box: public Object
 {
 public:
-	enum Allign
-	{
-		LEFT, CENTER, RIGHT
-	};
-	void AddObject(Object & something, Allign a = LEFT);
-	void SetBackground(const sf::Texture *texture);
+	void SetBackground(const sf::Texture & texture);
 	void Draw(sf::RenderWindow *window, InputState& state);
 
 	Box(float dx, float dy, float x = 0, float y = 0, sf::Color color_main = default_main_color);
@@ -149,11 +161,9 @@ public:
 	void operator=(Box& A);
 	void operator=(Box&& A);
 
-	//objects inside the box
-	std::vector< std::pair<Allign, Object> > objects;
-
+	virtual Object* GetCopy();
 private:
-
+	sf::Texture image;
 	sf::RectangleShape rect;
 	sf::View boxView;
 };
@@ -162,31 +172,41 @@ private:
 class Text: public Object
 {
 public:
-	void Draw(sf::RenderWindow *window, InputState& state);
 	sf::Text text;
+
+	void Draw(sf::RenderWindow *window, InputState& state);
 
 	Text(std::string text, sf::Font &f, float size, sf::Color col);
 	Text(sf::Text t);
 
-	Text(Box& A);
-	Text(Box&& A);
+	Text(Text& A);
+	Text(Text&& A);
 
 	void operator=(Text& A);
 	void operator=(Text&& A);
+
+	virtual Object* GetCopy();
 };
 
 class Window: public Box
 {
 public:
-	std::unique_ptr<Box> Bar, Inside, Scroll, Scroll_Slide;
-	std::unique_ptr<Text> Title;
-
 	sf::Vector2f dmouse;
 
-	void Add(Object* something, Allign a = LEFT);
+	void Add(Object * something, Allign a = LEFT);
 	void ScrollBy(float dx);
 
 	Window(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font);
+
+	Window(Window& A);
+	Window(Window&& A);
+
+	void CreateCallbacks();
+
+	void operator=(Window& A);
+	void operator=(Window&& A);
+
+	virtual Object* GetCopy();
 };
 
 class MenuBox : public Box
@@ -197,9 +217,22 @@ public:
 
 	sf::Vector2f dmouse;
 
-	void Add(Object* something, Allign a = LEFT);
+	void Add(Object * something, Allign a);
 	void Cursor(int d);
 	void ScrollBy(float dx);
 
 	MenuBox(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font);
+
+	MenuBox(MenuBox& A);
+	MenuBox(MenuBox&& A);
+
+	void CreateCallbacks();
+
+	void operator=(MenuBox& A);
+	void operator=(MenuBox&& A);
+
+	virtual Object* GetCopy();
 };
+
+void AddGlobalObject(Object & a);
+void RemoveGlobalObject(int id);
