@@ -5,13 +5,16 @@
 #include <vector>
 #include <string>
 #include <filesystem>
+#include <Level.h>
+#include <locale>
+#include <codecvt>
 
 namespace fs = std::filesystem;
 
 class Localization
 {
 public:
-	std::map<std::string, std::map<std::string, std::string>> locales;
+	std::map<std::string, std::map<std::string, std::wstring>> locales;
 	std::string cur_language;
 
 	Localization();
@@ -20,5 +23,7 @@ public:
 	void LoadLocalFromFile(fs::path path);
 	void SetLanguage(std::string lang);
 
-	std::string operator[](std::string str);
+	std::wstring operator[](std::string str);
 };
+
+extern Localization LOCAL;

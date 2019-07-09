@@ -34,6 +34,7 @@
 
 #include<Gamemodes.h>
 
+
 #ifdef _WIN32
 #include <Windows.h>
 #define ERROR_MSG(x) MessageBox(nullptr, TEXT(x), TEXT("ERROR"), MB_OK);
@@ -196,6 +197,8 @@ int main(int argc, char *argv[]) {
   //Load scores if available
   high_scores.Load(save_file);
   game_settings.Load(settings_file);
+  LOCAL.LoadLocalsFromFolder(local_folder);
+  LOCAL.SetLanguage("Ukrainian");
 
   //Have user select the resolution
   SelectRes select_res(&font_mono);
@@ -306,6 +309,7 @@ int main(int argc, char *argv[]) {
   
   io_state.window_size = sf::Vector2f(window.getSize().x, window.getSize().y);
   
+  OpenTestWindow(font);
   OpenTestWindow(font);
 
   while (window.isOpen()) {

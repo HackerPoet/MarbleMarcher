@@ -1,20 +1,23 @@
 #include <Interface.h>
 
 std::map<int, std::unique_ptr<Object>> global_objects;
-std::map<int, int> z_value; //rendering order
-std::vector<int> del;
-int obj_id = 0;
+std::vector<int> z_value; //rendering order
+std::map<int, int> z_index;
+std::stack<int> del; // deletion stack
+int all_obj_id = 0;
+std::map<int, bool> active;
+int focused = 0;
+int global_focus = 0;
 
 sf::Color default_main_color = sf::Color(128, 128, 128, 128);
 sf::Color default_hover_main_color = sf::Color(200, 128, 128, 128);
 sf::Color default_active_main_color = sf::Color(255, 128, 128, 255);
 float default_margin =0;
-sf::View default_view = sf::View(sf::FloatRect(0, 0, 1600, 900));
+sf::View default_view = sf::View(sf::FloatRect(0, 0, 2600, 1200));
 
-float animation_sharpness = 4.f;
+float animation_sharpness = 5.f;
 float action_dt = 0.2;
 
-static const std::string close_png = "images/clear.png";
 
 sf::FloatRect overlap(sf::FloatRect a, sf::FloatRect b)
 {
@@ -68,31 +71,48 @@ ColorFloat ToColorF(sf::Color a)
 
 void AddGlobalObject(Object & a)
 {
-	global_objects[obj_id] = std::unique_ptr<Object>(a.GetCopy());//add a copy to the global list
-	global_objects[obj_id].get()->id = obj_id;
-	obj_id++;
+	Object* copy = a.GetCopy();
+	global_objects[copy->id] = std::unique_ptr<Object>(copy);//add a copy to the global list
+	global_objects[copy->id].get()->id = copy->id;
+	z_value.push_back(copy->id);
+	z_index[copy->id] = z_value.size()-1;
 }
 
 void RemoveGlobalObject(int id)
 {
 	global_objects.erase(id);
+	z_value.erase(z_value.begin() + z_index[id]);
+	z_index.erase(id);
 }
 
 void Add2DeleteQueue(int id)
 {
-	del.push_back(id);
+	del.push(id);
 }
 
 void UpdateAllObjects(sf::RenderWindow * window, InputState& state)
 {
-	for (auto &id : del)
+	while (!del.empty()) // remove everything in the del queue
 	{
-		RemoveGlobalObject(id);
+		RemoveGlobalObject(del.top());
+		del.pop();
 	}
-	del.clear();
-	for (auto &obj : global_objects)
+	
+	//render stuff in the following order
+	for (auto &z : z_value)
 	{
-		obj.second->Update(window, state);
+		global_objects[z].get()->Update(window, state);
+	}
+	
+	if (global_objects.count(global_focus) != 0)
+	{
+		//put the focused global object to the top
+		int top_id = z_value[z_value.size() - 1];
+		std::swap(z_value[z_value.size() - 1], z_value[z_index[global_focus]]);
+		std::swap(z_index[global_focus], z_index[top_id]);
+
+		//update callbacks in the focused object
+		global_objects[global_focus]->UpdateAction(window, state);
 	}
 }
 
@@ -226,45 +246,35 @@ void Object::Draw(sf::RenderWindow * window, InputState& state)
 void Object::Update(sf::RenderWindow * window, InputState& state)
 {
 	window->setView(used_view);
-	//callback stuff
 	sf::Vector2f worldPos = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y));
 	sf::FloatRect obj(curstate.position.x, curstate.position.y, curstate.size.x, curstate.size.y);
 
 	state.mouse_speed = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y)) -
-						window->mapPixelToCoords(sf::Vector2i(state.mouse_prev.x, state.mouse_prev.y));
+		window->mapPixelToCoords(sf::Vector2i(state.mouse_prev.x, state.mouse_prev.y));
 
-	curmode = DEFAULT;
-	//if mouse is inside the object 
-	if (obj.contains(worldPos))
+	if (state.mouse[0] || state.mouse[2]) //if clicked
 	{
-		if (state.mouse[0] || state.mouse[2]) //if click
+		if (obj.contains(worldPos)) // if inside object
 		{
-			if (callback != NULL)
-				callback(window, state); //run callback with state info
-			curmode = ACTIVE;
-		}
-		else // if hover
-		{
-			if (hoverfn != NULL)
-				hoverfn(window, state); //run callback with state info
-			curmode = ONHOVER;
-		}
-	}
-	else curmode = DEFAULT;
+			active[id] = true; //set as active
+			if (defaultfn != NULL)
+				focused = id; // save this object as the last focused if it has a default callback
 
-	if (action_time < 0.f)
-	{
-		if (defaultfn != NULL)
-			defaultfn(window, state); //run callback with state info
+			if (z_index.count(id) != 0)
+			{
+				global_focus = id;
+			}
+		}
 	}
 	else
 	{
-		action_time -= state.dt;
+		active[id] = false; //deactivate
 	}
+	
 
 	float t = 1.f - exp(-animation_sharpness * state.dt);
 
-	//animation
+	//update animation
 	switch (curmode)
 	{
 	case DEFAULT:
@@ -281,6 +291,53 @@ void Object::Update(sf::RenderWindow * window, InputState& state)
 	Draw(window, state);
 }
 
+void Object::UpdateAction(sf::RenderWindow * window, InputState & state)
+{
+	sf::Vector2f worldPos = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y));
+	sf::FloatRect obj(curstate.position.x, curstate.position.y, curstate.size.x, curstate.size.y);
+
+	state.mouse_speed = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y)) -
+		window->mapPixelToCoords(sf::Vector2i(state.mouse_prev.x, state.mouse_prev.y));
+
+	curmode = DEFAULT;
+	//if mouse is inside the object 
+	if (obj.contains(worldPos))
+	{
+		if(!(state.mouse[0] || state.mouse[2])) // if hover
+		{
+			if (hoverfn != NULL)
+				hoverfn(window, state); //run callback with state info
+			curmode = ONHOVER;
+		}
+	}
+
+	if (active[id])
+	{
+		if (callback != NULL)
+			callback(window, state); //run callback with state info
+		curmode = ACTIVE;
+	}
+
+	if (action_time <= 0.f) //limit the repetability
+	{
+		if (focused == id) //if this object is the one that is currently in focus
+		{
+			if (defaultfn != NULL) //the function existance check may seem unnecessery, but it is
+				defaultfn(window, state); //run callback with state info
+		}
+	}
+	else
+	{
+		action_time -= state.dt;
+	}
+
+	//update callbacks for all functions inside
+	for (auto &obj : objects)
+	{
+		obj.get()->UpdateAction(window, state);
+	}
+}
+
 
 Object::Object() : callback(NULL), hoverfn(NULL), defaultfn(NULL), curmode(DEFAULT), action_time(0.2), obj_allign(LEFT)
 {
@@ -290,6 +347,10 @@ Object::Object() : callback(NULL), hoverfn(NULL), defaultfn(NULL), curmode(DEFAU
 	defaultstate.color_main = default_main_color;
 
 	used_view = default_view;
+
+	id = all_obj_id;
+	active[id] = false;
+	all_obj_id++;
 }
 
 Object::~Object()
@@ -330,7 +391,11 @@ void Object::copy(Object & A)
 	curmode = A.curmode;
 	used_view = A.used_view;
 	obj_allign = A.obj_allign;
-	id = A.id;
+
+	id = all_obj_id;
+	all_obj_id++;
+	active[id] = false;
+
 	action_time = A.action_time;
 
 	for (auto &element : A.objects)
@@ -379,7 +444,7 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 	rect.setOutlineColor(ToColor(curstate.color_border));
 	window->draw(rect);
 	
-	sf::Vector2f default_size = sf::Vector2f(1600, 900);
+	sf::Vector2f default_size = default_view.getSize();
 	sf::FloatRect global_view = sf::FloatRect(window->getView().getCenter() - window->getView().getSize()*0.5f, window->getView().getSize());
 	sf::FloatRect this_view = overlap(global_view, sf::FloatRect(curstate.position, curstate.size));
 	boxView.reset(this_view);
@@ -516,16 +581,6 @@ void Text::Draw(sf::RenderWindow * window, InputState& state)
 	SetSize(text.getLocalBounds().width, text.getLocalBounds().height);
 }
 
-Text::Text(std::string str, sf::Font & f, float size, sf::Color col)
-{
-	text.setString(str);
-	text.setFont(f);
-	defaultstate.font_size = size;
-	defaultstate.color_main = col;
-
-	clone_states();
-}
-
 Text::Text(sf::Text t)
 {
 	text = t;
@@ -593,38 +648,6 @@ void Window::ScrollBy(float dx)
 	}
 }
 
-Window::Window(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font)
-{
-	defaultstate.position.x = x;
-	defaultstate.position.y = y;
-	defaultstate.size.x = dx;
-	defaultstate.size.y = dy;
-	defaultstate.color_main = ToColorF(color_main);
-	clone_states();
-
-	Box Bar(0, 0, dx, 30, sf::Color(0, 100, 200, 128)), 
-		CloseBx(0, 0, 30, 30, sf::Color(255, 255, 255, 255)),
-		Inside(0, 0, dx - 30, dy - 30, sf::Color(100, 100, 100, 128)),
-		Scroll(0, 0, 30, dy - 30, sf::Color(150, 150, 150, 128)),
-		Scroll_Slide(0, 0, 27, 60, sf::Color(255, 150, 0, 128));
-	Text Title(title, font, 25, sf::Color::White);
-
-	Scroll_Slide.hoverstate.color_main = sf::Color(255, 50, 0, 128);
-	Scroll_Slide.activestate.color_main = sf::Color(255, 100, 100, 255);
-
-	sf::Image close; close.loadFromFile(close_png);
-	sf::Texture closetxt; closetxt.loadFromImage(close);
-	CloseBx.SetBackground(closetxt);
-
-	Bar.AddObject(&Title, Box::LEFT);
-	Bar.AddObject(&CloseBx, Box::RIGHT);
-	Scroll.AddObject(&Scroll_Slide, Box::CENTER);
-	this->AddObject(&Bar, Box::CENTER);
-	this->AddObject(&Inside, Box::LEFT);
-	this->AddObject(&Scroll, Box::RIGHT);
-
-	CreateCallbacks();
-}
 
 Window::Window(Window & A)
 {
@@ -641,7 +664,13 @@ void Window::CreateCallbacks()
 	//use lambda funtion
 	this->objects[2].get()->objects[0].get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
 	{
-		parent->ScrollBy(state.mouse_speed.y);
+		float inside_size = parent->objects[1].get()->defaultstate.inside_size;
+		float height_1 = parent->objects[2].get()->defaultstate.size.y - 2 * parent->objects[2].get()->defaultstate.margin;
+		float height_2 = parent->objects[2].get()->objects[0].get()->defaultstate.size.y;
+		float max_slide_scroll = height_1 - height_2;
+		//relative scroll
+		float rel_coef = inside_size / max_slide_scroll;
+		parent->ScrollBy(state.mouse_speed.y*rel_coef);
 	});
 
 	//use lambda funtion

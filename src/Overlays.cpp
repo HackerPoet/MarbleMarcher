@@ -18,6 +18,7 @@
 #include "Level.h"
 #include "Res.h"
 #include "Scores.h"
+#include <Localization.h>
 
 static const float pi = 3.14159265359f;
 static const int num_level_pages = 1 + (num_levels - 1) / Overlays::LEVELS_PER_PAGE;
@@ -81,12 +82,12 @@ Overlays::Texts Overlays::GetOption(Texts from, Texts to) {
 
 void Overlays::UpdateMenu(float mouse_x, float mouse_y) {
   //Update text boxes
-  MakeText("Marble\nMarcher", 60, 20, 72, sf::Color::White, all_text[TITLE]);
-  MakeText("Play", 80, 230, 60, sf::Color::White, all_text[PLAY]);
-  MakeText("Levels", 80, 300, 60, sf::Color::White, all_text[LEVELS]);
-  MakeText("Controls", 80, 370, 60, sf::Color::White, all_text[CONTROLS]);
-  MakeText("Screen Saver", 80, 440, 60, sf::Color::White, all_text[SCREEN_SAVER]);
-  MakeText("Exit", 80, 510, 60, sf::Color::White, all_text[EXIT]);
+  MakeText(LOCAL["Marble_Marcher"], 60, 20, 72, sf::Color::White, all_text[TITLE]);
+  MakeText(LOCAL["Play"], 80, 230, 60, sf::Color::White, all_text[PLAY]);
+  MakeText(LOCAL["Levels"], 80, 300, 60, sf::Color::White, all_text[LEVELS]);
+  MakeText(LOCAL["Controls"], 80, 370, 60, sf::Color::White, all_text[CONTROLS]);
+  MakeText(LOCAL["Screen_Saver"], 80, 440, 60, sf::Color::White, all_text[SCREEN_SAVER]);
+  MakeText(LOCAL["Exit"], 80, 510, 60, sf::Color::White, all_text[EXIT]);
   MakeText("\xA9""2019 CodeParade 1.3.0 beta, Community Edition \nMusic by PettyTheft", 16, 652, 32, sf::Color::White, all_text[CREDITS], true);
   all_text[TITLE].setLineSpacing(0.76f);
   all_text[CREDITS].setLineSpacing(0.9f);
@@ -358,7 +359,8 @@ void Overlays::DrawCheats(sf::RenderWindow& window) {
   window.draw(text);
 }
 
-void Overlays::MakeText(const char* str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono) {
+
+template<class T> void Overlays::MakeText(T str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono) {
   text.setString(str);
   text.setFont(mono ? *font_mono : *font);
   text.setCharacterSize(int(size * draw_scale));

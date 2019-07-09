@@ -176,7 +176,8 @@ public:
 
   bool TwManageEvent(sf::Event &event);
 protected:
-  void MakeText(const char* str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono=false);
+  template<class T>
+  void MakeText(T str, float x, float y, float size, const sf::Color & color, sf::Text & text, bool mono = 0);
   void MakeTime(int t, float x, float y, float size, const sf::Color& color, sf::Text& text);
   void UpdateHover(Texts from, Texts to, float mouse_x, float mouse_y);
 
@@ -202,4 +203,5 @@ private:
 
   const sf::Font* font;
   const sf::Font* font_mono;
+
 };

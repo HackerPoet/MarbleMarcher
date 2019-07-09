@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iterator>
 #include <functional>
+#include <stack>
 
 //default interface parameters
 extern sf::Color default_main_color;
@@ -17,6 +18,8 @@ extern sf::View default_view ;
 
 extern float animation_sharpness;
 extern float action_dt;
+
+static const std::string close_png = "images/clear.png";
 
 struct ColorFloat
 {
@@ -108,6 +111,7 @@ public:
 	virtual void Draw(sf::RenderWindow * window, InputState& state);
 	virtual void AddObject(Object* a, Allign b);
 	void Update(sf::RenderWindow * window, InputState& state);
+	void UpdateAction(sf::RenderWindow * window, InputState& state);
 	
 	Object();
 	~Object();
@@ -138,6 +142,7 @@ public:
 
 	//objects inside this object
 	std::vector<std::unique_ptr<Object>> objects;
+	std::stack<int> z_buffer;
 
 	//operation time limiter
 	float action_time;
@@ -176,7 +181,8 @@ public:
 
 	void Draw(sf::RenderWindow *window, InputState& state);
 
-	Text(std::string text, sf::Font &f, float size, sf::Color col);
+	template<class T>
+	Text(T str, sf::Font &f, float size, sf::Color col);
 	Text(sf::Text t);
 
 	Text(Text& A);
@@ -196,7 +202,8 @@ public:
 	void Add(Object * something, Allign a = LEFT);
 	void ScrollBy(float dx);
 
-	Window(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font);
+	template<class T>
+	Window(float x, float y, float dx, float dy, sf::Color color_main, T title, sf::Font & font);
 
 	Window(Window& A);
 	Window(Window&& A);
@@ -236,3 +243,50 @@ public:
 
 void AddGlobalObject(Object & a);
 void RemoveGlobalObject(int id);
+
+template<class T>
+inline Window::Window(float x, float y, float dx, float dy, sf::Color color_main, T title, sf::Font & font)
+{
+	defaultstate.position.x = x;
+	defaultstate.position.y = y;
+	defaultstate.size.x = dx;
+	defaultstate.size.y = dy;
+	defaultstate.color_main = ToColorF(color_main);
+	clone_states();
+
+	Box Bar(0, 0, dx, 30, sf::Color(0, 100, 200, 128)),
+		CloseBx(0, 0, 30, 30, sf::Color(255, 255, 255, 255)),
+		Inside(0, 0, dx - 30, dy - 30, sf::Color(100, 100, 100, 128)),
+		Scroll(0, 0, 30, dy - 30, sf::Color(150, 150, 150, 128)),
+		Scroll_Slide(0, 0, 27, 60, sf::Color(255, 150, 0, 128));
+	Text Title(title, font, 25, sf::Color::White);
+
+	CloseBx.hoverstate.color_main = sf::Color(255, 0, 0, 255);
+	Scroll_Slide.hoverstate.color_main = sf::Color(255, 50, 0, 128);
+	Scroll_Slide.activestate.color_main = sf::Color(255, 100, 100, 255);
+
+	sf::Image close; close.loadFromFile(close_png);
+	sf::Texture closetxt; closetxt.loadFromImage(close);
+	closetxt.setSmooth(true);
+	CloseBx.SetBackground(closetxt);
+
+	Bar.AddObject(&Title, Box::LEFT);
+	Bar.AddObject(&CloseBx, Box::RIGHT);
+	Scroll.AddObject(&Scroll_Slide, Box::CENTER);
+	this->AddObject(&Bar, Box::CENTER);
+	this->AddObject(&Inside, Box::LEFT);
+	this->AddObject(&Scroll, Box::RIGHT);
+
+	CreateCallbacks();
+}
+
+template<class T>
+inline Text::Text(T str, sf::Font & f, float size, sf::Color col)
+{
+	text.setString(str);
+	text.setFont(f);
+	defaultstate.font_size = size;
+	defaultstate.color_main = col;
+
+	clone_states();
+}

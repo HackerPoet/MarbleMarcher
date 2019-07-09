@@ -144,7 +144,7 @@ public:
 extern Level all_levels[num_levels];
 extern Level default_level;
 
-vector<fs::path> GetFilesInFolder(string folder, string filetype);
+std::vector<fs::path> GetFilesInFolder(std::string folder, std::string filetype);
 
 class All_Levels
 {
