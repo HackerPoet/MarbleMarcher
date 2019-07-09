@@ -18,6 +18,9 @@ add_library(MarbleMarcherSources
 
   Interface.h
   Interface.cpp
+  
+  Localization.h
+  Localization.cpp
 
   Settings.h
 
