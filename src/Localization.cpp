@@ -75,3 +75,8 @@ std::wstring Localization::operator[](std::string str)
 {
 	return locales[cur_language][str];
 }
+
+sf::Font & Localization::operator()(std::string str)
+{
+	return fonts[cur_language][str];
+}

@@ -76,6 +76,7 @@ void AddGlobalObject(Object & a)
 	global_objects[copy->id].get()->id = copy->id;
 	z_value.push_back(copy->id);
 	z_index[copy->id] = z_value.size()-1;
+	global_focus = copy->id;
 }
 
 void RemoveGlobalObject(int id)
@@ -399,7 +400,7 @@ void Object::copy(Object & A)
 	action_time = A.action_time;
 
 	for (auto &element : A.objects)
-		AddObject(element.get(), element.get()->obj_allign);
+		Object::AddObject(element.get(), element.get()->obj_allign);
 }
 
 void Object::copy(Object && A)
@@ -503,7 +504,10 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 					tries++;
 				}
 			}
-
+			if (tries >= 2)
+			{
+				ERROR_MSG("Object does not fit in the box.");
+			}
 			obj.get()->Update(window, state);
 		}
 		this->SetInsideSize(cur_shift_y - curstate.scroll - curstate.margin);
@@ -622,32 +626,7 @@ Object * Text::GetCopy()
 void Window::Add(Object* something, Allign a)
 {
 	objects[1].get()->AddObject(something, a);
-
-	//update the slider
-	float inside_size = this->objects[1].get()->defaultstate.inside_size;
-	float height = this->objects[2].get()->defaultstate.size.y;
-	float height_1 = height - 2 * this->objects[2].get()->defaultstate.margin;
-	float new_h = std::min(height_1 * (height / inside_size), height_1);
-	this->objects[2].get()->objects[0].get()->SetHeigth(new_h);
 }
-
-void Window::ScrollBy(float dx)
-{
-	float inside_size = this->objects[1].get()->defaultstate.inside_size;
-	float cur_scroll = -this->objects[1].get()->defaultstate.scroll + dx;
-	if (cur_scroll <= inside_size && cur_scroll >= 0)
-	{
-		this->objects[1].get()->ApplyScroll(-cur_scroll);
-
-		float height_1 = this->objects[2].get()->defaultstate.size.y - 2 * this->objects[2].get()->defaultstate.margin;
-		float height_2 = this->objects[2].get()->objects[0].get()->defaultstate.size.y;
-		float max_slide_scroll = height_1 - height_2;
-		//relative scroll
-		float scroll_a = max_slide_scroll * cur_scroll / inside_size;
-		this->objects[2].get()->SetScroll(scroll_a);
-	}
-}
-
 
 Window::Window(Window & A)
 {
@@ -662,18 +641,6 @@ Window::Window(Window && A)
 void Window::CreateCallbacks()
 {
 	//use lambda funtion
-	this->objects[2].get()->objects[0].get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
-	{
-		float inside_size = parent->objects[1].get()->defaultstate.inside_size;
-		float height_1 = parent->objects[2].get()->defaultstate.size.y - 2 * parent->objects[2].get()->defaultstate.margin;
-		float height_2 = parent->objects[2].get()->objects[0].get()->defaultstate.size.y;
-		float max_slide_scroll = height_1 - height_2;
-		//relative scroll
-		float rel_coef = inside_size / max_slide_scroll;
-		parent->ScrollBy(state.mouse_speed.y*rel_coef);
-	});
-
-	//use lambda funtion
 	this->objects[0].get()->objects[1].get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
 	{
 		Add2DeleteQueue(parent->id);
@@ -683,16 +650,6 @@ void Window::CreateCallbacks()
 	this->objects[0].get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
 	{
 		parent->Move(state.mouse_speed);
-	});
-
-	this->SetHoverFunction([parent = this](sf::RenderWindow * window, InputState & state)
-	{
-		//wheel scroll 
-		if (state.wheel != 0.f)
-		{
-			float ds = 20.f;
-			parent->ScrollBy(state.wheel*ds);
-		}
 	});
 }
 
@@ -726,9 +683,27 @@ InputState::InputState(bool a[sf::Keyboard::KeyCount], bool b[3], sf::Vector2f c
 	std::copy(b, b + 2, mouse);
 }
 
-void MenuBox::Add(Object * something, Allign a)
+void MenuBox::AddObject(Object * something, Allign a)
 {
-	Inside.get()->AddObject(something, a);
+	this->objects[0].get()->AddObject(something, a);
+
+	//update the slider
+	float inside_size = this->objects[0].get()->defaultstate.inside_size;
+	float height = this->objects[0].get()->defaultstate.size.y;
+	float height_1 = height - 2 * this->objects[1].get()->defaultstate.margin;
+	float new_h = std::min(height_1 * (height / inside_size), height_1);
+	if (new_h == height_1)
+	{
+		//remove the slider
+		this->objects[1].get()->SetWidth(0);
+		this->objects[0].get()->SetWidth(this->defaultstate.size.x);
+	}
+	else
+	{
+		this->objects[0].get()->SetWidth(this->defaultstate.size.x - 30);
+		this->objects[1].get()->SetWidth(30);
+		this->objects[1].get()->objects[0].get()->SetHeigth(new_h);
+	}
 }
 
 void MenuBox::Cursor(int d)
@@ -738,28 +713,37 @@ void MenuBox::Cursor(int d)
 		if (cursor_id > 0)
 		{
 			cursor_id--;
-			Inside.get()->objects[cursor_id].get()->curmode = ONHOVER;
+			this->objects[1].get()->objects[cursor_id].get()->curmode = ONHOVER;
 		}
 	}
 	else if(d == 1)
 	{
-		if (cursor_id < Inside.get()->objects.size() - 1)
+		if (cursor_id < this->objects[2].get()->objects.size() - 1)
 		{
 			cursor_id++;
-			Inside.get()->objects[cursor_id].get()->curmode = ONHOVER;
+			this->objects[1].get()->objects[cursor_id].get()->curmode = ONHOVER;
 		}
 	}
 }
 
 void MenuBox::ScrollBy(float dx)
 {
-	float scroll_a = this->Scroll.get()->defaultstate.scroll + dx;
-	float scroll_b = this->Inside.get()->defaultstate.scroll - dx;
-	this->Inside.get()->ApplyScroll(scroll_b);
-	this->Scroll.get()->SetScroll(scroll_a);
+	float inside_size = this->objects[0].get()->defaultstate.inside_size;
+	float cur_scroll = -this->objects[0].get()->defaultstate.scroll + dx;
+	float height_1 = this->objects[1].get()->defaultstate.size.y - 2 * this->objects[1].get()->defaultstate.margin;
+	float height_2 = this->objects[1].get()->objects[0].get()->defaultstate.size.y;
+	//only scroll within the appropriate range
+	if (cur_scroll <= inside_size - height_1 && cur_scroll >= 0)
+	{
+		this->objects[0].get()->ApplyScroll(-cur_scroll);
+		float max_slide_scroll = height_1 - height_2;
+		//relative scroll of the scroll button
+		float scroll_a = max_slide_scroll * cur_scroll / (inside_size - height_1);
+		this->objects[1].get()->SetScroll(scroll_a);
+	}
 }
 
-MenuBox::MenuBox(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font): cursor_id(0)
+MenuBox::MenuBox(float dx, float dy, float x, float y, sf::Color color_main): cursor_id(0)
 {
 	defaultstate.position.x = x;
 	defaultstate.position.y = y;
@@ -768,27 +752,28 @@ MenuBox::MenuBox(float x, float y, float dx, float dy, sf::Color color_main, std
 	defaultstate.color_main = ToColorF(color_main);
 	clone_states();
 
-	Box Inside(0, 0, dx - 30, dy - 30, sf::Color(100, 100, 100, 128)),
-		Scroll(0, 0, 30, dy - 30, sf::Color(150, 150, 150, 128)),
+	Box Inside(0, 0, dx - 30, dy, sf::Color(100, 100, 100, 128)),
+		Scroll(0, 0, 30, dy, sf::Color(150, 150, 150, 128)),
 		Scroll_Slide(0, 0, 27, 60, sf::Color(255, 150, 0, 128));
-	Text Title(title, font, 25, sf::Color::White);
 
 	Scroll_Slide.hoverstate.color_main = sf::Color(255, 50, 0, 128);
 	Scroll_Slide.activestate.color_main = sf::Color(255, 100, 100, 255);
 
+
+	Inside.SetMargin(5);
 	Scroll.AddObject(&Scroll_Slide, Box::CENTER);
-	this->AddObject(&Inside, Box::LEFT);
-	this->AddObject(&Scroll, Box::RIGHT);
+	this->Object::AddObject(&Inside, Box::LEFT);
+	this->Object::AddObject(&Scroll, Box::RIGHT);
 
 	CreateCallbacks();
 }
 
-MenuBox::MenuBox(MenuBox & A)
+MenuBox::MenuBox(MenuBox & A): cursor_id(0)
 {
 	*this = A;
 }
 
-MenuBox::MenuBox(MenuBox && A)
+MenuBox::MenuBox(MenuBox && A): cursor_id(0)
 {
 	*this = A;
 }
@@ -798,7 +783,13 @@ void MenuBox::CreateCallbacks()
 	//use lambda funtion
 	this->objects[1].get()->objects[0].get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
 	{
-		parent->ScrollBy(state.mouse_speed.y);
+		float inside_size = parent->objects[0].get()->defaultstate.inside_size;
+		float height_1 = parent->objects[1].get()->defaultstate.size.y - 2 * parent->objects[1].get()->defaultstate.margin;
+		float height_2 = parent->objects[1].get()->objects[0].get()->defaultstate.size.y;
+		float max_slide_scroll = height_1 - height_2;
+		//relative scroll coefficient
+		float rel_coef = (inside_size - height_1) / max_slide_scroll;
+		parent->ScrollBy(state.mouse_speed.y*rel_coef);
 	});
 
 	this->SetHoverFunction([parent = this](sf::RenderWindow * window, InputState & state)
@@ -830,7 +821,7 @@ void MenuBox::CreateCallbacks()
 		if (state.keys[sf::Keyboard::Enter])
 		{
 			//run the callback function of the chosen object
-			parent->Inside.get()->objects[parent->cursor_id].get()->callback(window, state);
+			parent->objects[0].get()->objects[parent->cursor_id].get()->callback(window, state);
 			A = 1;
 		}
 

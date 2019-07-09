@@ -3,7 +3,6 @@
 void OpenTestWindow(sf::Font & font)
 {
 	Window test(200, 200, 500, 500, sf::Color(0, 0, 0, 128), LOCAL["Window"], font);
-	test.objects[1].get()->SetMargin(5);
 	Text button(LOCAL["Button"], font, 30, sf::Color::White);
 	Box sbox(0, 0, 420, 200, sf::Color(128, 128, 128, 240));
 	Box sbox2(0, 0, 240, 40, sf::Color(0, 64, 128, 240));
@@ -18,6 +17,7 @@ void OpenTestWindow(sf::Font & font)
 	test.Add(&sbox2, Box::CENTER);
 	test.Add(&sbox, Box::CENTER);
 	test.Add(&sbox2, Box::CENTER);
+	
 
 	AddGlobalObject(test);
 }

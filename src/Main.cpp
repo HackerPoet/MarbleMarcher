@@ -310,7 +310,6 @@ int main(int argc, char *argv[]) {
   io_state.window_size = sf::Vector2f(window.getSize().x, window.getSize().y);
   
   OpenTestWindow(font);
-  OpenTestWindow(font);
 
   while (window.isOpen()) {
     sf::Event event;

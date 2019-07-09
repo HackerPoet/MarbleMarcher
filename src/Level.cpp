@@ -588,7 +588,6 @@ void All_Levels::LoadLevelsFromFolder(std::string folder)
 	{
 		LoadLevelFromFile(files[i]);
 	}
-
 }
 
 void All_Levels::LoadMusicFromFolder(std::string folder)

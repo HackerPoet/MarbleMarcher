@@ -2,12 +2,19 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
+#include <Localization.h>
 #include <map>
 #include <stack>
 #include <algorithm>
 #include <iterator>
 #include <functional>
 #include <stack>
+
+#ifdef _WIN32
+#define ERROR_MSG(x) MessageBox(nullptr, TEXT(x), TEXT("ERROR"), MB_OK);
+#else
+#define ERROR_MSG(x) std::cerr << x << std::endl;
+#endif
 
 //default interface parameters
 extern sf::Color default_main_color;
@@ -194,13 +201,39 @@ public:
 	virtual Object* GetCopy();
 };
 
+
+class MenuBox : public Box
+{
+public:
+	int cursor_id;
+
+	sf::Vector2f dmouse;
+
+	virtual void AddObject(Object * something, Allign a);
+
+	void Cursor(int d);
+	void ScrollBy(float dx);
+
+	MenuBox(float dx, float dy, float x = 0, float y = 0, sf::Color color_main = sf::Color(0, 0, 0, 0));
+
+	MenuBox(MenuBox& A);
+	MenuBox(MenuBox&& A);
+
+	void CreateCallbacks();
+
+	void operator=(MenuBox& A);
+	void operator=(MenuBox&& A);
+
+	virtual Object* GetCopy();
+};
+
+
 class Window: public Box
 {
 public:
 	sf::Vector2f dmouse;
 
 	void Add(Object * something, Allign a = LEFT);
-	void ScrollBy(float dx);
 
 	template<class T>
 	Window(float x, float y, float dx, float dy, sf::Color color_main, T title, sf::Font & font);
@@ -216,36 +249,11 @@ public:
 	virtual Object* GetCopy();
 };
 
-class MenuBox : public Box
-{
-public:
-	std::unique_ptr<Box> Inside, Scroll, Scroll_Slide;
-	int cursor_id;
-
-	sf::Vector2f dmouse;
-
-	void Add(Object * something, Allign a);
-	void Cursor(int d);
-	void ScrollBy(float dx);
-
-	MenuBox(float x, float y, float dx, float dy, sf::Color color_main, std::string title, sf::Font & font);
-
-	MenuBox(MenuBox& A);
-	MenuBox(MenuBox&& A);
-
-	void CreateCallbacks();
-
-	void operator=(MenuBox& A);
-	void operator=(MenuBox&& A);
-
-	virtual Object* GetCopy();
-};
-
 void AddGlobalObject(Object & a);
 void RemoveGlobalObject(int id);
 
 template<class T>
-inline Window::Window(float x, float y, float dx, float dy, sf::Color color_main, T title, sf::Font & font)
+inline Window::Window(float x, float y, float dx, float dy, sf::Color color_main = default_main_color, T title = LOCAL["Window"], sf::Font & font = LOCAL("default"))
 {
 	defaultstate.position.x = x;
 	defaultstate.position.y = y;
@@ -255,15 +263,10 @@ inline Window::Window(float x, float y, float dx, float dy, sf::Color color_main
 	clone_states();
 
 	Box Bar(0, 0, dx, 30, sf::Color(0, 100, 200, 128)),
-		CloseBx(0, 0, 30, 30, sf::Color(255, 255, 255, 255)),
-		Inside(0, 0, dx - 30, dy - 30, sf::Color(100, 100, 100, 128)),
-		Scroll(0, 0, 30, dy - 30, sf::Color(150, 150, 150, 128)),
-		Scroll_Slide(0, 0, 27, 60, sf::Color(255, 150, 0, 128));
+		CloseBx(0, 0, 30, 30, sf::Color(255, 255, 255, 255));
 	Text Title(title, font, 25, sf::Color::White);
 
 	CloseBx.hoverstate.color_main = sf::Color(255, 0, 0, 255);
-	Scroll_Slide.hoverstate.color_main = sf::Color(255, 50, 0, 128);
-	Scroll_Slide.activestate.color_main = sf::Color(255, 100, 100, 255);
 
 	sf::Image close; close.loadFromFile(close_png);
 	sf::Texture closetxt; closetxt.loadFromImage(close);
@@ -272,10 +275,11 @@ inline Window::Window(float x, float y, float dx, float dy, sf::Color color_main
 
 	Bar.AddObject(&Title, Box::LEFT);
 	Bar.AddObject(&CloseBx, Box::RIGHT);
-	Scroll.AddObject(&Scroll_Slide, Box::CENTER);
+
+	MenuBox Inside(dx, dy - 30);
+
 	this->AddObject(&Bar, Box::CENTER);
 	this->AddObject(&Inside, Box::LEFT);
-	this->AddObject(&Scroll, Box::RIGHT);
 
 	CreateCallbacks();
 }

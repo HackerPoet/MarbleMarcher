@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <algorithm>
+#include <SFML/Graphics.hpp>
 #include <fstream>
 #include <vector>
 #include <string>
@@ -14,9 +15,6 @@ namespace fs = std::filesystem;
 class Localization
 {
 public:
-	std::map<std::string, std::map<std::string, std::wstring>> locales;
-	std::string cur_language;
-
 	Localization();
 
 	void LoadLocalsFromFolder(std::string folder);
@@ -24,6 +22,12 @@ public:
 	void SetLanguage(std::string lang);
 
 	std::wstring operator[](std::string str);
+	sf::Font& operator()(std::string str);
+
+private:
+	std::string cur_language;
+	std::map<std::string, std::map<std::string, std::wstring>> locales;
+	std::map<std::string, std::map<std::string, sf::Font>> fonts;
 };
 
 extern Localization LOCAL;
