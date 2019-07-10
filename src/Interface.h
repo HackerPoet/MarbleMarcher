@@ -82,6 +82,12 @@ State interpolate(State a, State b, float t);
 
 void UpdateAllObjects(sf::RenderWindow * window, InputState& state);
 
+
+void AddGlobalObject(Object & a);
+void RemoveGlobalObject(int id);
+void RemoveAllObjects();
+void Add2DeleteQueue(int id);
+
 //the object base class
 class Object
 {
@@ -249,8 +255,6 @@ public:
 	virtual Object* GetCopy();
 };
 
-void AddGlobalObject(Object & a);
-void RemoveGlobalObject(int id);
 
 template<class T>
 inline Window::Window(float x, float y, float dx, float dy, sf::Color color_main = default_main_color, T title = LOCAL["Window"], sf::Font & font = LOCAL("default"))

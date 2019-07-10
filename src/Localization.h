@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <Level.h>
 #include <locale>
+#include <Res.h>
 #include <codecvt>
 
 namespace fs = std::filesystem;
@@ -31,3 +32,5 @@ private:
 };
 
 extern Localization LOCAL;
+
+std::wstring utf8_to_wstring(const std::string& str);

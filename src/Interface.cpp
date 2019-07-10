@@ -86,6 +86,14 @@ void RemoveGlobalObject(int id)
 	z_index.erase(id);
 }
 
+void RemoveAllObjects()
+{
+	for (auto &obj : global_objects)
+	{
+		del.push(obj.first);
+	}
+}
+
 void Add2DeleteQueue(int id)
 {
 	del.push(id);

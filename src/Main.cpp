@@ -55,28 +55,12 @@ template < typename T > std::string num2str(const T& n)
 	return stm.str();
 }
 
-//Game modes
-enum GameMode {
-  MAIN_MENU,
-  PLAYING,
-  PAUSED,
-  SCREEN_SAVER,
-  CONTROLS,
-  LEVELS,
-  LEVEL_EDITOR,
-  CREDITS,
-  MIDPOINT
-};
-
-
-
 //Global variables
 static sf::Vector2i mouse_pos, mouse_prev_pos;
 static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
 static bool mouse_clicked = false;
 static bool show_cheats = false;
 static InputState io_state;
-extern GameMode game_mode = MAIN_MENU;
 
 //Graphics settings
 static bool VSYNC = true;
