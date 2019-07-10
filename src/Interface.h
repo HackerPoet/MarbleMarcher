@@ -27,6 +27,12 @@ extern float animation_sharpness;
 extern float action_dt;
 
 static const std::string close_png = "images/clear.png";
+static const std::string delete_png = "images/clear.png";
+static const std::string edit_png = "images/clear.png";
+static const std::string priority_png = "images/clear.png";
+static const std::string done_png = "images/done.png";
+
+
 
 struct ColorFloat
 {
@@ -82,11 +88,6 @@ State interpolate(State a, State b, float t);
 
 void UpdateAllObjects(sf::RenderWindow * window, InputState& state);
 
-
-void AddGlobalObject(Object & a);
-void RemoveGlobalObject(int id);
-void RemoveAllObjects();
-void Add2DeleteQueue(int id);
 
 //the object base class
 class Object
@@ -162,6 +163,12 @@ public:
 
 	int id;
 };
+
+int AddGlobalObject(Object & a);
+Object& get_glob_obj(int id);
+void RemoveGlobalObject(int id);
+void RemoveAllObjects();
+void Add2DeleteQueue(int id);
 
 //a box to add stuff in
 class Box: public Object

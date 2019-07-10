@@ -69,7 +69,12 @@ ColorFloat ToColorF(sf::Color a)
 	return ColorFloat(a.r, a.g, a.b, a.a);
 }
 
-void AddGlobalObject(Object & a)
+Object& get_glob_obj(int id)
+{
+	return *global_objects[id].get();
+}
+
+int AddGlobalObject(Object & a)
 {
 	Object* copy = a.GetCopy();
 	global_objects[copy->id] = std::unique_ptr<Object>(copy);//add a copy to the global list
@@ -77,6 +82,7 @@ void AddGlobalObject(Object & a)
 	z_value.push_back(copy->id);
 	z_index[copy->id] = z_value.size()-1;
 	global_focus = copy->id;
+	return copy->id;  
 }
 
 void RemoveGlobalObject(int id)

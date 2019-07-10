@@ -42,11 +42,6 @@
 #define ERROR_MSG(x) std::cerr << x << std::endl;
 #endif
 
-//Constants
-static float mouse_sensitivity = 0.005f;
-static float wheel_sensitivity = 0.2f;
-static float music_vol = 75.0f;
-static float target_fps = 60.0f;
 
 template < typename T > std::string num2str(const T& n)
 {
@@ -55,53 +50,9 @@ template < typename T > std::string num2str(const T& n)
 	return stm.str();
 }
 
-//Global variables
-static sf::Vector2i mouse_pos, mouse_prev_pos;
-static bool all_keys[sf::Keyboard::KeyCount] = { 0 };
-static bool mouse_clicked = false;
-static bool show_cheats = false;
-static InputState io_state;
-
 //Graphics settings
 static bool VSYNC = true;
 
-
-float GetVol() {
-  if (game_settings.mute) {
-    return 0.0f;
-  } else if (game_mode == PAUSED) {
-    return music_vol / 4;
-  } else {
-    return music_vol;
-  }
-}
-
-void LockMouse(sf::RenderWindow& window) {
-  window.setMouseCursorVisible(false);
-  const sf::Vector2u size = window.getSize();
-  mouse_pos = sf::Vector2i(size.x / 2, size.y / 2);
-  sf::Mouse::setPosition(mouse_pos);
-}
-void UnlockMouse(sf::RenderWindow& window) {
-  window.setMouseCursorVisible(true);
-}
-
-void PauseGame(sf::RenderWindow& window, Scene& scene) {
-  game_mode = PAUSED;
-  scene.GetCurMusic().setVolume(GetVol());
-  UnlockMouse(window);
-  scene.SetExposure(0.5f);
-}
-
-int DirExists(const char *path) {
-  struct stat info;
-  if (stat(path, &info) != 0) {
-    return 0;
-  } else if (info.st_mode & S_IFDIR) {
-    return 1;
-  }
-  return 0;
-}
 
 #if defined(_WIN32)
 int WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR lpCmdLine, int nCmdShow) {
@@ -482,6 +433,7 @@ int main(int argc, char *argv[]) {
 							overlays.GetLevelPage() = 0;
 							scene.SetExposure(0.5f);
 							overlays.ReloadLevelMenu(&scene);
+							OpenLevelMenu(&scene, &overlays);
 						}
 						else if (selected == Overlays::SCREEN_SAVER) {
 							game_mode = SCREEN_SAVER;
@@ -499,7 +451,7 @@ int main(int argc, char *argv[]) {
 						}
 					}
 					else if (game_mode == LEVELS) {
-						int selected = overlays.level_menu.GetSelection();
+						/*int selected = overlays.level_menu.GetSelection();
 
 						if (selected == -1)
 						{

@@ -32,11 +32,29 @@ sf::SoundBuffer buff_count;
 sf::Sound sound_go;
 sf::SoundBuffer buff_go;
 
+//Global variables
+extern sf::Vector2i mouse_pos, mouse_prev_pos;
+extern bool all_keys[sf::Keyboard::KeyCount] = { 0 };
+extern bool mouse_clicked = false;
+extern bool show_cheats = false;
+extern InputState io_state;
+
+//Constants
+extern float mouse_sensitivity = 0.005f;
+extern float wheel_sensitivity = 0.2f;
+extern float music_vol = 75.0f;
+extern float target_fps = 60.0f;
+
 extern GameMode game_mode = MAIN_MENU;
 
-void EnableEditor(int level);
+void OpenMainMenu(Scene * scene, Overlays * overlays);
+
+void OpenEditor(Scene * scene, Overlays * overlays, int level);
+void PlayLevel(Scene * scene, sf::RenderWindow * window, int level);
 
 void OpenTestWindow(sf::Font & font);
+void OpenLevelMenu(Scene* scene, Overlays* overlays);
+void ConfirmLevelDeletion(int lvl, Scene* scene);
 
 
 float GetVol() {

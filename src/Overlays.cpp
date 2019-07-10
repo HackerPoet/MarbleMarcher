@@ -703,10 +703,10 @@ Menu::Menu()
 	scroll_velocity = 0;
 	button_id = 1;
 
-	edit_tex.loadFromFile(edit_png);
+	/*edit_tex.loadFromFile(edit_png);
 	edit_tex.setSmooth(true);
 	edit_spr.setTexture(edit_tex);
-	edit_spr.setOrigin(edit_spr.getLocalBounds().width / 2, edit_spr.getLocalBounds().height / 2);
+	edit_spr.setOrigin(edit_spr.getLocalBounds().width / 2, edit_spr.getLocalBounds().height / 2);*/
 
 	rectangle.setSize(sf::Vector2f(100, 10));
 	rectangle.setFillColor(sf::Color(0, 0, 0, 128));
@@ -835,7 +835,7 @@ bool Menu::IsEdit()
 
 void Menu::RenderMenu(sf::RenderWindow & window)
 {
-	w_size_x = window.getSize().x;
+	/*w_size_x = window.getSize().x;
 	w_size_y = window.getSize().y;
 	inside_edit = false;
 	sf::Vector2i mouse= sf::Mouse::getPosition();
@@ -884,7 +884,7 @@ void Menu::RenderMenu(sf::RenderWindow & window)
 			SetText(texts[i], menu_x, GetElementYPosition(i), 30, is_active ? sf::Color::Red : sf::Color::White, true);
 			window.draw(text);
 		}
-	}
+	}*/
 }
 
 void Menu::ClearAll()
