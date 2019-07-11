@@ -177,7 +177,8 @@ public:
 	void SetBackground(const sf::Texture & texture);
 	void Draw(sf::RenderWindow *window, InputState& state);
 
-	Box(float dx, float dy, float x = 0, float y = 0, sf::Color color_main = default_main_color);
+	Box(float x, float y,  float dx, float dy,  sf::Color color_main = default_main_color);
+	Box(float dx, float dy);
 	Box();
 
 	Box(Box& A);

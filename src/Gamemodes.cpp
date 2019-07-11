@@ -1,5 +1,21 @@
 #include "Gamemodes.h"
 
+//Global variables
+sf::Vector2i mouse_pos, mouse_prev_pos;
+InputState io_state;
+
+bool all_keys[sf::Keyboard::KeyCount] = { 0 };
+bool mouse_clicked = false;
+bool show_cheats = false;
+
+//Constants
+float mouse_sensitivity = 0.005f;
+float wheel_sensitivity = 0.2f;
+float music_vol = 75.0f;
+float target_fps = 60.0f;
+
+GameMode game_mode = MAIN_MENU;
+
 void OpenMainMenu(Scene * scene, Overlays * overlays)
 {
 	RemoveAllObjects();
@@ -12,7 +28,6 @@ void OpenEditor(Scene * scene, Overlays * overlays, int level)
 	RemoveAllObjects();
 	//go to level editor
 	game_mode = LEVEL_EDITOR;
-	menu_music.stop();
 	scene->SetExposure(1.0f);
 	overlays->TWBAR_ENABLED = true;
 	TwDefine("LevelEditor visible=true position='20 20'");
@@ -27,7 +42,6 @@ void PlayLevel(Scene * scene, sf::RenderWindow * window, int level)
 	RemoveAllObjects();
 	//play level
 	game_mode = PLAYING;
-	menu_music.stop();
 	scene->SetExposure(1.0f);
 	scene->levels.GetLevelMusic(level)->setVolume(GetVol());
 	scene->levels.GetLevelMusic(level)->play();
@@ -37,8 +51,8 @@ void PlayLevel(Scene * scene, sf::RenderWindow * window, int level)
 
 void OpenTestWindow(sf::Font & font)
 {
-	Window test(200, 200, 500, 500, sf::Color(0, 0, 0, 128), LOCAL["Window"], font);
-	Text button(LOCAL["Button"], font, 30, sf::Color::White);
+	Window test(200, 200, 500, 500, sf::Color(0, 0, 0, 128), LOCAL["Window"], LOCAL("default"));
+	Text button(LOCAL["Button"], LOCAL("default"), 30, sf::Color::White);
 	Box sbox(0, 0, 420, 200, sf::Color(128, 128, 128, 240));
 	Box sbox2(0, 0, 240, 40, sf::Color(0, 64, 128, 240));
 	Box sbox3(0, 0, 30, 30, sf::Color(0, 64, 128, 240));
@@ -58,15 +72,17 @@ void OpenTestWindow(sf::Font & font)
 
 void OpenLevelMenu(Scene* scene, Overlays* overlays)
 {
+	RemoveAllObjects();
 	sf::Vector2f wsize = default_view.getSize();
-	MenuBox levels(wsize.x*0.85, wsize.y*0.95, wsize.x*0.075, wsize.y*0.025);
+	MenuBox levels(wsize.x*0.95f, wsize.y*0.95f, wsize.x*0.025f, wsize.y*0.025f);
 	game_mode = LEVELS;
 	std::vector<std::string> names = scene->levels.getLevelNames();
 	std::vector<std::string> desc = scene->levels.getLevelDesc();
 	std::vector<int> ids = scene->levels.getLevelIds();
 
-	Box Bk2Menu(100, 40);
+	Box Bk2Menu(800, 45);
 	Text button(LOCAL["Back2Main"], LOCAL("default"), 35, sf::Color::White);
+	Bk2Menu.hoverstate.color_main = sf::Color(200, 40, 0, 255);
 	Bk2Menu.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
 	{
 		OpenMainMenu(scene, overlays);
@@ -74,7 +90,7 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	Bk2Menu.AddObject(&button, Object::Allign::CENTER);
 	levels.AddObject(&Bk2Menu, Object::Allign::LEFT);
 	
-	sf::Image edit; edit.loadFromFile(edit_png);
+	/*sf::Image edit; edit.loadFromFile(edit_png);
 	sf::Texture edittxt; edittxt.loadFromImage(edit);
 	edittxt.setSmooth(true);
 
@@ -123,8 +139,8 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 		OpenEditor(scene, overlays, -1);
 	});
 	Newlvl.AddObject(&newlvl, Object::Allign::CENTER);
-	levels.AddObject(&Newlvl, Object::Allign::LEFT);
-
+	levels.AddObject(&Newlvl, Object::Allign::LEFT);*/
+	AddGlobalObject(levels);
 }
 
 void ConfirmLevelDeletion(int lvl, Scene* scene)
@@ -159,4 +175,45 @@ void ConfirmLevelDeletion(int lvl, Scene* scene)
 		
 		Add2DeleteQueue(id);
 	});
+}
+
+
+float GetVol() {
+	if (game_settings.mute) {
+		return 0.0f;
+	}
+	else if (game_mode == PAUSED) {
+		return music_vol / 4;
+	}
+	else {
+		return music_vol;
+	}
+}
+
+void LockMouse(sf::RenderWindow& window) {
+	window.setMouseCursorVisible(false);
+	const sf::Vector2u size = window.getSize();
+	mouse_pos = sf::Vector2i(size.x / 2, size.y / 2);
+	sf::Mouse::setPosition(mouse_pos);
+}
+void UnlockMouse(sf::RenderWindow& window) {
+	window.setMouseCursorVisible(true);
+}
+
+void PauseGame(sf::RenderWindow& window, Scene& scene) {
+	game_mode = PAUSED;
+	scene.GetCurMusic().setVolume(GetVol());
+	UnlockMouse(window);
+	scene.SetExposure(0.5f);
+}
+
+int DirExists(const char *path) {
+	struct stat info;
+	if (stat(path, &info) != 0) {
+		return 0;
+	}
+	else if (info.st_mode & S_IFDIR) {
+		return 1;
+	}
+	return 0;
 }

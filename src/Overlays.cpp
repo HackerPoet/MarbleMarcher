@@ -754,7 +754,7 @@ void Menu::AddLevelButton(int LVL_ID, std::string name, std::string desc, std::s
 
 void Menu::UpdateMenu(int mouse_x, int mouse_y, int scroll)
 {
-	menu_size = texts.size() * Element_Height * draw_scale;
+	/*menu_size = texts.size() * Element_Height * draw_scale;
 	//scroll only if the menu is bigger than the screen
 	if (menu_size > w_size_y)
 	{
@@ -786,7 +786,7 @@ void Menu::UpdateMenu(int mouse_x, int mouse_y, int scroll)
 				sound_hover.play();
 			}
 		}
-	}
+	}*/
 }
 
 int Menu::WhichActive()

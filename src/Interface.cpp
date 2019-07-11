@@ -92,11 +92,19 @@ void RemoveGlobalObject(int id)
 	z_index.erase(id);
 }
 
+void RemoveAllObjects1()
+{
+	global_objects.clear();
+	z_value.clear();
+	z_index.clear();
+}
+
+
 void RemoveAllObjects()
 {
-	for (auto &obj : global_objects)
+	for (int i = 0; i < z_value.size(); i++)
 	{
-		del.push(obj.first);
+		del.push(z_value[i]);
 	}
 }
 
@@ -107,6 +115,11 @@ void Add2DeleteQueue(int id)
 
 void UpdateAllObjects(sf::RenderWindow * window, InputState& state)
 {
+	if (del.size() == global_objects.size())
+	{
+		RemoveAllObjects1();
+	}
+
 	while (!del.empty()) // remove everything in the del queue
 	{
 		RemoveGlobalObject(del.top());
@@ -406,6 +419,9 @@ void Object::copy(Object & A)
 	curmode = A.curmode;
 	used_view = A.used_view;
 	obj_allign = A.obj_allign;
+	callback = A.callback;
+	hoverfn = A.hoverfn;
+	defaultfn = A.hoverfn;
 
 	id = all_obj_id;
 	all_obj_id++;
@@ -487,7 +503,7 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 				float space_left = defaultstate.size.x - cur_shift_x1 - cur_shift_x2;
 				float obj_width = obj.get()->curstate.size.x;
 
-				if (space_left >= obj_width)
+				if (space_left >= obj_width || space_left >= defaultstate.size.x - 2 * curstate.margin)
 				{
 					not_placed = false;
 					switch (A)
@@ -537,6 +553,17 @@ Box::Box(float x, float y, float dx, float dy, sf::Color color_main)
 	defaultstate.color_main = ToColorF(color_main);
 	clone_states();
 }
+
+Box::Box(float dx, float dy)
+{
+	defaultstate.position.x = 0;
+	defaultstate.position.y = 0;
+	defaultstate.size.x = dx;
+	defaultstate.size.y = dy;
+	defaultstate.color_main = ToColorF(default_main_color);
+	clone_states();
+}
+
 
 Box::Box()
 {
@@ -710,12 +737,14 @@ void MenuBox::AddObject(Object * something, Allign a)
 	{
 		//remove the slider
 		this->objects[1].get()->SetWidth(0);
+		this->objects[1].get()->objects[0].get()->SetWidth(0);
 		this->objects[0].get()->SetWidth(this->defaultstate.size.x);
 	}
 	else
 	{
 		this->objects[0].get()->SetWidth(this->defaultstate.size.x - 30);
 		this->objects[1].get()->SetWidth(30);
+		this->objects[1].get()->objects[0].get()->SetWidth(26);
 		this->objects[1].get()->objects[0].get()->SetHeigth(new_h);
 	}
 }
@@ -768,13 +797,13 @@ MenuBox::MenuBox(float dx, float dy, float x, float y, sf::Color color_main): cu
 
 	Box Inside(0, 0, dx - 30, dy, sf::Color(100, 100, 100, 128)),
 		Scroll(0, 0, 30, dy, sf::Color(150, 150, 150, 128)),
-		Scroll_Slide(0, 0, 27, 60, sf::Color(255, 150, 0, 128));
+		Scroll_Slide(0, 0, 26, 60, sf::Color(255, 150, 0, 128));
 
 	Scroll_Slide.hoverstate.color_main = sf::Color(255, 50, 0, 128);
 	Scroll_Slide.activestate.color_main = sf::Color(255, 100, 100, 255);
 
-
-	Inside.SetMargin(5);
+	Scroll.SetMargin(2);
+	Inside.SetMargin(12);
 	Scroll.AddObject(&Scroll_Slide, Box::CENTER);
 	this->Object::AddObject(&Inside, Box::LEFT);
 	this->Object::AddObject(&Scroll, Box::RIGHT);
