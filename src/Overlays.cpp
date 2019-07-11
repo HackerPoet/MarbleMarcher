@@ -386,7 +386,8 @@ void Overlays::MakeTime(int t, float x, float y, float size, const sf::Color& co
 
 void Overlays::UpdateHover(Texts from, Texts to, float mouse_x, float mouse_y) {
   for (int i = from; i <= to; ++i) {
-    const sf::FloatRect bounds = all_text[i].getGlobalBounds();
+    sf::FloatRect bounds = all_text[i].getGlobalBounds();
+	bounds.height *= 0.7;
     if (bounds.contains(mouse_x, mouse_y)) {
       all_text[i].setFillColor(sf::Color(255, 64, 64));
       if (!all_hover[i]) {
@@ -754,7 +755,7 @@ void Menu::AddLevelButton(int LVL_ID, std::string name, std::string desc, std::s
 
 void Menu::UpdateMenu(int mouse_x, int mouse_y, int scroll)
 {
-	/*menu_size = texts.size() * Element_Height * draw_scale;
+	menu_size = texts.size() * Element_Height * draw_scale;
 	//scroll only if the menu is bigger than the screen
 	if (menu_size > w_size_y)
 	{
@@ -786,7 +787,7 @@ void Menu::UpdateMenu(int mouse_x, int mouse_y, int scroll)
 				sound_hover.play();
 			}
 		}
-	}*/
+	}
 }
 
 int Menu::WhichActive()

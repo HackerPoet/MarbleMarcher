@@ -20,8 +20,8 @@
 static const int num_level_music = 4;
 static const char vert_glsl[] = "shaders/vert.glsl";
 static const char frag_glsl[] = "shaders/frag.glsl";
-static const char Orbitron_Bold_ttf[] = "assets/Roboto-Bold.ttf";
-static const char Inconsolata_Bold_ttf[] = "assets/Roboto-Regular.ttf";
+static const char Orbitron_Bold_ttf[] = "assets/Orbitron-Bold.ttf";
+static const char Inconsolata_Bold_ttf[] = "assets/Inconsolata-Bold.ttf";
 static const char menu_ogg[] = "sound/music/menu.ogg";
 static const char level1_ogg[] = "sound/music/level1.ogg";
 static const char level2_ogg[] = "sound/music/level2.ogg";

@@ -83,7 +83,8 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	std::vector<std::string> names = scene->levels.getLevelNames();
 	std::vector<std::string> desc = scene->levels.getLevelDesc();
 	std::vector<int> ids = scene->levels.getLevelIds();
-
+	Text lvl(LOCAL["Levels"], LOCAL("default"), 60, sf::Color::White);
+	levels.AddObject(&lvl, Object::Allign::CENTER);
 	Box Bk2Menu(800, 60);
 	Text button(LOCAL["Back2Main"], LOCAL("default"), 50, sf::Color::White);
 	Bk2Menu.hoverstate.color_main = sf::Color(200, 40, 0, 255);
@@ -93,6 +94,16 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	});
 	Bk2Menu.AddObject(&button, Object::Allign::CENTER);
 	levels.AddObject(&Bk2Menu, Object::Allign::LEFT);
+
+	Box Newlvl(800, 60);
+	Text newlvl(LOCAL["CreateNewLvl"], LOCAL("default"), 50, sf::Color::White);
+	Newlvl.hoverstate.color_main = sf::Color(200, 40, 0, 255);
+	Newlvl.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
+	{
+		OpenEditor(scene, overlays, -1);
+	});
+	Newlvl.AddObject(&newlvl, Object::Allign::CENTER);
+	levels.AddObject(&Newlvl, Object::Allign::LEFT);
 	
 	sf::Image edit; edit.loadFromFile(edit_png);
 	sf::Texture edittxt; edittxt.loadFromImage(edit);
@@ -145,14 +156,6 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 		levels.AddObject(&lvlbtton, Object::Allign::LEFT);
 	}
 
-	Box Newlvl(200, 60);
-	Text newlvl(LOCAL["CreateNewLvl"], LOCAL("default"), 35, sf::Color::White);
-	Newlvl.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
-	{
-		OpenEditor(scene, overlays, -1);
-	});
-	Newlvl.AddObject(&newlvl, Object::Allign::CENTER);
-	levels.AddObject(&Newlvl, Object::Allign::CENTER);
 	AddGlobalObject(levels);
 }
 

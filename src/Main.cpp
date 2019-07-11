@@ -197,7 +197,7 @@ int main(int argc, char *argv[]) {
     renderTexture.setSmooth(false);
   }
 
-  sf::View default_view = window.getDefaultView();
+  sf::View default_window_view = window.getDefaultView();
 
   //Create the fractal scene
   Scene scene(level_music);
@@ -251,6 +251,8 @@ int main(int argc, char *argv[]) {
 	mouse_prev_pos = mouse_pos;
 	io_state.mouse_prev = sf::Vector2f(mouse_prev_pos.x, mouse_prev_pos.y);
 	io_state.wheel = mouse_wheel;
+	io_state.mouse_press[2] = false;
+	io_state.mouse_press[0] = false;
 	while (window.pollEvent(event)) 
 	{
 		bool handled = overlays.TwManageEvent(event);
@@ -269,8 +271,8 @@ int main(int argc, char *argv[]) {
 			overlays.SetTWBARResolution(event.size.width, event.size.height);
 			overlays.SetScale( std::max(float(screen_size.width), float(screen_size.height))/ 1280.0f);
 			sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
-			default_view = sf::View(visibleArea);
-			window.setView(default_view);
+			default_window_view = sf::View(visibleArea);
+			window.setView(default_window_view);
 			io_state.window_size = sf::Vector2f(window.getSize().x, window.getSize().y);
 			scene.SetWindowResolution(window.getSize().x, window.getSize().y);
 		}
@@ -413,6 +415,7 @@ int main(int argc, char *argv[]) {
 					mouse_pos = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
 					mouse_clicked = true;
 					io_state.mouse[0] = true;
+					io_state.mouse_press[0] = true;
 					if (game_mode == MAIN_MENU) {
 						const Overlays::Texts selected = overlays.GetOption(Overlays::PLAY, Overlays::EXIT);
 						if (selected == Overlays::PLAY) {
@@ -504,7 +507,8 @@ int main(int argc, char *argv[]) {
 					}
 				}
 				else if (event.mouseButton.button == sf::Mouse::Right) {
-					io_state.mouse[2] = true;
+					io_state.mouse[2] = true; 
+					io_state.mouse_press[2] = true;
 					if (game_mode == PLAYING) {
 						scene.ResetLevel();
 					}
@@ -562,8 +566,6 @@ int main(int argc, char *argv[]) {
       overlays.UpdateControls((float)mouse_pos.x, (float)mouse_pos.y);
     } else if (game_mode == LEVELS) {
       scene.UpdateCamera();
-	  overlays.UpdateLevelMenu(mouse_pos.x, mouse_pos.y, mouse_wheel);
-      overlays.UpdateLevels((float)mouse_pos.x, (float)mouse_pos.y);
     } else if (game_mode == SCREEN_SAVER) {
       scene.UpdateCamera();
     } else if (game_mode == PLAYING || game_mode == CREDITS || game_mode == MIDPOINT || game_mode == LEVEL_EDITOR) {
@@ -709,7 +711,7 @@ int main(int argc, char *argv[]) {
 	io_state.dt = 1.f / smooth_fps;
 	io_state.time += io_state.dt;
 	UpdateAllObjects(&window, io_state);
-	window.setView(default_view);
+	window.setView(default_window_view);
 
     if (!skip_frame) {
       //Finally display to the screen
@@ -735,6 +737,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  RemoveAllObjects();
+  UpdateAllObjects(&window, io_state);
   //Stop all music
   menu_music.stop();
   scene.StopAllMusic();

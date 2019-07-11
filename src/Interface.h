@@ -56,6 +56,7 @@ struct InputState
 {
 	bool keys[sf::Keyboard::KeyCount] = { false };
 	bool mouse[3] = { false };
+	bool mouse_press[3] = { false };
 	float wheel = 0.f;
 	sf::Vector2f mouse_pos = sf::Vector2f(0,0);
 	sf::Vector2f mouse_prev = sf::Vector2f(0, 0);

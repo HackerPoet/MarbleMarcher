@@ -248,10 +248,13 @@ void Object::ApplyScroll(float x)
 
 void Object::Move(sf::Vector2f dx)
 {
-	defaultstate.position += dx;
-	curstate.position += dx;
-	activestate.position += dx;
-	hoverstate.position += dx;
+	if (!isnan(dx.x) && !isnan(dx.y) && (dx.x != 0 || dx.y != 0))
+	{
+		defaultstate.position += dx;
+		curstate.position += dx;
+		activestate.position += dx;
+		hoverstate.position += dx;
+	}
 }
 
 void Object::SetDefaultFunction(std::function<void(sf::RenderWindow * window, InputState&state)> fun)
@@ -291,7 +294,7 @@ void Object::Update(sf::RenderWindow * window, InputState& state)
 	state.mouse_speed = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y)) -
 		window->mapPixelToCoords(sf::Vector2i(state.mouse_prev.x, state.mouse_prev.y));
 
-	if (state.mouse[0] || state.mouse[2]) //if clicked
+	if ( ((state.mouse[0] || state.mouse[2]) && !limiter) || ((state.mouse_press[0] || state.mouse_press[2]) && limiter) ) //if clicked
 	{
 		if (obj.contains(worldPos)) // if inside object
 		{
@@ -349,23 +352,18 @@ void Object::UpdateAction(sf::RenderWindow * window, InputState & state)
 			curmode = ONHOVER;
 		}
 	}
-	
+
+	if (active[id])
+	{
+		if (callback != NULL)
+		{
+			callback(window, state); //run callback with state info
+		}
+		curmode = ACTIVE;
+	}
 
 	if (action_time <= 0.f) //limit the repetability
 	{
-		if (active[id])
-		{
-			if (callback != NULL)
-			{
-				callback(window, state); //run callback with state info
-				if (limiter)
-				{
-					action_time = action_dt;
-				}
-			}
-			curmode = ACTIVE;
-		}
-
 		if (focused == id) //if this object is the one that is currently in focus
 		{
 			if (defaultfn != NULL) //the function existance check may seem unnecessery, but it is
@@ -518,8 +516,10 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 			Allign A = obj.get()->obj_allign;
 			bool not_placed = true;
 			int tries = 0;
-			obj.get()->used_view = boxView;
+			int obj_id = obj.get()->id;
+			float old_line_height = line_height;
 			line_height = std::max(obj.get()->curstate.size.y, line_height);
+			obj.get()->used_view = boxView;
 			while (not_placed && tries < 2) //try to place the object somewhere
 			{
 				float space_left = defaultstate.size.x - cur_shift_x1 - cur_shift_x2;
@@ -560,6 +560,7 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 			{
 				ERROR_MSG("Object does not fit in the box.");
 			}
+			
 			obj.get()->Update(window, state);
 		}
 		this->SetInsideSize(cur_shift_y - curstate.scroll - curstate.margin);
@@ -798,7 +799,7 @@ void MenuBox::ScrollBy(float dx)
 	float height_1 = this->objects[1].get()->defaultstate.size.y - 2 * this->objects[1].get()->defaultstate.margin;
 	float height_2 = this->objects[1].get()->objects[0].get()->defaultstate.size.y;
 	//only scroll within the appropriate range
-	if (cur_scroll <= inside_size - height_1 && cur_scroll >= 0)
+	if (cur_scroll <= inside_size - height_1 + 100 && cur_scroll >= 0)
 	{
 		this->objects[0].get()->ApplyScroll(-cur_scroll);
 		float max_slide_scroll = height_1 - height_2;
@@ -863,7 +864,7 @@ void MenuBox::CreateCallbacks()
 		if (state.wheel != 0.f)
 		{
 			float ds = 20.f;
-			parent->ScrollBy(state.wheel*ds);
+			parent->ScrollBy(-state.wheel*ds);
 		}
 	});
 
