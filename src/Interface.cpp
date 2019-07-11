@@ -16,7 +16,7 @@ float default_margin =0;
 sf::View default_view = sf::View(sf::FloatRect(0, 0, 2600, 1200));
 
 float animation_sharpness = 5.f;
-float action_dt = 0.2;
+float action_dt = 0.5;
 
 
 sf::FloatRect overlap(sf::FloatRect a, sf::FloatRect b)
@@ -88,7 +88,8 @@ int AddGlobalObject(Object & a)
 void RemoveGlobalObject(int id)
 {
 	global_objects.erase(id);
-	z_value.erase(z_value.begin() + z_index[id]);
+	if(!z_value.empty())
+		z_value.erase(z_value.begin() + z_index[id]);
 	z_index.erase(id);
 }
 
@@ -136,9 +137,18 @@ void UpdateAllObjects(sf::RenderWindow * window, InputState& state)
 	{
 		//put the focused global object to the top
 		int top_id = z_value[z_value.size() - 1];
-		std::swap(z_value[z_value.size() - 1], z_value[z_index[global_focus]]);
-		std::swap(z_index[global_focus], z_index[top_id]);
 
+		//if not the top object and not a static object
+		if (top_id != global_focus)
+		{
+			global_objects[top_id]->UpdateAction(window, state);
+			if ( !global_objects[global_focus].get()->static_object)
+			{
+				std::swap(z_value[z_value.size() - 1], z_value[z_index[global_focus]]);
+				std::swap(z_index[global_focus], z_index[top_id]);
+			}
+		}
+		
 		//update callbacks in the focused object
 		global_objects[global_focus]->UpdateAction(window, state);
 	}
@@ -249,9 +259,10 @@ void Object::SetDefaultFunction(std::function<void(sf::RenderWindow * window, In
 	defaultfn = fun;
 }
 
-void Object::SetCallbackFunction(std::function<void(sf::RenderWindow * window, InputState&state)> fun)
+void Object::SetCallbackFunction(std::function<void(sf::RenderWindow*window, InputState&state)> fun, bool limit_repeat)
 {
 	callback = fun;
+	limiter = limit_repeat;
 }
 
 void Object::SetHoverFunction(std::function<void(sf::RenderWindow * window, InputState&state)> fun)
@@ -338,16 +349,23 @@ void Object::UpdateAction(sf::RenderWindow * window, InputState & state)
 			curmode = ONHOVER;
 		}
 	}
-
-	if (active[id])
-	{
-		if (callback != NULL)
-			callback(window, state); //run callback with state info
-		curmode = ACTIVE;
-	}
+	
 
 	if (action_time <= 0.f) //limit the repetability
 	{
+		if (active[id])
+		{
+			if (callback != NULL)
+			{
+				callback(window, state); //run callback with state info
+				if (limiter)
+				{
+					action_time = action_dt;
+				}
+			}
+			curmode = ACTIVE;
+		}
+
 		if (focused == id) //if this object is the one that is currently in focus
 		{
 			if (defaultfn != NULL) //the function existance check may seem unnecessery, but it is
@@ -367,7 +385,7 @@ void Object::UpdateAction(sf::RenderWindow * window, InputState & state)
 }
 
 
-Object::Object() : callback(NULL), hoverfn(NULL), defaultfn(NULL), curmode(DEFAULT), action_time(0.2), obj_allign(LEFT)
+Object::Object() : callback(NULL), hoverfn(NULL), defaultfn(NULL), curmode(DEFAULT), action_time(0.2), obj_allign(LEFT), static_object(false), limiter(false)
 {
 	curstate.color_main = default_main_color;
 	activestate.color_main = default_active_main_color;
@@ -417,6 +435,8 @@ void Object::copy(Object & A)
 	hoverstate = A.hoverstate;
 	defaultstate = A.defaultstate;
 	curmode = A.curmode;
+	static_object = A.static_object;
+	limiter = A.limiter;
 	used_view = A.used_view;
 	obj_allign = A.obj_allign;
 	callback = A.callback;
@@ -440,6 +460,8 @@ void Object::copy(Object && A)
 	std::swap(hoverstate, A.hoverstate);
 	std::swap(defaultstate, A.defaultstate);
 	std::swap(curmode, A.curmode);
+	std::swap(limiter, A.limiter);
+	std::swap(static_object, A.static_object);
 	std::swap(used_view, A.used_view);
 	std::swap(obj_allign, A.obj_allign);
 	std::swap(id, A.id);

@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
   high_scores.Load(save_file);
   game_settings.Load(settings_file);
   LOCAL.LoadLocalsFromFolder(local_folder);
-  LOCAL.SetLanguage("Ukrainian");
+  LOCAL.SetLanguage("English");
 
   //Have user select the resolution
   SelectRes select_res(&font_mono);
@@ -243,8 +243,6 @@ int main(int argc, char *argv[]) {
   overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);
   
   io_state.window_size = sf::Vector2f(window.getSize().x, window.getSize().y);
-  
-  OpenTestWindow(font);
 
   while (window.isOpen()) {
     sf::Event event;
@@ -305,8 +303,7 @@ int main(int argc, char *argv[]) {
 						break;
 					}
 					else if (game_mode == CONTROLS || game_mode == LEVELS) {
-						game_mode = MAIN_MENU;
-						scene.SetExposure(1.0f);
+						OpenMainMenu(&scene, &overlays);
 					}
 					else if (game_mode == SCREEN_SAVER) {
 						game_mode = MAIN_MENU;
@@ -333,7 +330,8 @@ int main(int argc, char *argv[]) {
 						overlays.TWBAR_ENABLED = false;
 						TwDefine("LevelEditor visible=false");
 						TwDefine("FractalEditor visible=false");
-						overlays.ReloadLevelMenu(&scene);
+						//overlays.ReloadLevelMenu(&scene);
+						OpenLevelMenu(&scene, &overlays);
 					}
 				}
 				else if (keycode == sf::Keyboard::R) {
@@ -451,81 +449,7 @@ int main(int argc, char *argv[]) {
 						}
 					}
 					else if (game_mode == LEVELS) {
-						/*int selected = overlays.level_menu.GetSelection();
-
-						if (selected == -1)
-						{
-							//nothing
-						}
-						else if (selected == -1)
-						{
-
-						}
-						else if (selected == -2)
-						{
-							//go back
-							game_mode = MAIN_MENU;
-							scene.SetExposure(1.0f);
-						}
-						else if (selected == -3)
-						{
-							//go to level editor
-							game_mode = LEVEL_EDITOR;
-							menu_music.stop();
-							scene.SetExposure(1.0f);
-							overlays.TWBAR_ENABLED = true;
-							TwDefine("LevelEditor visible=true position='20 20'");
-							TwDefine("FractalEditor visible=true position='20 500'");
-							TwDefine("Settings iconified=true");
-							TwDefine("Statistics iconified=true");
-							scene.StartLevelEditor(-1);
-
-						}
-						else if (selected >= 0)
-						{
-							if (overlays.level_menu.IsEdit())
-							{
-								//edit level
-								game_mode = LEVEL_EDITOR;
-								menu_music.stop();
-								scene.SetExposure(1.0f);
-								overlays.TWBAR_ENABLED = true;
-								TwDefine("LevelEditor visible=true position='20 20'");
-								TwDefine("FractalEditor visible=true position='20 500'");
-								TwDefine("Settings iconified=true");
-								TwDefine("Statistics iconified=true");
-								scene.StartLevelEditor(selected);
-							}
-							else
-							{
-								//play level
-								game_mode = PLAYING;
-								menu_music.stop();
-								scene.SetExposure(1.0f);
-								scene.levels.GetLevelMusic(selected)->setVolume(GetVol());
-								scene.levels.GetLevelMusic(selected)->play();
-								scene.StartSingle(selected);
-								LockMouse(window);
-							}
-						}
-						/*
-						const Overlays::Texts selected = overlays.GetOption(Overlays::L0, Overlays::BACK2);
-						if (selected == Overlays::BACK2) {
-							game_mode = MAIN_MENU;
-							scene.SetExposure(1.0f);
-						}
-						else if (selected == Overlays::PREV) {
-							overlays.GetLevelPage() -= 1;
-						}
-						else if (selected == Overlays::NEXT) {
-							overlays.GetLevelPage() += 1;
-						}
-						else if (selected >= Overlays::L0 && selected <= Overlays::L14) {
-							const int level = selected - Overlays::L0 + overlays.GetLevelPage() * Overlays::LEVELS_PER_PAGE;
-							if (high_scores.HasUnlocked(level)) {
-								
-							}
-						}*/
+					
 					}
 					else if (game_mode == SCREEN_SAVER) {
 						scene.SetMode(Scene::INTRO);
@@ -549,6 +473,7 @@ int main(int argc, char *argv[]) {
 						else if (selected == Overlays::QUIT) {
 							if (scene.IsSinglePlay()) {
 								game_mode = LEVELS;
+								OpenLevelMenu(&scene, &overlays);
 							}
 							else {
 								game_mode = MAIN_MENU;

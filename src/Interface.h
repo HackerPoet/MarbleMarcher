@@ -27,9 +27,9 @@ extern float animation_sharpness;
 extern float action_dt;
 
 static const std::string close_png = "images/clear.png";
-static const std::string delete_png = "images/clear.png";
-static const std::string edit_png = "images/clear.png";
-static const std::string priority_png = "images/clear.png";
+static const std::string delete_png = "images/delete.png";
+static const std::string edit_png = "images/edit.png";
+static const std::string priority_png = "images/priority.png";
 static const std::string done_png = "images/done.png";
 
 
@@ -117,7 +117,7 @@ public:
 	void Move(sf::Vector2f dx);
 
 	void SetDefaultFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun);
-	void SetCallbackFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun);
+	void SetCallbackFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun, bool limit_repeat = false);
 	void SetHoverFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun);
 
 	void clone_states();
@@ -160,6 +160,8 @@ public:
 
 	//operation time limiter
 	float action_time;
+	bool static_object;
+	bool limiter;
 
 	int id;
 };

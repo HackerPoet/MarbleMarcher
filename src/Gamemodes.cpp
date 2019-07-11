@@ -74,14 +74,18 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 {
 	RemoveAllObjects();
 	sf::Vector2f wsize = default_view.getSize();
+
 	MenuBox levels(wsize.x*0.95f, wsize.y*0.95f, wsize.x*0.025f, wsize.y*0.025f);
+	//make the menu static
+	levels.static_object = true;
+
 	game_mode = LEVELS;
 	std::vector<std::string> names = scene->levels.getLevelNames();
 	std::vector<std::string> desc = scene->levels.getLevelDesc();
 	std::vector<int> ids = scene->levels.getLevelIds();
 
-	Box Bk2Menu(800, 45);
-	Text button(LOCAL["Back2Main"], LOCAL("default"), 35, sf::Color::White);
+	Box Bk2Menu(800, 60);
+	Text button(LOCAL["Back2Main"], LOCAL("default"), 50, sf::Color::White);
 	Bk2Menu.hoverstate.color_main = sf::Color(200, 40, 0, 255);
 	Bk2Menu.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
 	{
@@ -90,37 +94,46 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	Bk2Menu.AddObject(&button, Object::Allign::CENTER);
 	levels.AddObject(&Bk2Menu, Object::Allign::LEFT);
 	
-	/*sf::Image edit; edit.loadFromFile(edit_png);
+	sf::Image edit; edit.loadFromFile(edit_png);
 	sf::Texture edittxt; edittxt.loadFromImage(edit);
 	edittxt.setSmooth(true);
 
-	sf::Image remove; edit.loadFromFile(delete_png);
+	sf::Image remove; remove.loadFromFile(delete_png);
 	sf::Texture removetxt; removetxt.loadFromImage(remove);
 	removetxt.setSmooth(true);
 
 	for (int i = 0; i < scene->levels.GetLevelNum(); i++)
 	{
-		Box lvlbtton(wsize.x*0.8, 60);
+		Box lvlbtton(wsize.x*0.95f - 60, 60);
 		Text lvlname(utf8_to_wstring(names[i]), LOCAL("default"), 35, sf::Color::White);
+		lvlname.hoverstate.color_main = sf::Color(255, 0, 0, 255);
 		lvlname.SetCallbackFunction([scene, selected = ids[i]](sf::RenderWindow * window, InputState & state)
 		{
 			PlayLevel(scene, window, selected);
 		});
 		lvlbtton.AddObject(&lvlname, Object::Allign::LEFT);
 		
-		Box buttons(100, 50);
+		Box buttons(120, 60);
 
-		Box bedit(100, 50);
+		Box bedit(60, 60);
+		bedit.defaultstate.color_main = sf::Color(255, 255, 255, 255);
 		bedit.hoverstate.color_main = sf::Color(0, 255, 0, 255);
 		bedit.SetBackground(edittxt);
-		Box bremove(100, 50);
+		bedit.SetCallbackFunction([scene, overlays, id = ids[i]](sf::RenderWindow * window, InputState & state)
+		{
+			OpenEditor(scene, overlays, id);
+		}, true);
+
+
+		Box bremove(60, 60);
+		bremove.defaultstate.color_main = sf::Color(255, 255, 255, 255);
 		bremove.hoverstate.color_main = sf::Color(255, 0, 0, 255);
 		bremove.SetBackground(removetxt);
 
 		bremove.SetCallbackFunction([scene, overlays, id = ids[i]](sf::RenderWindow * window, InputState & state)
 		{
 			ConfirmLevelDeletion(id, scene);
-		});
+		}, true);
 
 		buttons.AddObject(&bremove, Object::Allign::RIGHT);
 		buttons.AddObject(&bedit, Object::Allign::RIGHT);
@@ -132,29 +145,30 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 		levels.AddObject(&lvlbtton, Object::Allign::LEFT);
 	}
 
-	Box Newlvl(100, 40);
+	Box Newlvl(200, 60);
 	Text newlvl(LOCAL["CreateNewLvl"], LOCAL("default"), 35, sf::Color::White);
 	Newlvl.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
 	{
 		OpenEditor(scene, overlays, -1);
 	});
 	Newlvl.AddObject(&newlvl, Object::Allign::CENTER);
-	levels.AddObject(&Newlvl, Object::Allign::LEFT);*/
+	levels.AddObject(&Newlvl, Object::Allign::CENTER);
 	AddGlobalObject(levels);
 }
 
 void ConfirmLevelDeletion(int lvl, Scene* scene)
 {
-	Window confirm(200, 200, 500, 300, sf::Color(0, 0, 0, 128), LOCAL["You_sure"], LOCAL("default"));
+	sf::Vector2f wsize = default_view.getSize();
+	Window confirm(wsize.x*0.45f, wsize.y*0.45f, 500, 215, sf::Color(0, 0, 0, 128), LOCAL["You_sure"], LOCAL("default"));
 	Text button1(LOCAL["Yes"], LOCAL("default"), 30, sf::Color::White);
 	Text button2(LOCAL["No"], LOCAL("default"), 30, sf::Color::White);
 	Text text(LOCAL["You_sure"], LOCAL("default"), 30, sf::Color::White);
 	 
 	Box but1(0, 0, 240, 40, sf::Color(0, 64, 128, 240));
-	Box but2(0, 0, 30, 30, sf::Color(0, 64, 128, 240));
+	Box but2(0, 0, 240, 40, sf::Color(0, 64, 128, 240));
 
 	but1.hoverstate.color_main = sf::Color(230, 40, 20, 200);
-	but2.hoverstate.color_main = sf::Color(230, 40, 20, 200);
+	but2.hoverstate.color_main = sf::Color(40, 230, 20, 200);
 	but1.AddObject(&button1, Box::CENTER);
 	but2.AddObject(&button2, Box::CENTER);
 
@@ -172,7 +186,6 @@ void ConfirmLevelDeletion(int lvl, Scene* scene)
 
 	get_glob_obj(id).objects[1].get()->objects[0].get()->objects[2].get()->SetCallbackFunction([scene, id](sf::RenderWindow * window, InputState & state)
 	{
-		
 		Add2DeleteQueue(id);
 	});
 }
