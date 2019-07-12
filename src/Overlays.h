@@ -22,92 +22,7 @@
 
 #include <AntTweakBar.h>
 
-
 extern Settings game_settings;
-
-
-const int Element_Height = 50;
-const int Descr_Height = 25;
-
-
-
-//Generalized menu overlay 
-class Menu
-{
-public:
-	enum ElementType
-	{
-		Button,
-		LevelButton
-	};
-
-	Menu();
-
-	void AddFonts(sf::Font * a, sf::Font * b);
-
-	void SetPosition(int posx, int posy);
-	void SetScale(float scale);
-	void AddButton(std::string text);
-	void AddLevelButton(int LVL_ID, std::string name, std::string desc, std::string best_time);
-
-	void UpdateState(sf::Vector2f mouse, bool all_keys[]);
-	void UpdateMenu(int px, int py, int scroll);
-
-	int WhichActive();
-	int WhatLevelActive();
-	int GetSelection();
-
-	void SetText(std::string str, float x, float y, float size, const sf::Color & color, bool mono);
-	bool IsEdit();
-	void RenderMenu(sf::RenderWindow& window);
-
-	void ClearAll();
-
-private:
-
-	int GetElementYPosition(int i);
-
-	float draw_scale;
-
-	//scroll parameters
-	float scroll_value, scroll_velocity;
-
-	//window size
-	int w_size_x, w_size_y;
-
-	//menu position
-	int menu_x, menu_y;
-
-	bool inside_edit;
-	//y size of the menu
-	int menu_size;
-	int button_id;
-	int active;
-	int last_active;
-	std::vector<int> lvl_id;
-	std::vector<ElementType> types;
-	std::vector<std::string> texts;
-	std::vector<std::string> description;
-	std::vector<std::string> bsttime;
-
-	sf::Text text;
-	sf::Font* font;
-	sf::Font* font_mono;
-
-	sf::Sound sound_hover;
-	sf::SoundBuffer buff_hover;
-	sf::Sound sound_click;
-	sf::SoundBuffer buff_click;
-	sf::Sound sound_count;
-	sf::SoundBuffer buff_count;
-	sf::Sound sound_go;
-	sf::SoundBuffer buff_go;
-
-	sf::Texture edit_tex;
-	sf::Sprite edit_spr;
-
-	sf::RectangleShape rectangle;
-};
 
 class Overlays {
 public:
@@ -139,14 +54,13 @@ public:
   static const int LEVELS_PER_PAGE = 15;
   bool TWBAR_ENABLED;
   TwBar *stats, *settings, *fractal_editor, *level_editor, *confirmation_box;
-  Menu level_menu;
 
   Overlays(sf::Font* _font, sf::Font* _font_mono, Scene* scene);
 
   void ReloadLevelMenu(Scene * scene);
 
   //Relative to 1280x720
-  void SetScale(float scale) { draw_scale = scale;  level_menu.SetScale(scale); }
+  void SetScale(float scale) { draw_scale = scale; }
   void SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, bool *vsync, float *mouse_sensitivity, float *wheel_sensitivity, float *music_vol, float *target_fps);
   void SetTWBARResolution(int Width, int Height);
 
