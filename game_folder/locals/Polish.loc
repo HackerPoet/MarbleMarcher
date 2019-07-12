@@ -1,0 +1,181 @@
+#Polish
+Polski
+#Marble_Marcher
+Marble Marcher
+#Play
+Graj
+#Levels
+Poziomy
+#Controls
+Sterowanie
+#Settings
+Ustawienia
+#Exit
+Wyjście
+#OK
+OK
+#Yes
+Tak
+#No
+Nie
+#Best_time
+Najlepszy czas
+#Edit
+Edytuj
+#Remove
+Usuń
+#You_sure
+Na pewno?
+#Graphics
+Grafika
+#MM_about_short
+Marble Marcher Community Edition
+#MM_about_long
+Marble Marcher Community Edition.
+Oryginał stworzony przez CodeParade
+Muzyka zrobiona przez PettyTheft.
+
+Deweloperzy Community Edition:
+Michael Moroz(michael0884)
+WAUthethird
+Bryce AS202313
+Selicre
+
+Tłumacz: KaMa2
+#Window
+Okno
+#Button
+Przycisk
+#Screen_Saver
+Wygaszacz Ekranu
+#Back2Main
+Powrót do menu
+#CreateNewLvl
+Stwórz nowy poziom
+#About
+©2019 CodeParade 1.3.0 beta, Community Edition
+Muzyka zrobiona przez PettyTheft
+#DetailControls
+Toczenie się      WASD lub Strzałki
+Kamera            Mysz
+Zoom              Scroll
+Restart           R lub Przwy przycisk myszy
+Pauza             Esc
+#Back
+Powrót
+#Paused
+Pauza
+#Continue
+Kontynuuj
+#Restart
+Restart
+#Quit
+Wyjdź
+#Music
+Muzyka
+#On
+Włączona
+#Off
+Wyłączona
+#High
+Wysoka
+#Medium
+Średnia
+#Low
+Niska
+#CongratsEnd
+Gratulacje, przeszedłeś wszystkie poziomy!
+
+
+
+W ramach nagrody odblokowano kody!
+Aktywuj je naciskając F1 podczas gry.
+Dziękujemy za grę!
+#CongratsMid
+Dobrze ci idzie!
+
+
+
+Ale to dopiero początek.
+Jeśli potrzebujesz przerwy to zrób ją teraz.
+Prawdziwe wyzwania dopiero nadchodzą...
+#CheatsON
+Kody Aktywowane
+#CheatsInfo
+[ C ] Zmiana koloru
+[ F ] Tryb widza
+[ G ] Zmiana siły grawitacji
+[ H ] Włączenie hiperprędkości
+[ I ] Ignoruj flagę
+[ M ] Wyłączenie ruchu poziomu
+[ P ] Przełączenie trybu grawitacji
+[ Z ] Zmiana wielkości
+[ 1 - 9 ] Edycja Fraktala (scrollem)
+#Statistics
+Statystyki
+#Marble_velocity
+Prędkość kulki
+#Marble_position
+Pozycja kulki
+#Settings
+Ustawienia
+#Sun_direction
+Kierunek słońca
+#Shadows
+Cienie
+#Reflection_Refraction
+Odbicia i refrakcja
+#Glass
+Szkło
+#Metal
+Metal
+#Marble_type
+Materiał
+#Mouse_sensitivity
+Czułość myszy
+#Wheel_sensitivity
+Czułość scrolla
+#Music_volume
+Głośność
+#Target_FPS
+Zamierzona ilość FPS
+#Camera_size
+Wielkość kamery
+#Camera_speed_free
+Prędkość kamery (tryb widza)
+#Level_Name
+Nazwa Poziomu
+#Level_Description
+Opis
+#Save
+Zapisz
+#Set_Marble
+Ustaw położenie początkowe
+#Set_Marble_help
+Naciśnij w odpowiednim miejscu na fraktalu, aby umieścić położenie
+#Set_Flag
+Umieść flagę
+#Flag_Position
+Położenie flagi
+#Marble_Position
+Położenie kulki
+#Marble_scale
+Wielkość kulki(skala)
+#Level_music
+Muzyka
+#Play_Music
+Graj/Zatrzymaj muzykę
+#None
+Żadne
+#Fractal_Iterations
+Iteracje fraktala
+#Fractal_Scale
+Skala fraktala
+#Fractal_Angle1
+Kąt 1 fraktala
+#Fractal_Angle2
+Kąt 2 fraktala
+#Fractal_Shift
+Przesunięcie fraktala
+#Fractal_Color
+Kolor fraktala
