@@ -536,7 +536,7 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 						break;
 					case CENTER:
 						obj.get()->SetPosition(curstate.position.x + defaultstate.size.x * 0.5f - obj_width * 0.5f, curstate.position.y + cur_shift_y);
-						cur_shift_y += line_height + curstate.margin;
+						cur_shift_y += old_line_height + curstate.margin;
 						line_height = 0;
 						cur_shift_x1 = curstate.margin;
 						cur_shift_x2 = curstate.margin;
@@ -549,12 +549,13 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 				}
 				else
 				{
-					cur_shift_y += line_height + curstate.margin;
+					cur_shift_y += old_line_height + curstate.margin;
 					line_height = 0;
 					cur_shift_x1 = curstate.margin;
 					cur_shift_x2 = curstate.margin;
 					tries++;
 				}
+
 			}
 			if (tries >= 2)
 			{

@@ -48,3 +48,8 @@ void LockMouse(sf::RenderWindow& window);
 void UnlockMouse(sf::RenderWindow& window);
 void PauseGame(sf::RenderWindow& window, Scene& scene);
 int DirExists(const char *path);
+
+class Sounds
+{
+
+};

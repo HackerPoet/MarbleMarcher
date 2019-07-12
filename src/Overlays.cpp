@@ -47,27 +47,11 @@ Overlays::Overlays(sf::Font* _font, sf::Font* _font_mono, Scene* scene) :
   arrow_spr.setOrigin(arrow_spr.getLocalBounds().width / 2, arrow_spr.getLocalBounds().height / 2);
 
   ReloadLevelMenu(scene);
- 
-  level_menu.AddFonts(_font, _font_mono);
 }
 
 void Overlays::ReloadLevelMenu(Scene* scene)
 {
-	std::vector<std::string> names = scene->levels.getLevelNames();
-	std::vector<std::string> desc = scene->levels.getLevelDesc();
-	std::vector<int> ids = scene->levels.getLevelIds();
-
-	level_menu.ClearAll();
-	level_menu.SetPosition(40, 40);
-
-	level_menu.AddButton("Back To Main Menu");
-
-	for (int i = 0; i < scene->levels.GetLevelNum(); i++)
-	{
-		level_menu.AddLevelButton(ids[i], names[i], desc[i], "--:--");
-	}
-
-	level_menu.AddButton("Create New Level");
+	
 }
 
 Overlays::Texts Overlays::GetOption(Texts from, Texts to) {
@@ -88,7 +72,7 @@ void Overlays::UpdateMenu(float mouse_x, float mouse_y) {
   MakeText(LOCAL["Controls"], 80, 370, 60, sf::Color::White, all_text[CONTROLS]);
   MakeText(LOCAL["Screen_Saver"], 80, 440, 60, sf::Color::White, all_text[SCREEN_SAVER]);
   MakeText(LOCAL["Exit"], 80, 510, 60, sf::Color::White, all_text[EXIT]);
-  MakeText("\xA9""2019 CodeParade 1.3.0 beta, Community Edition \nMusic by PettyTheft", 16, 652, 32, sf::Color::White, all_text[CREDITS], true);
+  MakeText(LOCAL["About"], 16, 652, 32, sf::Color::White, all_text[CREDITS], true);
   all_text[TITLE].setLineSpacing(0.76f);
   all_text[CREDITS].setLineSpacing(0.9f);
 
@@ -98,9 +82,8 @@ void Overlays::UpdateMenu(float mouse_x, float mouse_y) {
 
 void Overlays::UpdateControls(float mouse_x, float mouse_y) {
   //Update text boxes
-  MakeText("Roll\nCamera\nZoom\nRestart\nPause", 40, 200, 46, sf::Color::White, all_text[CONTROLS_L]);
-  MakeText("WASD or Arrows\nMouse\nScroll Wheel\nR or Right-Click\nEsc", 280, 200, 46, sf::Color::White, all_text[CONTROLS_R]);
-  MakeText("Back", 60, 550, 40, sf::Color::White, all_text[BACK]);
+  MakeText(LOCAL["DetailControls"], 40, 200, 46, sf::Color::White, all_text[CONTROLS_L]);
+  MakeText(LOCAL["Back"], 60, 550, 40, sf::Color::White, all_text[BACK]);
 
   //A little extra vertical spacing
   all_text[CONTROLS_L].setLineSpacing(1.1f);
@@ -132,7 +115,7 @@ void Overlays::UpdateLevels(float mouse_x, float mouse_y) {
   } else {
     all_text[PREV] = sf::Text();
   }
-  MakeText("Back", 590, 660, 40, sf::Color::White, all_text[BACK2]);
+  MakeText(LOCAL["Back"], 590, 660, 40, sf::Color::White, all_text[BACK2]);
   if (level_page < num_level_pages - 1) {
     MakeText(">", 732, 652, 48, sf::Color::White, all_text[NEXT]);
   } else {
@@ -145,26 +128,33 @@ void Overlays::UpdateLevels(float mouse_x, float mouse_y) {
 
 void Overlays::UpdateLevelMenu(float mouse_x, float mouse_y, float scroll)
 {
-	level_menu.UpdateMenu(mouse_x, mouse_y, scroll);
+
 }
 
 void Overlays::UpdatePaused(float mouse_x, float mouse_y) {
   //Update text boxes
-  MakeText("Paused", 540, 288, 54, sf::Color::White, all_text[PAUSED]);
-  MakeText("Continue", 370, 356, 40, sf::Color::White, all_text[CONTINUE]);
-  MakeText("Restart", 620, 356, 40, sf::Color::White, all_text[RESTART]);
-  MakeText("Quit", 845, 356, 40, sf::Color::White, all_text[QUIT]);
+  MakeText(LOCAL["Paused"], 540, 288, 54, sf::Color::White, all_text[PAUSED]);
+  MakeText(LOCAL["Continue"], 370, 356, 40, sf::Color::White, all_text[CONTINUE]);
+  MakeText(LOCAL["Restart"], 620, 356, 40, sf::Color::White, all_text[RESTART]);
+  MakeText(LOCAL["Quit"], 845, 356, 40, sf::Color::White, all_text[QUIT]);
 
   //Update music setting
-  const char* music_txt = (game_settings.mute ? "Music:  Off" : "Music:  On");
+  std::wstring music_txt = LOCAL["Music"] + L": " + std::wstring(game_settings.mute ? LOCAL["On"] : LOCAL["Off"]);
   MakeText(music_txt, 410, 500, 40, sf::Color::White, all_text[MUSIC]);
 
   //Update mouse sensitivity setting
-  const char* mouse_txt = "Mouse Sensitivity:  High";
-  if (game_settings.mouse_sensitivity == 1) {
-    mouse_txt = "Mouse Sensitivity:  Medium";
-  } else if (game_settings.mouse_sensitivity == 2) {
-    mouse_txt = "Mouse Sensitivity:  Low";
+  std::wstring mouse_txt = LOCAL["Mouse Sensitivity"] + L": ";
+  if (game_settings.mouse_sensitivity == 1) 
+  {
+    mouse_txt += LOCAL["Medium"];
+  } 
+  else if (game_settings.mouse_sensitivity == 2) 
+  {
+	mouse_txt += LOCAL["Low"];
+  }	
+  else
+  {
+	mouse_txt += LOCAL["High"];
   }
   MakeText(mouse_txt, 410, 550, 40, sf::Color::White, all_text[MOUSE]);
 
@@ -269,11 +259,7 @@ void Overlays::DrawArrow(sf::RenderWindow& window, const sf::Vector3f& v3) {
 }
 
 void Overlays::DrawCredits(sf::RenderWindow& window, bool fullrun, int t) {
-  const char* txt =
-    "  Congratulations, you beat all the levels!\n\n\n\n"
-    "As a reward, cheats have been unlocked!\n"
-    "Activate them with the F1 key during gameplay.\n\n"
-    "Thanks for playing!";
+  std::wstring txt = LOCAL["CongratsEnd"];
   sf::Text text;
   MakeText(txt, 100, 100, 44, sf::Color::White, text);
   text.setLineSpacing(1.3f);
@@ -289,11 +275,7 @@ void Overlays::DrawCredits(sf::RenderWindow& window, bool fullrun, int t) {
 }
 
 void Overlays::DrawMidPoint(sf::RenderWindow& window, bool fullrun, int t) {
-  const char* txt =
-    "            You've done well so far.\n\n\n\n"
-    "      But this is only the beginning.\n"
-    "If you need a quick break, take it now.\n"
-    "The challenge levels are coming up...";
+  std::wstring txt = LOCAL["CongratsMid"];
   sf::Text text;
   MakeText(txt, 205, 100, 44, sf::Color::White, text);
   text.setLineSpacing(1.3f);
@@ -309,26 +291,7 @@ void Overlays::DrawMidPoint(sf::RenderWindow& window, bool fullrun, int t) {
 }
 
 void Overlays::DrawLevels(sf::RenderWindow& window) {
-  //Draw the level names
-
-  /*for (int i = L0; i <= BACK2; ++i) {
-    window.draw(all_text[i]);
-  }
-  //Draw the times
-  const int page_start = level_page * LEVELS_PER_PAGE;
-  const int page_end = page_start + LEVELS_PER_PAGE;
-  for (int i = page_start; i < page_end; ++i) {
-    if (i < num_levels && high_scores.HasCompleted(i)) {
-      sf::Text text;
-      const int j = i % LEVELS_PER_PAGE;
-      const float y = 98.0f + float(j / 3) * 120.0f;
-      const float x = 148.0f + float(j % 3) * 400.0f;
-      MakeTime(high_scores.Get(i), x, y, 48, sf::Color(64, 255, 64), text);
-      window.draw(text);
-    }
-  }*/
-
-  level_menu.RenderMenu(window);
+  
 }
 
 void Overlays::DrawSumTime(sf::RenderWindow& window, int t) {
@@ -339,22 +302,13 @@ void Overlays::DrawSumTime(sf::RenderWindow& window, int t) {
 
 void Overlays::DrawCheatsEnabled(sf::RenderWindow& window) {
   sf::Text text;
-  MakeText("Cheats Enabled", 10, 680, 32, sf::Color::White, text);
+  MakeText(LOCAL["CheatsON"], 10, 680, 32, sf::Color::White, text);
   window.draw(text);
 }
 
 void Overlays::DrawCheats(sf::RenderWindow& window) {
   sf::Text text;
-  const char* txt =
-    "[ C ] Color change\n"
-    "[ F ] Free camera\n"
-    "[ G ] Gravity strength\n"
-    "[ H ] Hyperspeed toggle\n"
-    "[ I ] Ignore goal\n"
-    "[ M ] Motion disable\n"
-    "[ P ] Planet toggle\n"
-    "[ Z ] Zoom to scale\n"
-    "[1-9] Scroll fractal parameter\n";
+  std::wstring txt = LOCAL["CheatsInfo"];
   MakeText(txt, 460, 160, 32, sf::Color::White, text, true);
   window.draw(text);
 }
@@ -686,221 +640,4 @@ bool Overlays::TwManageEvent(sf::Event &event)
 void Overlays::SetTWBARResolution(int Width, int Height)
 {
 	TwWindowSize(Width, Height);
-}
-
-Menu::Menu()
-{
-	inside_edit = 0;
-	buff_hover.loadFromFile(menu_hover_wav);
-	sound_hover.setBuffer(buff_hover);
-	buff_click.loadFromFile(menu_click_wav);
-	sound_click.setBuffer(buff_click);
-	buff_count.loadFromFile(count_down_wav);
-	sound_count.setBuffer(buff_count);
-	buff_go.loadFromFile(count_go_wav);
-	sound_go.setBuffer(buff_go);
-	active = -1;
-	scroll_value = 0;
-	scroll_velocity = 0;
-	button_id = 1;
-
-	/*edit_tex.loadFromFile(edit_png);
-	edit_tex.setSmooth(true);
-	edit_spr.setTexture(edit_tex);
-	edit_spr.setOrigin(edit_spr.getLocalBounds().width / 2, edit_spr.getLocalBounds().height / 2);*/
-
-	rectangle.setSize(sf::Vector2f(100, 10));
-	rectangle.setFillColor(sf::Color(0, 0, 0, 128));
-}
-
-void Menu::AddFonts(sf::Font* a, sf::Font* b)
-{
-	font = a;
-	font_mono = b;
-}
-
-void Menu::SetPosition(int posx, int posy)
-{
-	menu_x = posx;
-	menu_y = posy;
-}
-
-void Menu::SetScale(float scale)
-{
-	draw_scale = scale;
-	text.setLetterSpacing(0.8f);
-	text.setOutlineThickness(3.0f * draw_scale);
-	text.setOutlineColor(sf::Color::Black);
-	edit_spr.setScale(draw_scale*0.5f, draw_scale*0.5f);
-}
-
-void Menu::AddButton(std::string text)
-{
-	texts.push_back(text);
-	types.push_back(Button);
-	description.push_back("");
-	bsttime.push_back("");
-	button_id++;
-	lvl_id.push_back(-button_id);
-}
-
-void Menu::AddLevelButton(int LVL_ID, std::string name, std::string desc, std::string best_time)
-{
-	lvl_id.push_back(LVL_ID);
-	texts.push_back(name);
-	types.push_back(LevelButton);
-	description.push_back(desc);
-	bsttime.push_back(best_time);
-}
-
-void Menu::UpdateMenu(int mouse_x, int mouse_y, int scroll)
-{
-	menu_size = texts.size() * Element_Height * draw_scale;
-	//scroll only if the menu is bigger than the screen
-	if (menu_size > w_size_y)
-	{
-		if (scroll != 0)
-			scroll_velocity += 6*scroll;
-		scroll_velocity *= 0.85;
-		scroll_value += scroll_velocity;
-		if (scroll_value > 0)
-		{
-			scroll_value = 0;
-			scroll_velocity = 0;
-		}
-		if (scroll_value < w_size_y/draw_scale - menu_y - texts.size()  * (Element_Height+Descr_Height))
-		{
-			scroll_value = w_size_y / draw_scale - menu_y - (texts.size()) * (Element_Height + Descr_Height);
-			scroll_velocity = 0;
-		}
-	}
-	last_active = active;
-	active = -1;
-	for (int i = 0; i < texts.size(); i++)
-	{
-		const sf::FloatRect bounds(menu_x*draw_scale, GetElementYPosition(i)*draw_scale, w_size_x*0.8f*draw_scale, Element_Height*draw_scale);
-		if (bounds.contains(mouse_x, mouse_y))
-		{
-			active = i;
-			if (active != last_active)
-			{
-				sound_hover.play();
-			}
-		}
-	}
-}
-
-int Menu::WhichActive()
-{
-	return active;
-}
-
-int Menu::WhatLevelActive()
-{
-	if (active >= 0)
-	{
-		return lvl_id[active];
-	}
-	else
-	{
-		return -2;
-	}
-}
-
-int Menu::GetSelection()
-{
-	if (active >= 0)
-	{
-		return lvl_id[active];
-	}
-	else
-	{
-		return -1;
-	}
-	
-}
-
-void Menu::SetText(std::string str, float x, float y, float size, const sf::Color& color, bool mono) 
-{
-	text.setString(str);
-	text.setFont(mono ? *font_mono : *font);
-	text.setCharacterSize(int(size * draw_scale));
-	text.setPosition((x - 2.0f) * draw_scale, (y - 2.0f) * draw_scale);
-	text.setFillColor(color);
-}
-
-bool Menu::IsEdit()
-{
-	return inside_edit;
-}
-
-void Menu::RenderMenu(sf::RenderWindow & window)
-{
-	/*w_size_x = window.getSize().x;
-	w_size_y = window.getSize().y;
-	inside_edit = false;
-	sf::Vector2i mouse= sf::Mouse::getPosition();
-	sf::FloatRect bounds;
-	for (int i = 0; i < texts.size(); i++)
-	{
-		if ((GetElementYPosition(i))*draw_scale < w_size_y && (GetElementYPosition(i)+Element_Height+ Descr_Height)*draw_scale > 0)
-		{
-			bool is_active = active == i;
-
-			float ycor = (GetElementYPosition(i) + 15) * draw_scale;
-			sf::FloatRect bounds;
-			switch (types[i])
-			{
-			case Button:
-				rectangle.setSize(sf::Vector2f(w_size_x*0.8f, (Element_Height) * draw_scale*0.95));
-				rectangle.setFillColor(sf::Color(0, 0, 0, 128));
-				rectangle.setPosition((menu_x - 5) * draw_scale, GetElementYPosition(i)* draw_scale);
-				window.draw(rectangle);
-				break;
-			case LevelButton:
-				rectangle.setSize(sf::Vector2f(w_size_x*0.8f, (Element_Height + Descr_Height) * draw_scale*0.95));
-				rectangle.setFillColor(sf::Color(0, 0, 0, 128));
-				rectangle.setPosition((menu_x - 5) * draw_scale, GetElementYPosition(i)* draw_scale);
-				window.draw(rectangle);
-
-				SetText(description[i], menu_x, GetElementYPosition(i)+Element_Height*0.6, 25, is_active ? sf::Color(160,220,160) : sf::Color(160, 160, 160), true);
-				window.draw(text);
-
-				SetText(bsttime[i], (menu_x - 5)  + w_size_x * 0.5f/draw_scale, GetElementYPosition(i), 30, is_active ? sf::Color(0, 255, 0) : sf::Color(0, 255, 128), false);
-				window.draw(text);
-
-				edit_spr.setPosition((menu_x - 20)*draw_scale + w_size_x * 0.8f , ycor);
-
-				bounds = edit_spr.getGlobalBounds();
-				bounds.width = edit_tex.getSize().x*draw_scale;
-				bounds.height = edit_tex.getSize().y*draw_scale;
-
-				inside_edit = inside_edit || bounds.contains(mouse.x, mouse.y);
-				window.draw(edit_spr);
-				break;
-			default:
-				break;
-			}
-
-			SetText(texts[i], menu_x, GetElementYPosition(i), 30, is_active ? sf::Color::Red : sf::Color::White, true);
-			window.draw(text);
-		}
-	}*/
-}
-
-void Menu::ClearAll()
-{
-	lvl_id.clear();
-	types.clear();
-	texts.clear();
-	description.clear();
-	bsttime.clear();
-	scroll_value = 0;
-	scroll_velocity = 0;
-	button_id = 1;
-}
-
-int Menu::GetElementYPosition(int i)
-{
-	return scroll_value + menu_y + i*(Element_Height+ Descr_Height);
 }
