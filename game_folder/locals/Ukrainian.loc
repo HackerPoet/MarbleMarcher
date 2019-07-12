@@ -1,10 +1,9 @@
 #Ukrainian
 Українська
 #Marble_Marcher
-Marble
-Marcher
+Marble Marcher
 #Play
-Розпочати гру
+Грати
 #Levels
 Рівні
 #Controls
@@ -22,7 +21,7 @@ OK
 #Best_time
 Найкращий час
 #Edit
-Редагуання
+Редагувати
 #Remove
 Видалити
 #You_sure
@@ -30,17 +29,21 @@ OK
 #Graphics
 Графіка
 #MM_about_short
-Marble Marcher Community Edition версія
+Marble Marcher Community Edition
 #MM_about_long
 Marble Marcher Community Edition.
 Оригінал зроблений CodeParade. 
-Музика PettyTheft
+Музика PettyTheft.
 
-Команда Community Edition:
+Команда розробки Community Edition:
 Michael Moroz(michael0884)
 WAUthethird
 Bryce AS202313
 Selicre
+
+Перекладачі:
+KaMa2 - польська мова
+Michael Moroz - англійська, українська та російська
 #Window
 Вікно
 #Button
@@ -48,6 +51,133 @@ Selicre
 #Screen_Saver
 Заставка
 #Back2Main
-Назад в головне меню
+Назад в Головне Меню
 #CreateNewLvl
 Створити новий рівень
+#About
+©2019 CodeParade 1.3.0 beta, Community Edition
+Музика PettyTheft
+#DetailControls
+Котитися          WASD or Arrows
+Камера            Mouse
+Приближення       Scroll Wheel
+Перезапуск рівня  R or Right-Click
+Пауза             Esc
+#Back
+Назад
+#Paused
+Пауза
+#Continue
+Продовжити
+#Restart
+Перезапустити рівень
+#Quit
+Вийти
+#Music
+Музика
+#On
+Включено
+#Off
+Виключено
+#High
+Висока
+#Medium
+Середня
+#Low
+Низька
+#CongratsEnd
+Вітаю, ти пройшов всі рівні!
+
+
+
+Твоя нагорода - розблоковані чіти!
+Ти можеш активувати їх за допомогою F1 під час гри.
+Дякую за те що грали!
+#CongratsMid
+Непогано - непогано...
+
+
+
+Але це тільки початок.
+Якщо ти потребуєш паузи, то можеш зробити її зараз.
+Наступні рівні будуть набагато складнішими...
+#CheatsON
+Чіти включені
+#CheatsInfo
+[ C ] Зміна кольору
+[ F ] Режим вільної камери
+[ G ] Сила тяжіння
+[ H ] Режим гіпершвидкості
+[ I ] Ігнорувати ціль(флаг)
+[ M ] Виключити рух фрактала
+[ P ] Включити режим планети
+[ Z ] Режим зміни розміру кульки
+[ 1 - 9 ] Зміна параметрів фрактала
+#Statistics
+Статистика
+#Marble_velocity
+Швидкість кульки
+#Marble_position
+Розташування кульки
+#Settings
+Налаштування
+#Sun_direction
+Напрямок сонця
+#Shadows
+Тіні
+#Reflection_Refraction
+Відбивання та заломлення
+#Glass
+Скло
+#Metal
+Метал
+#Marble_type
+Тип кульки
+#Mouse_sensitivity
+Чутливість мишки
+#Wheel_sensitivity
+Чутливість колеса мишки
+#Music_volume
+Гучність музики
+#Target_FPS
+Цільовий FPS
+#Camera_size
+Розмір камери
+#Camera_speed_free
+Швидкість камери(режим вільної камери)
+#Level_Name
+Назва рівня
+#Level_Description
+Опис рівня
+#Save
+Запам'ятати рівень
+#Set_Marble
+Поставити кульку
+#Set_Marble_help
+Натисність на фрактал щоб поставити
+#Set_Flag
+Поставити флаг
+#Flag_Position
+Розташування флага
+#Marble_Position
+Розташування кульки
+#Marble_scale
+Радіус кульки(масштаб)
+#Level_music
+Музика рівня
+#Play_Music
+Ввімкнути/вимкнути музику
+#None
+Нічого
+#Fractal_Iterations
+Кількість ітерації фрактала
+#Fractal_Scale
+Масштаб фрактала
+#Fractal_Angle1
+Кут 1 фрактала
+#Fractal_Angle2
+Кут 2 фрактала
+#Fractal_Shift
+Зсув фрактала
+#Fractal_Color
+Колір фрактала
