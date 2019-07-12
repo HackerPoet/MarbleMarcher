@@ -2,3 +2,5 @@
 2560
 #Screenshot height
 1440
+#Language(write name in English)
+English

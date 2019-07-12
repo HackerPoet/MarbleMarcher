@@ -164,6 +164,9 @@ public:
 	bool static_object;
 	bool limiter;
 
+	sf::Vector2f worldPos;
+	sf::FloatRect obj;
+
 	int id;
 };
 

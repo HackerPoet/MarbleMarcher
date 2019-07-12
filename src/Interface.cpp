@@ -203,6 +203,9 @@ void Object::SetWidth(float x)
 
 void Object::SetBackgroundColor(sf::Color color)
 {
+	defaultstate.color_main = color;
+	activestate.color_main = color;
+	hoverstate.color_main = color;
 }
 
 void Object::SetBorderColor(sf::Color color)
@@ -287,10 +290,10 @@ void Object::Draw(sf::RenderWindow * window, InputState& state)
 
 void Object::Update(sf::RenderWindow * window, InputState& state)
 {
-	window->setView(used_view);
-	sf::Vector2f worldPos = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y));
-	sf::FloatRect obj(curstate.position.x, curstate.position.y, curstate.size.x, curstate.size.y);
+	worldPos = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y));
+	obj= sf::FloatRect(curstate.position.x, curstate.position.y, curstate.size.x, curstate.size.y);
 
+	window->setView(used_view);
 	state.mouse_speed = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y)) -
 		window->mapPixelToCoords(sf::Vector2i(state.mouse_prev.x, state.mouse_prev.y));
 
@@ -335,11 +338,8 @@ void Object::Update(sf::RenderWindow * window, InputState& state)
 
 void Object::UpdateAction(sf::RenderWindow * window, InputState & state)
 {
-	sf::Vector2f worldPos = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y));
-	sf::FloatRect obj(curstate.position.x, curstate.position.y, curstate.size.x, curstate.size.y);
-
 	state.mouse_speed = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y)) -
-		window->mapPixelToCoords(sf::Vector2i(state.mouse_prev.x, state.mouse_prev.y));
+						window->mapPixelToCoords(sf::Vector2i(state.mouse_prev.x, state.mouse_prev.y));
 
 	curmode = DEFAULT;
 	//if mouse is inside the object 
@@ -536,7 +536,7 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 						break;
 					case CENTER:
 						obj.get()->SetPosition(curstate.position.x + defaultstate.size.x * 0.5f - obj_width * 0.5f, curstate.position.y + cur_shift_y);
-						cur_shift_y += old_line_height + curstate.margin;
+						cur_shift_y += ((tries==0)?line_height:old_line_height) + curstate.margin;
 						line_height = 0;
 						cur_shift_x1 = curstate.margin;
 						cur_shift_x2 = curstate.margin;
@@ -549,7 +549,7 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 				}
 				else
 				{
-					cur_shift_y += old_line_height + curstate.margin;
+					cur_shift_y += ((tries == 0) ? line_height : old_line_height) + curstate.margin;
 					line_height = 0;
 					cur_shift_x1 = curstate.margin;
 					cur_shift_x2 = curstate.margin;
@@ -646,8 +646,7 @@ void Text::Draw(sf::RenderWindow * window, InputState& state)
 	text.setOutlineColor(ToColor(curstate.color_border));
 
 	window->draw(text);
-
-	SetSize(text.getLocalBounds().width, text.getLocalBounds().height);
+	SetSize(text.getLocalBounds().width+ text.getLocalBounds().left, text.getLocalBounds().height+ text.getLocalBounds().top);
 }
 
 Text::Text(sf::Text t)

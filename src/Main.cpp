@@ -132,8 +132,7 @@ int main(int argc, char *argv[]) {
   //Load scores if available
   high_scores.Load(save_file);
   game_settings.Load(settings_file);
-  LOCAL.LoadLocalsFromFolder(local_folder);
-  LOCAL.SetLanguage("English");
+
 
   //Have user select the resolution
   SelectRes select_res(&font_mono);
@@ -162,6 +161,8 @@ int main(int argc, char *argv[]) {
 
   AdditionalSettings addsett;
   addsett.Load("assets/config.txt");
+  LOCAL.LoadLocalsFromFolder(local_folder);
+  LOCAL.SetLanguage(addsett.lang);
 
   sf::Vector2f screenshot_size = sf::Vector2f(addsett.screenshot_width, addsett.screenshot_height);
 
@@ -216,7 +217,7 @@ int main(int argc, char *argv[]) {
   rect_scrshot.setPosition(0, 0);
   
   menu_music.setVolume(GetVol());
-  menu_music.play();
+  //menu_music.play();
 
   //Main loop
   sf::Clock clock;
@@ -291,7 +292,7 @@ int main(int argc, char *argv[]) {
 					credits_music.stop();
 					scene.levels.StopAllMusic();
 					menu_music.setVolume(GetVol());
-					menu_music.play();
+					//menu_music.play();
 				}
 				else if (game_mode == MIDPOINT) {
 					game_mode = PLAYING;
@@ -327,8 +328,8 @@ int main(int argc, char *argv[]) {
 						scene.SetExposure(0.5f);
 						scene.SetMode(Scene::INTRO);
 						scene.StopAllMusic();
-						menu_music.setVolume(GetVol());
-						menu_music.play();
+						//menu_music.setVolume(GetVol());
+						//menu_music.play();
 						overlays.TWBAR_ENABLED = false;
 						TwDefine("LevelEditor visible=false");
 						TwDefine("FractalEditor visible=false");
@@ -485,7 +486,7 @@ int main(int argc, char *argv[]) {
 							scene.SetMode(Scene::INTRO);
 							scene.StopAllMusic();
 							menu_music.setVolume(GetVol());
-							menu_music.play();
+							//menu_music.play();
 						}
 						else if (selected == Overlays::MUSIC) {
 							game_settings.mute = !game_settings.mute;

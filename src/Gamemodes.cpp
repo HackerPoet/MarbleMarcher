@@ -116,16 +116,31 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	for (int i = 0; i < scene->levels.GetLevelNum(); i++)
 	{
 		Box lvlbtton(wsize.x*0.95f - 60, 60);
+		Box lvltext(500, 60);
+		lvltext.SetBackgroundColor(sf::Color::Transparent);
+		Box lvltitle(500, 40);
+		lvltitle.SetBackgroundColor(sf::Color::Transparent);
 		Text lvlname(utf8_to_wstring(names[i]), LOCAL("default"), 35, sf::Color::White);
+		Text lvldescr(utf8_to_wstring(desc[i]), LOCAL("default"), 18, sf::Color::White);
 		lvlname.hoverstate.color_main = sf::Color(255, 0, 0, 255);
 		lvlname.SetCallbackFunction([scene, selected = ids[i]](sf::RenderWindow * window, InputState & state)
 		{
 			PlayLevel(scene, window, selected);
 		});
-		lvlbtton.AddObject(&lvlname, Object::Allign::LEFT);
-		
-		Box buttons(120, 60);
+		lvltitle.AddObject(&lvlname, Object::Allign::LEFT);
+		lvltext.AddObject(&lvltitle, Object::Allign::LEFT);
+		lvltext.AddObject(&lvldescr, Object::Allign::LEFT);
+		lvlbtton.AddObject(&lvltext, Object::Allign::LEFT);
 
+
+		Box lvlscore(500, 40);
+		lvlscore.SetBackgroundColor(sf::Color::Transparent);
+		Text lvlscorev("--:-- TODO", LOCAL("default"), 35, sf::Color::White);
+		lvlscorev.SetBackgroundColor(sf::Color::Green);
+		lvlscore.AddObject(&lvlscorev, Object::Allign::CENTER);
+		lvlbtton.AddObject(&lvlscore, Object::Allign::LEFT);
+
+		Box buttons(120, 60);
 		Box bedit(60, 60);
 		bedit.defaultstate.color_main = sf::Color(255, 255, 255, 255);
 		bedit.hoverstate.color_main = sf::Color(0, 255, 0, 255);
@@ -150,8 +165,6 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 		buttons.AddObject(&bedit, Object::Allign::RIGHT);
 
 		lvlbtton.AddObject(&buttons, Object::Allign::RIGHT);
-
-		Text lvldescr(utf8_to_wstring(desc[i]), LOCAL("default"), 35, sf::Color::White);
 
 		levels.AddObject(&lvlbtton, Object::Allign::LEFT);
 	}

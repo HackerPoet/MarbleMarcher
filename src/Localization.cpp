@@ -15,6 +15,16 @@ void Localization::LoadLocalsFromFolder(std::string folder)
 	}
 }
 
+std::string tostring(std::wstring string_to_convert)
+{
+	//setup converter
+	using convert_type = std::codecvt_utf8<wchar_t>;
+	std::wstring_convert<convert_type, wchar_t> converter;
+
+	//use converter (.to_bytes: wstr->str, .from_bytes: str->wstr)
+	return converter.to_bytes(string_to_convert);
+}
+
 std::wstring utf8_to_wstring(const std::string& str)
 {
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
@@ -37,11 +47,13 @@ void Localization::LoadLocalFromFile(fs::path path)
 
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 
+	int line_num = 0;
 	while (std::getline(local_file, line))
 	{
 		if (line.substr(0, 1) != "#")
 		{
-			element_text.append(converter.from_bytes(line) + L"\n");
+			element_text.append(((line_num != 0)?L"\n":L"") + converter.from_bytes(line));
+			line_num++;
 		}
 		else
 		{
@@ -57,6 +69,7 @@ void Localization::LoadLocalFromFile(fs::path path)
 			}
 			element_text.clear();
 			element++;
+			line_num = 0;
 		}
 	}
 	//last element
@@ -64,12 +77,13 @@ void Localization::LoadLocalFromFile(fs::path path)
 
 	//Load the font
 	sf::Font font;
-	if (!font.loadFromFile(Orbitron_Bold_ttf)) {
+	std::wstring assets = L"assets/";
+	if (!font.loadFromFile(tostring(assets + local["font_1"]))) {
 		ERROR_MSG("Unable to load font");
 	}
 	//Load the mono font
 	sf::Font font_mono;
-	if (!font_mono.loadFromFile(Inconsolata_Bold_ttf)) {
+	if (!font_mono.loadFromFile(tostring(assets + local["font_2"]))) {
 		ERROR_MSG("Unable to load mono font");
 	}
 

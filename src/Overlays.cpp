@@ -143,7 +143,7 @@ void Overlays::UpdatePaused(float mouse_x, float mouse_y) {
   MakeText(music_txt, 410, 500, 40, sf::Color::White, all_text[MUSIC]);
 
   //Update mouse sensitivity setting
-  std::wstring mouse_txt = LOCAL["Mouse Sensitivity"] + L": ";
+  std::wstring mouse_txt = LOCAL["Mouse_sensitivity"] + L": ";
   if (game_settings.mouse_sensitivity == 1) 
   {
     mouse_txt += LOCAL["Medium"];
@@ -316,7 +316,7 @@ void Overlays::DrawCheats(sf::RenderWindow& window) {
 
 template<class T> void Overlays::MakeText(T str, float x, float y, float size, const sf::Color& color, sf::Text& text, bool mono) {
   text.setString(str);
-  text.setFont(mono ? *font_mono : *font);
+  text.setFont(mono ? LOCAL("mono"): LOCAL("default"));
   text.setCharacterSize(int(size * draw_scale));
   text.setLetterSpacing(0.8f);
   text.setPosition((x - 2.0f) * draw_scale, (y - 2.0f) * draw_scale);
@@ -341,7 +341,6 @@ void Overlays::MakeTime(int t, float x, float y, float size, const sf::Color& co
 void Overlays::UpdateHover(Texts from, Texts to, float mouse_x, float mouse_y) {
   for (int i = from; i <= to; ++i) {
     sf::FloatRect bounds = all_text[i].getGlobalBounds();
-	bounds.height *= 0.7;
     if (bounds.contains(mouse_x, mouse_y)) {
       all_text[i].setFillColor(sf::Color(255, 64, 64));
       if (!all_hover[i]) {

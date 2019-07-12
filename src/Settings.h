@@ -45,14 +45,12 @@ class AdditionalSettings
 public:
 	int screenshot_width;
 	int screenshot_height;
-
-// TODO
-//	bool PBR_rendering;
-//	bool shadows;
+	std::string lang;
 
 	AdditionalSettings() :
 		screenshot_width(1920),
-		screenshot_height(1080)
+		screenshot_height(1080),
+		lang("English")
 	{}
 
 	void Load(const std::string& fname) {
@@ -81,17 +79,16 @@ public:
 					case 2:
 						screenshot_height = num;
 						break;
-
-					//TODO
-					case 3:
-					
-						break;
 					case 4:
 						
 						break;
 					default:
 						break;
 					}
+				}
+				if (increment == 3)
+				{
+					lang = line;
 				}
 			}
 		}
