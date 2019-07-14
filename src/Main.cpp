@@ -42,14 +42,6 @@
 #define ERROR_MSG(x) std::cerr << x << std::endl;
 #endif
 
-
-template < typename T > std::string num2str(const T& n)
-{
-	std::ostringstream stm;
-	stm << n;
-	return stm.str();
-}
-
 //Graphics settings
 static bool VSYNC = true;
 
@@ -744,7 +736,7 @@ int main(int argc, char *argv[]) {
   menu_music.stop();
   scene.StopAllMusic();
   credits_music.stop();
-  //high_scores.Save(save_file);
+  scene.levels.SaveScoresToFile();
   game_settings.Save(settings_file);
 
 #ifdef _DEBUG

@@ -588,6 +588,8 @@ void All_Levels::LoadLevelsFromFolder(std::string folder)
 	{
 		LoadLevelFromFile(files[i]);
 	}
+
+	LoadScoresFromFile(folder + "/scores.bin");
 }
 
 void All_Levels::LoadMusicFromFolder(std::string folder)
@@ -627,6 +629,11 @@ std::vector<int> All_Levels::getLevelIds()
 	return level_ids;
 }
 
+std::map<int, Score> All_Levels::getLevelScores()
+{
+	return score_map;
+}
+
 sf::Music* All_Levels::GetLevelMusic(int ID)
 {
 	return music_map[level_map[ID].use_music];
@@ -652,6 +659,69 @@ void All_Levels::LoadLevelFromFile(fs::path file)
 	level_descriptions.push_back(cur_lvl.desc);
 	level_ids.push_back(cur_lvl.level_id);
 	level_num++;
+}
+
+void All_Levels::LoadScoresFromFile(std::string file)
+{
+	if (!fs::exists(file))
+	{
+		return;
+	}
+
+	int scores_size = fs::file_size(file);
+	int score_size = sizeof(Score);
+
+	if (scores_size % score_size != 0)
+	{
+		return;
+	}
+
+	int lvl_num = scores_size / score_size;
+
+	std::ifstream score_file(file, ios_base::in | ios_base::binary);
+	score_file.seekg(0);
+	for (int i = 0; i < lvl_num; i++)
+	{
+		Score sc;
+		score_file.read(reinterpret_cast<char *>(&sc), sizeof(Score));
+		score_map[sc.level_id] = sc;
+	}
+	score_file.close();
+}
+
+
+void All_Levels::SaveScoresToFile()
+{
+	std::ofstream score_file(lvl_folder + "/scores.bin", ios_base::out | ios_base::trunc | ios_base::binary);
+
+	for (auto &score : score_map)
+	{ 
+		score_file.write(reinterpret_cast<char *>(&score), sizeof(Score));
+	}
+
+	score_file.close();
+}
+
+bool All_Levels::UpdateScore(int lvl, float time)
+{
+	float last = 1e10;
+	if (score_map.count(lvl) > 0)
+	{
+		last = score_map[lvl].best_time;
+	}
+	else
+	{
+		score_map[lvl] = Score();
+	}
+	bool is_best = time<last;
+	if (is_best)
+	{
+		score_map[lvl].best_time = last;
+	}
+	score_map[lvl].all_time += time;
+	score_map[lvl].played_num++;
+	score_map[lvl].last_time = time;
+	return is_best;
 }
 
 sf::Music * All_Levels::GetMusicByID(int ID)

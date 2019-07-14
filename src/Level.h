@@ -23,7 +23,6 @@
 #include <map>
 #include <algorithm>
 
-
 #ifdef _WIN32
 #include <Windows.h>
 #define ERROR_MSG(x) MessageBox(nullptr, TEXT(x), TEXT("ERROR"), MB_OK);
@@ -146,6 +145,15 @@ extern Level default_level;
 
 std::vector<fs::path> GetFilesInFolder(std::string folder, std::string filetype);
 
+struct Score
+{
+	int level_id = 0;
+	float best_time = 0;
+	float all_time = 0;
+	float last_time = 0;
+	int played_num = 0;
+};
+
 class All_Levels
 {
 public:
@@ -159,11 +167,16 @@ public:
 	std::vector<std::string> getLevelNames();
 	std::vector<std::string> getLevelDesc();
 	std::vector<int> getLevelIds();
+	std::map<int, Score> getLevelScores();
 	sf::Music* GetLevelMusic(int ID);
 
 	void ReloadLevels();
 
 	void LoadLevelFromFile(fs::path file);
+	void LoadScoresFromFile(std::string file);
+	void SaveScoresToFile();
+
+	bool UpdateScore(int lvl, float time);
 	sf::Music* GetMusicByID(int ID);
 
 	void StopAllMusic();
@@ -172,6 +185,7 @@ public:
 
 private:
 	std::map<int, Level> level_map;
+	std::map<int, Score> score_map;
 	std::map<int, int> level_id_map;
 	std::vector<std::string> level_names;
 	std::vector<std::string> level_descriptions;

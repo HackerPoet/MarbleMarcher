@@ -559,10 +559,13 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 			}
 			if (tries >= 2)
 			{
-				ERROR_MSG("Object does not fit in the box.");
+				//ERROR_MSG("Object does not fit in the box.");
 			}
-			
-			obj.get()->Update(window, state);
+			sf::FloatRect obj_box(obj.get()->curstate.position, obj.get()->curstate.size);
+			sf::FloatRect seen_part = overlap(obj_box, this_view);
+			//if the object is seen in the view, then update it
+			if(seen_part.width > 0.f && seen_part.height > 0.f)
+				obj.get()->Update(window, state);
 		}
 		this->SetInsideSize(cur_shift_y - curstate.scroll - curstate.margin);
 	}

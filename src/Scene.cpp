@@ -420,7 +420,7 @@ void Scene::UpdateMarble(float dx, float dy) {
       if (fx*fx + fz*fz < 6 * marble_rad*marble_rad) {
         final_time = timer;
         if (!enable_cheats) {
-          high_scores.Update(cur_level, final_time);
+          levels.UpdateScore(cur_level, final_time/60.f);
         }
         SetMode(GOAL);
         sound_goal.play();

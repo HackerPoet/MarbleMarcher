@@ -55,6 +55,11 @@ public:
   bool TWBAR_ENABLED;
   TwBar *stats, *settings, *fractal_editor, *level_editor, *confirmation_box;
 
+  sf::Sound sound_hover;
+  sf::Sound sound_click;
+  sf::Sound sound_count;
+  sf::Sound sound_go;
+
   Overlays(sf::Font* _font, sf::Font* _font_mono, Scene* scene);
 
   void ReloadLevelMenu(Scene * scene);
@@ -99,13 +104,9 @@ private:
   sf::Text all_text[NUM_TEXTS];
   bool all_hover[NUM_TEXTS];
 
-  sf::Sound sound_hover;
   sf::SoundBuffer buff_hover;
-  sf::Sound sound_click;
   sf::SoundBuffer buff_click;
-  sf::Sound sound_count;
   sf::SoundBuffer buff_count;
-  sf::Sound sound_go;
   sf::SoundBuffer buff_go;
 
   sf::Texture arrow_tex;

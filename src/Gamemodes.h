@@ -41,13 +41,21 @@ void PlayLevel(Scene * scene, sf::RenderWindow * window, int level);
 
 void OpenTestWindow(sf::Font & font);
 void OpenLevelMenu(Scene* scene, Overlays* overlays);
-void ConfirmLevelDeletion(int lvl, Scene* scene);
+void ConfirmLevelDeletion(int lvl, Scene* scene, Overlays* overlays);
 
 float GetVol();
 void LockMouse(sf::RenderWindow& window);
 void UnlockMouse(sf::RenderWindow& window);
 void PauseGame(sf::RenderWindow& window, Scene& scene);
 int DirExists(const char *path);
+
+template < typename T > std::string num2str(const T& n)
+{
+	std::ostringstream stm;
+	stm << n;
+	return stm.str();
+}
+
 
 class Sounds
 {
