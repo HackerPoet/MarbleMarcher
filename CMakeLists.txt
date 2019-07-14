@@ -3,8 +3,8 @@ project(MarbleMarcher)
 set(CMAKE_CXX_STANDARD 17)
 
 ## DEPENDENCIES
-set(SFML_DIR C:/Libraries/SFML-2.5.1/lib/cmake/SFML)
-set(SFML_INCLUDE_DIR C:/Libraries/SFML-2.5.1/include)
+set(SFML_DIR C:/Libraries/SFML-2.5.1_64/lib/cmake/SFML)
+set(SFML_INCLUDE_DIR C:/Libraries/SFML-2.5.1_64/include)
 set(SDK_DIRECTORY "C:/Program Files (x86)/Microsoft SDKs")
 set(EIGEN3_INCLUDE_DIR C:/Libraries/eigen3/)
 set(SFML_STATIC_LIBRARIES TRUE)

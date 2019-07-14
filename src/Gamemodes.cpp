@@ -153,6 +153,22 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 		lvlscore.AddObject(&lvlscorev, Object::Allign::CENTER);
 		lvlbtton.AddObject(&lvlscore, Object::Allign::LEFT);
 
+		Box lvlavg(500, 40);
+		lvlavg.SetBackgroundColor(sf::Color::Transparent);
+		score_text = "--:--:--";
+		if (scores[ids[i]].best_time != 0)
+		{
+			float time = scores[ids[i]].all_time/scores[ids[i]].played_num;
+			float minutes = floor(time / 60.f);
+			float seconds = floor(time) - minutes * 60;
+			float mili = floor(time * 100) - seconds * 100 - minutes * 6000;
+			score_text = num2str(minutes) + ":" + num2str(seconds) + ":" + num2str(mili);
+		}
+		Text lvlavgtxt(score_text, LOCAL("default"), 35, sf::Color::White);
+		lvlavgtxt.SetBackgroundColor(sf::Color::White);
+		lvlavg.AddObject(&lvlavgtxt, Object::Allign::CENTER);
+		lvlbtton.AddObject(&lvlavg, Object::Allign::LEFT);
+
 		Box buttons(120, 60);
 		buttons.SetBackgroundColor(sf::Color::Transparent);
 		Box bedit(60, 60);
