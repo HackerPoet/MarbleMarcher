@@ -192,11 +192,12 @@ void Scene::StopAllMusic() {
   levels.StopAllMusic();
 }
 
-bool Scene::IsHighScore() const {
+bool Scene::IsHighScore(){
   if (cam_mode != GOAL) {
     return false;
   } else {
-    //return final_time == high_scores.Get(cur_level);
+	  float best = levels.GetBest(cur_level);
+    return best == final_time / 60.f;
   }
 }
 

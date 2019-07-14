@@ -679,24 +679,30 @@ void All_Levels::LoadScoresFromFile(std::string file)
 	int lvl_num = scores_size / score_size;
 
 	std::ifstream score_file(file, ios_base::in | ios_base::binary);
-	score_file.seekg(0);
+	//score_file.seekg(0);
 	for (int i = 0; i < lvl_num; i++)
 	{
 		Score sc;
 		score_file.read(reinterpret_cast<char *>(&sc), sizeof(Score));
-		score_map[sc.level_id] = sc;
+		if(sc.best_time != 0)
+			score_map[sc.level_id] = sc;
 	}
 	score_file.close();
+}
+
+float All_Levels::GetBest(int lvl)
+{
+	return score_map[lvl].best_time;
 }
 
 
 void All_Levels::SaveScoresToFile()
 {
-	std::ofstream score_file(lvl_folder + "/scores.bin", ios_base::out | ios_base::trunc | ios_base::binary);
+	std::ofstream score_file(lvl_folder + "/scores.bin", ios_base::trunc | ios_base::binary);
 
 	for (auto &score : score_map)
 	{ 
-		score_file.write(reinterpret_cast<char *>(&score), sizeof(Score));
+		score_file.write(reinterpret_cast<char *>(&score.second), sizeof(Score));
 	}
 
 	score_file.close();
@@ -705,7 +711,7 @@ void All_Levels::SaveScoresToFile()
 bool All_Levels::UpdateScore(int lvl, float time)
 {
 	float last = 1e10;
-	if (score_map.count(lvl) > 0)
+	if (score_map.count(lvl) > 0 && score_map[lvl].best_time!=0)
 	{
 		last = score_map[lvl].best_time;
 	}
@@ -716,8 +722,9 @@ bool All_Levels::UpdateScore(int lvl, float time)
 	bool is_best = time<last;
 	if (is_best)
 	{
-		score_map[lvl].best_time = last;
+		score_map[lvl].best_time = time;
 	}
+	score_map[lvl].level_id = lvl;
 	score_map[lvl].all_time += time;
 	score_map[lvl].played_num++;
 	score_map[lvl].last_time = time;

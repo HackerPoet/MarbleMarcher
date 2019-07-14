@@ -129,7 +129,6 @@ public:
 	void UpdateAction(sf::RenderWindow * window, InputState& state);
 	
 	Object();
-	~Object();
 
 	Object(Object& A);
 	Object(Object&& A);
@@ -194,6 +193,8 @@ public:
 	void operator=(Box&& A);
 
 	virtual Object* GetCopy();
+
+	~Box();
 private:
 	sf::Texture image;
 	sf::RectangleShape rect;

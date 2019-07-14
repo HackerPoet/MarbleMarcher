@@ -52,6 +52,7 @@ int DirExists(const char *path);
 template < typename T > std::string num2str(const T& n)
 {
 	std::ostringstream stm;
+	if (n < 10) stm << "0";
 	stm << n;
 	return stm.str();
 }

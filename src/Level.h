@@ -148,10 +148,10 @@ std::vector<fs::path> GetFilesInFolder(std::string folder, std::string filetype)
 struct Score
 {
 	int level_id = 0;
-	float best_time = 0;
-	float all_time = 0;
-	float last_time = 0;
 	int played_num = 0;
+	float best_time = 0.f;
+	float all_time = 0.f;
+	float last_time = 0.f;
 };
 
 class All_Levels
@@ -174,6 +174,7 @@ public:
 
 	void LoadLevelFromFile(fs::path file);
 	void LoadScoresFromFile(std::string file);
+	float GetBest(int lvl);
 	void SaveScoresToFile();
 
 	bool UpdateScore(int lvl, float time);

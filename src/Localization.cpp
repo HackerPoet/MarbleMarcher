@@ -108,5 +108,8 @@ std::wstring Localization::operator[](std::string str)
 
 sf::Font & Localization::operator()(std::string str)
 {
-	return fonts[cur_language][str];
+	if (fonts[cur_language].count(str) != 0)
+		return fonts[cur_language][str];
+	else
+		return sf::Font();
 }

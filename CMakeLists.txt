@@ -42,7 +42,7 @@ add_custom_command(TARGET MarbleMarcher PRE_BUILD
 target_compile_definitions(MarbleMarcher PRIVATE SFML_STATIC)
 target_link_libraries(MarbleMarcher
   MarbleMarcherSources
-  ${ANTTWEAKBAR_DIR}/lib/AntTweakBar.lib
+  ${ANTTWEAKBAR_DIR}/lib/AntTweakBar64.lib
   sfml-system
   sfml-window
   sfml-graphics

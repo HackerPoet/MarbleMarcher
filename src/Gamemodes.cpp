@@ -142,7 +142,7 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 		std::string score_text = "--:--:--";
 		if (scores[ids[i]].best_time != 0)
 		{
-			float time = scores[ids[i]].best_time/100;
+			float time = scores[ids[i]].best_time;
 			float minutes = floor(time / 60.f);
 			float seconds = floor(time) - minutes*60;
 			float mili = floor(time*100) - seconds*100 - minutes*6000;

@@ -397,10 +397,6 @@ Object::Object() : callback(NULL), hoverfn(NULL), defaultfn(NULL), curmode(DEFAU
 	all_obj_id++;
 }
 
-Object::~Object()
-{
-}
-
 Object::Object(Object & A)
 {
 	*this = A;
@@ -628,6 +624,11 @@ void Box::operator=(Box && A)
 Object * Box::GetCopy()
 {
 	return static_cast<Object*>(new Box(*this));
+}
+
+Box::~Box()
+{
+	
 }
 
 ColorFloat::ColorFloat(float red, float green, float blue, float alpha): r(red), g(green), b(blue), a(alpha)

@@ -94,7 +94,7 @@ public:
   int GetSumTime() const { return sum_time; }
   sf::Vector3f GetGoalDirection() const;
   bool IsSinglePlay() const { return play_single; }
-  bool IsHighScore() const;
+  bool IsHighScore();
   bool IsFullRun() const { return is_fullrun && !enable_cheats; }
   bool IsFreeCamera() const { return free_camera; }
   bool HasCheats() const { return enable_cheats; }
