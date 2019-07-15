@@ -479,8 +479,8 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	TwAddButton(level_editor, "Set Flag", FlagSet, NULL,
 		" label='Set Flag Position'  help='Click on the fractal to place' ");
 
-	TwAddVarRW(level_editor, "Flag Position", TW_TYPE_DIR3F, copy->end_pos.data(), "step=0.0001");
-	TwAddVarRW(level_editor, "Marble Position", TW_TYPE_DIR3F, copy->start_pos.data(), "step=0.0001");
+	TwAddVarRW(level_editor, "Flag Position", TW_TYPE_DIR3F, copy->end_pos.data(), "");
+	TwAddVarRW(level_editor, "Marble Position", TW_TYPE_DIR3F, copy->start_pos.data(), "");
 	TwAddVarRW(level_editor, "Marble Radius(Scale)", TW_TYPE_FLOAT, &copy->marble_rad, "min=0 max=10 step=0.001 ");
 
 	std::vector<std::string> music_list = scene->levels.GetMusicNames();
@@ -527,8 +527,8 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	TwAddVarRW(fractal_editor, "Fractal Scale", TW_TYPE_FLOAT, p, "min=0 max=5 step=0.0001");
 	TwAddVarRW(fractal_editor, "Fractal Angle1", TW_TYPE_FLOAT, p + 1, "min=-10 max=10 step=0.0001 ");
 	TwAddVarRW(fractal_editor, "Fractal Angle2", TW_TYPE_FLOAT, p + 2, "min=-10 max=10 step=0.0001  ");
-	TwAddVarRW(fractal_editor, "Fractal Shift", TW_TYPE_DIR3F, p + 3, "step=0.0001");
-	TwAddVarRW(fractal_editor, "Fractal Color", TW_TYPE_DIR3F, p + 6, "step=0.005");
+	TwAddVarRW(fractal_editor, "Fractal Shift", TW_TYPE_DIR3F, p + 3, "");
+	TwAddVarRW(fractal_editor, "Fractal Color", TW_TYPE_DIR3F, p + 6, "");
 
 	//TwAddButton(stats, "Info1.1", NULL, NULL, string);
 	
@@ -536,8 +536,6 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 
 	TwAddVarRW(confirmation_box, "OK", TW_TYPE_BOOLCPP, &copy->txt, "");
 	TwAddVarRW(confirmation_box, "Cancel", TW_TYPE_BOOLCPP, &copy->desc, "");
-
-	TwDefine(" GLOBAL fontscaling=2 ");
 
 	TwDefine("confirm visible=false size='300 100' color='255 50 0' alpha=255 label='Are you sure?'");
 
@@ -563,13 +561,24 @@ bool Overlays::TwManageEvent(sf::Event &event)
 {
 	if (TWBAR_ENABLED)
 	{
+		bool handl = 0;
+
+		if (event.type == sf::Event::TextEntered)
+		{
+			if (event.text.unicode < 128)
+			{
+				char txt = static_cast<char>(event.text.unicode);
+				bool KPR = TwKeyPressed(txt, TW_KMOD_NONE);
+				handl = handl || KPR;
+			}
+		}
+
 		bool released = event.type == sf::Event::MouseButtonReleased;
 		bool moved = event.type == sf::Event::MouseMoved;
 		bool LMB = event.mouseButton.button == sf::Mouse::Left;
 		bool RMB = event.mouseButton.button == sf::Mouse::Right;
 		bool MMB = event.mouseButton.button == sf::Mouse::Middle;
-
-		bool handl = 0;
+	
 
 		if (moved)
 		{
@@ -617,15 +626,11 @@ bool Overlays::TwManageEvent(sf::Event &event)
 		{
 			if (keycode >= sf::Keyboard::F1 && keycode <= sf::Keyboard::F12)
 			{
-				handl = handl || TwKeyPressed(TW_KEY_F1 + keycode - sf::Keyboard::F1, TW_KMOD_NONE);
+			//	handl = handl || TwKeyPressed(TW_KEY_F1 + keycode - sf::Keyboard::F1, TW_KMOD_NONE);
 			}
 		}
 
-		if (event.type == sf::Event::TextEntered)
-		{
-			if (event.text.unicode < 128)
-				handl = handl || TwKeyPressed(static_cast<char>(event.text.unicode), TW_KMOD_NONE);
-		}
+		
 
 		return handl;
 	}
@@ -634,7 +639,6 @@ bool Overlays::TwManageEvent(sf::Event &event)
 		return 0;
 	}
 }
-
 
 void Overlays::SetTWBARResolution(int Width, int Height)
 {

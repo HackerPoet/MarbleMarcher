@@ -730,14 +730,15 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  RemoveAllObjects();
-  UpdateAllObjects(&window, io_state);
+ // RemoveAllObjects();
+  //UpdateAllObjects(&window, io_state);
   //Stop all music
   menu_music.stop();
   scene.StopAllMusic();
   credits_music.stop();
   scene.levels.SaveScoresToFile();
   game_settings.Save(settings_file);
+  TwTerminate();
 
 #ifdef _DEBUG
   system("pause");

@@ -146,7 +146,7 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 			float minutes = floor(time / 60.f);
 			float seconds = floor(time) - minutes*60;
 			float mili = floor(time*100) - seconds*100 - minutes*6000;
-			score_text = num2str(minutes) + ":" + num2str(seconds) + ":" + num2str(mili);
+			score_text = num2str(minutes) + ":" + num2str(seconds) + ":" + num2str(floor(mili*0.6f));
 		}
 		Text lvlscorev(score_text, LOCAL("default"), 35, sf::Color::White);
 		lvlscorev.SetBackgroundColor(sf::Color::Green);
@@ -162,7 +162,7 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 			float minutes = floor(time / 60.f);
 			float seconds = floor(time) - minutes * 60;
 			float mili = floor(time * 100) - seconds * 100 - minutes * 6000;
-			score_text = num2str(minutes) + ":" + num2str(seconds) + ":" + num2str(mili);
+			score_text = num2str(minutes) + ":" + num2str(seconds) + ":" + num2str(floor(mili*0.6f));
 		}
 		Text lvlavgtxt(score_text, LOCAL("default"), 35, sf::Color::White);
 		lvlavgtxt.SetBackgroundColor(sf::Color::White);
