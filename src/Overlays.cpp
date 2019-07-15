@@ -557,87 +557,141 @@ void Overlays::DrawAntTweakBar()
 	}
 }
 
-bool Overlays::TwManageEvent(sf::Event &event)
+bool Overlays::TwManageEvent(sf::Event *event)
 {
-	if (TWBAR_ENABLED)
-	{
-		bool handl = 0;
+	bool handled = 0;
 
-		if (event.type == sf::Event::TextEntered)
+	TwMouseAction mouseAction;
+	int key = 0;
+	static int s_KMod = 0;
+	static bool s_PreventTextHandling = false;
+	static int s_WheelPos = 0;
+
+	switch (event->type)
+	{
+	case sf::Event::KeyPressed:
+		s_PreventTextHandling = false;
+		s_KMod = 0;
+		if (event->key.shift)   s_KMod |= TW_KMOD_SHIFT;
+		if (event->key.alt)     s_KMod |= TW_KMOD_ALT;
+		if (event->key.control) s_KMod |= TW_KMOD_CTRL;
+		key = 0;
+		switch (event->key.code)
 		{
-			if (event.text.unicode < 128)
+		case sf::Keyboard::Escape:
+			key = TW_KEY_ESCAPE;
+			break;
+		case sf::Keyboard::Return:
+			key = TW_KEY_RETURN;
+			break;
+		case sf::Keyboard::Tab:
+			key = TW_KEY_TAB;
+			break;
+		case sf::Keyboard::BackSpace:
+			key = TW_KEY_BACKSPACE;
+			break;
+		case sf::Keyboard::PageUp:
+			key = TW_KEY_PAGE_UP;
+			break;
+		case sf::Keyboard::PageDown:
+			key = TW_KEY_PAGE_DOWN;
+			break;
+		case sf::Keyboard::Up:
+			key = TW_KEY_UP;
+			break;
+		case sf::Keyboard::Down:
+			key = TW_KEY_DOWN;
+			break;
+		case sf::Keyboard::Left:
+			key = TW_KEY_LEFT;
+			break;
+		case sf::Keyboard::Right:
+			key = TW_KEY_RIGHT;
+			break;
+		case sf::Keyboard::End:
+			key = TW_KEY_END;
+			break;
+		case sf::Keyboard::Home:
+			key = TW_KEY_HOME;
+			break;
+		case sf::Keyboard::Insert:
+			key = TW_KEY_INSERT;
+			break;
+		case sf::Keyboard::Delete:
+			key = TW_KEY_DELETE;
+			break;
+		case sf::Keyboard::Space:
+			key = TW_KEY_SPACE;
+			break;
+		default:
+			if (event->key.code >= sf::Keyboard::F1 && event->key.code <= sf::Keyboard::F15)
+				key = TW_KEY_F1 + event->key.code - sf::Keyboard::F1;
+			else if (s_KMod & TW_KMOD_ALT)
 			{
-				char txt = static_cast<char>(event.text.unicode);
-				bool KPR = TwKeyPressed(txt, TW_KMOD_NONE);
-				handl = handl || KPR;
+				if (event->key.code >= sf::Keyboard::A && event->key.code <= sf::Keyboard::Z)
+				{
+					if (s_KMod & TW_KMOD_SHIFT)
+						key = 'A' + event->key.code - sf::Keyboard::A;
+					else
+						key = 'a' + event->key.code - sf::Keyboard::A;
+				}
 			}
 		}
-
-		bool released = event.type == sf::Event::MouseButtonReleased;
-		bool moved = event.type == sf::Event::MouseMoved;
-		bool LMB = event.mouseButton.button == sf::Mouse::Left;
-		bool RMB = event.mouseButton.button == sf::Mouse::Right;
-		bool MMB = event.mouseButton.button == sf::Mouse::Middle;
-	
-
-		if (moved)
+		if (key != 0)
 		{
-			sf::Vector2i mouse = sf::Vector2i(event.mouseMove.x, event.mouseMove.y);
-			handl = handl || TwMouseMotion(mouse.x, mouse.y);
+			handled = TwKeyPressed(key, s_KMod);
+			s_PreventTextHandling = true;
 		}
-
-		if (LMB && !released)
+		break;
+	case sf::Event::KeyReleased:
+		s_PreventTextHandling = false;
+		s_KMod = 0;
+		break;
+	case sf::Event::TextEntered:
+		if (!s_PreventTextHandling && event->text.unicode != 0 && (event->text.unicode & 0xFF00) == 0)
 		{
-			handl = handl || TwMouseButton(TW_MOUSE_PRESSED, TW_MOUSE_LEFT);
+			if ((event->text.unicode & 0xFF) < 32) // CTRL+letter
+				handled = TwKeyPressed((event->text.unicode & 0xFF) + 'a' - 1, TW_KMOD_CTRL | s_KMod);
+			else
+				handled = TwKeyPressed(event->text.unicode & 0xFF, 0);
 		}
-		if (LMB && released)
+		s_PreventTextHandling = false;
+		break;
+	case sf::Event::MouseMoved:
+		handled = TwMouseMotion(event->mouseMove.x, event->mouseMove.y);
+		break;
+	case sf::Event::MouseButtonPressed:
+	case sf::Event::MouseButtonReleased:
+		mouseAction = (event->type == sf::Event::MouseButtonPressed) ? TW_MOUSE_PRESSED : TW_MOUSE_RELEASED;
+		switch (event->mouseButton.button)
 		{
-			handl = handl || TwMouseButton(TW_MOUSE_RELEASED, TW_MOUSE_LEFT);
+		case sf::Mouse::Left:
+			handled = TwMouseButton(mouseAction, TW_MOUSE_LEFT);
+			break;
+		case sf::Mouse::Middle:
+			handled = TwMouseButton(mouseAction, TW_MOUSE_MIDDLE);
+			break;
+		case sf::Mouse::Right:
+			handled = TwMouseButton(mouseAction, TW_MOUSE_RIGHT);
+			break;
+		default:
+			break;
 		}
-
-		if (MMB && !released)
-		{
-			handl = handl || TwMouseButton(TW_MOUSE_PRESSED, TW_MOUSE_MIDDLE);
-		}
-		if (MMB && released)
-		{
-			handl = handl || TwMouseButton(TW_MOUSE_RELEASED, TW_MOUSE_MIDDLE);
-		}
-
-		if (RMB && !released)
-		{
-			handl = handl || TwMouseButton(TW_MOUSE_PRESSED, TW_MOUSE_RIGHT);
-		}
-		if (RMB && released)
-		{
-			handl = handl || TwMouseButton(TW_MOUSE_RELEASED, TW_MOUSE_RIGHT);
-		}
-
-		if (RMB && released)
-		{
-			handl = handl || TwMouseButton(TW_MOUSE_RELEASED, TW_MOUSE_RIGHT);
-		}
-
-		bool keypress = event.type == sf::Event::KeyPressed;
-		bool keyrelease = event.type == sf::Event::MouseButtonReleased;
-		int keycode = event.key.code;
-
-		if (keypress)
-		{
-			if (keycode >= sf::Keyboard::F1 && keycode <= sf::Keyboard::F12)
-			{
-			//	handl = handl || TwKeyPressed(TW_KEY_F1 + keycode - sf::Keyboard::F1, TW_KMOD_NONE);
-			}
-		}
-
-		
-
-		return handl;
+		break;
+	case sf::Event::MouseWheelMoved:
+		s_WheelPos += event->mouseWheel.delta;
+		handled = TwMouseWheel(s_WheelPos);
+		break;
+	case sf::Event::Resized:
+		// tell the new size to TweakBar
+		TwWindowSize(event->size.width, event->size.height);
+		// do not set 'handled', sf::Event::Resized may be also processed by the client application
+		break;
+	default:
+		break;
 	}
-	else
-	{
-		return 0;
-	}
+
+	return handled && TWBAR_ENABLED;
 }
 
 void Overlays::SetTWBARResolution(int Width, int Height)

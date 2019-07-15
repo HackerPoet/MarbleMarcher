@@ -248,7 +248,7 @@ int main(int argc, char *argv[]) {
 	io_state.mouse_press[0] = false;
 	while (window.pollEvent(event)) 
 	{
-		bool handled = overlays.TwManageEvent(event);
+		bool handled = overlays.TwManageEvent(&event);
 		if (event.type == sf::Event::Closed) {
 			window.close();
 			break;
@@ -261,7 +261,6 @@ int main(int argc, char *argv[]) {
 		else if (event.type == sf::Event::Resized) {
 			screen_size.width = event.size.width;
 			screen_size.height = event.size.height;
-			overlays.SetTWBARResolution(event.size.width, event.size.height);
 			overlays.SetScale( std::max(float(screen_size.width), float(screen_size.height))/ 1280.0f);
 			sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
 			default_window_view = sf::View(visibleArea);

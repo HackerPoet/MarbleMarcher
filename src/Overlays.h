@@ -93,7 +93,7 @@ public:
   void DrawCheats(sf::RenderWindow& window);
   void DrawAntTweakBar();
 
-  bool TwManageEvent(sf::Event &event);
+  bool TwManageEvent(sf::Event * event);
 protected:
   template<class T>
   void MakeText(T str, float x, float y, float size, const sf::Color & color, sf::Text & text, bool mono = 0);
