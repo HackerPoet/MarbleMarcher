@@ -162,7 +162,7 @@ int main(int argc, char *argv[]) {
   window.setVerticalSyncEnabled(VSYNC);
   window.setKeyRepeatEnabled(false);
   window.requestFocus();
-
+  UpdateAspectRatio(window.getSize().x, window.getSize().y);
   //set window icon
   sf::Image icon;
   icon.loadFromFile(icon_png); 
@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
   //Create the menus
   Overlays overlays(&font, &font_mono, &scene);
   overlays.SetScale(float(screen_size.width) / 1280.0f);
-  UpdateAspectRatio(window.getSize().x, window.getSize().y);
+ 
 
   scene.StartDefault();
   overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);

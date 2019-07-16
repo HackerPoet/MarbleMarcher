@@ -13,7 +13,7 @@ sf::Color default_main_color = sf::Color(128, 128, 128, 128);
 sf::Color default_hover_main_color = sf::Color(200, 128, 128, 128);
 sf::Color default_active_main_color = sf::Color(255, 128, 128, 255);
 float default_margin =0;
-sf::View default_view = sf::View(sf::FloatRect(0, 0, 1920, 1200));
+sf::View default_view = sf::View(sf::FloatRect(0, 0, 1920, 1080));
 
 float animation_sharpness = 5.f;
 float action_dt = 0.5;
@@ -76,7 +76,8 @@ Object& get_glob_obj(int id)
 
 void UpdateAspectRatio(float width, float heigth)
 {
-	default_view.setSize(1920.f, 1920.f * heigth / width);
+	sf::Vector2f size = sf::Vector2f(default_view.getSize().x, default_view.getSize().x * heigth / width);
+	default_view.reset(sf::FloatRect(sf::Vector2f(0, 0), size));
 }
 
 int AddGlobalObject(Object & a)
@@ -300,7 +301,7 @@ void Object::Update(sf::RenderWindow * window, InputState& state)
 
 	window->setView(used_view);
 	state.mouse_speed = window->mapPixelToCoords(sf::Vector2i(state.mouse_pos.x, state.mouse_pos.y)) -
-		window->mapPixelToCoords(sf::Vector2i(state.mouse_prev.x, state.mouse_prev.y));
+						window->mapPixelToCoords(sf::Vector2i(state.mouse_prev.x, state.mouse_prev.y));
 
 	if ( ((state.mouse[0] || state.mouse[2]) && !limiter) || ((state.mouse_press[0] || state.mouse_press[2]) && limiter) ) //if clicked
 	{
@@ -496,11 +497,13 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 	rect.setOutlineColor(ToColor(curstate.color_border));
 	window->draw(rect);
 	
+	sf::Vector2f thisone = this->used_view.getSize();
 	sf::Vector2f default_size = default_view.getSize();
-	sf::FloatRect global_view = sf::FloatRect(window->getView().getCenter() - window->getView().getSize()*0.5f, window->getView().getSize());
+	sf::View gview = window->getView();
+	sf::FloatRect global_view = sf::FloatRect(gview.getCenter() - gview.getSize()*0.5f, gview.getSize());
 	sf::FloatRect this_view = overlap(global_view, sf::FloatRect(curstate.position, curstate.size));
 	boxView.reset(this_view);
-	sf::FloatRect global_viewport = window->getView().getViewport();
+	sf::FloatRect global_viewport = gview.getViewport();
 	sf::FloatRect local_viewport = sf::FloatRect(curstate.position.x / default_size.x, curstate.position.y / default_size.y, curstate.size.x / default_size.x, curstate.size.y / default_size.y);
 	sf::FloatRect this_viewport = overlap(global_viewport, local_viewport);
 	boxView.setViewport(this_viewport);
@@ -520,7 +523,6 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 			int obj_id = obj.get()->id;
 			float old_line_height = line_height;
 			line_height = std::max(obj.get()->curstate.size.y, line_height);
-			obj.get()->used_view = boxView;
 			while (not_placed && tries < 2) //try to place the object somewhere
 			{
 				float space_left = defaultstate.size.x - cur_shift_x1 - cur_shift_x2;
@@ -565,8 +567,12 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 			sf::FloatRect obj_box(obj.get()->curstate.position, obj.get()->curstate.size);
 			sf::FloatRect seen_part = overlap(obj_box, this_view);
 			//if the object is seen in the view, then update it
-			if(seen_part.width > 0.f && seen_part.height > 0.f)
+			if (seen_part.width > 0.f && seen_part.height > 0.f)
+			{
+				obj.get()->used_view = boxView;
 				obj.get()->Update(window, state);
+			}
+				
 		}
 		this->SetInsideSize(cur_shift_y - curstate.scroll - curstate.margin);
 	}
