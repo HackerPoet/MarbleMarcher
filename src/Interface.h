@@ -169,6 +169,7 @@ public:
 	int id;
 };
 
+void UpdateAspectRatio(float width, float heigth);
 int AddGlobalObject(Object & a);
 Object& get_glob_obj(int id);
 void RemoveGlobalObject(int id);

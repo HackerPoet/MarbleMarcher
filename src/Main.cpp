@@ -231,6 +231,7 @@ int main(int argc, char *argv[]) {
   //Create the menus
   Overlays overlays(&font, &font_mono, &scene);
   overlays.SetScale(float(screen_size.width) / 1280.0f);
+  UpdateAspectRatio(window.getSize().x, window.getSize().y);
 
   scene.StartDefault();
   overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);
@@ -266,6 +267,7 @@ int main(int argc, char *argv[]) {
 			default_window_view = sf::View(visibleArea);
 			window.setView(default_window_view);
 			io_state.window_size = sf::Vector2f(window.getSize().x, window.getSize().y);
+			UpdateAspectRatio(window.getSize().x, window.getSize().y);
 			scene.SetWindowResolution(window.getSize().x, window.getSize().y);
 		}
 

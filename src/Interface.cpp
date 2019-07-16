@@ -13,7 +13,7 @@ sf::Color default_main_color = sf::Color(128, 128, 128, 128);
 sf::Color default_hover_main_color = sf::Color(200, 128, 128, 128);
 sf::Color default_active_main_color = sf::Color(255, 128, 128, 255);
 float default_margin =0;
-sf::View default_view = sf::View(sf::FloatRect(0, 0, 2600, 1200));
+sf::View default_view = sf::View(sf::FloatRect(0, 0, 1920, 1200));
 
 float animation_sharpness = 5.f;
 float action_dt = 0.5;
@@ -72,6 +72,11 @@ ColorFloat ToColorF(sf::Color a)
 Object& get_glob_obj(int id)
 {
 	return *global_objects[id].get();
+}
+
+void UpdateAspectRatio(float width, float heigth)
+{
+	default_view.setSize(1920.f, 1920.f * heigth / width);
 }
 
 int AddGlobalObject(Object & a)
@@ -545,7 +550,7 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 				}
 				else
 				{
-					cur_shift_y += ((tries == 0) ? line_height : old_line_height) + curstate.margin;
+					cur_shift_y += ((tries == 0 && old_line_height != 0) ? old_line_height : line_height) + curstate.margin;
 					line_height = 0;
 					cur_shift_x1 = curstate.margin;
 					cur_shift_x2 = curstate.margin;

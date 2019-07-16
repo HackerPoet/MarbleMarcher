@@ -86,8 +86,8 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	std::map<int, Score> scores = scene->levels.getLevelScores();
 	Text lvl(LOCAL["Levels"], LOCAL("default"), 60, sf::Color::White);
 	levels.AddObject(&lvl, Object::Allign::CENTER);
-	Box Bk2Menu(800, 60);
-	Text button(LOCAL["Back2Main"], LOCAL("default"), 50, sf::Color::White);
+	Box Bk2Menu(600, 50);
+	Text button(LOCAL["Back2Main"], LOCAL("default"), 40, sf::Color::White);
 	Bk2Menu.hoverstate.color_main = sf::Color(200, 40, 0, 255);
 	Bk2Menu.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
 	{
@@ -97,8 +97,8 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	Bk2Menu.AddObject(&button, Object::Allign::CENTER);
 	levels.AddObject(&Bk2Menu, Object::Allign::LEFT);
 
-	Box Newlvl(800, 60);
-	Text newlvl(LOCAL["CreateNewLvl"], LOCAL("default"), 50, sf::Color::White);
+	Box Newlvl(600, 50);
+	Text newlvl(LOCAL["CreateNewLvl"], LOCAL("default"), 40, sf::Color::White);
 	Newlvl.hoverstate.color_main = sf::Color(200, 40, 0, 255);
 	Newlvl.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
 	{
@@ -146,6 +146,7 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 			float minutes = floor(time / 60.f);
 			float seconds = floor(time) - minutes*60;
 			float mili = floor(time*100) - seconds*100 - minutes*6000;
+			//convrt mili to frames
 			score_text = num2str(minutes) + ":" + num2str(seconds) + ":" + num2str(floor(mili*0.6f));
 		}
 		Text lvlscorev(score_text, LOCAL("default"), 35, sf::Color::White);
