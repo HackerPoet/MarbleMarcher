@@ -490,13 +490,18 @@ void Box::SetBackground(const sf::Texture & texture)
 void Box::Draw(sf::RenderWindow * window, InputState& state)
 {
 	//update the box itself
-	rect.setPosition(curstate.position);
-	rect.setSize(curstate.size);
-	rect.setFillColor(ToColor(curstate.color_main));
-	rect.setOutlineThickness(curstate.border_thickness);
-	rect.setOutlineColor(ToColor(curstate.color_border));
-	window->draw(rect);
-	
+	if (   !(ToColor(defaultstate.color_main) == sf::Color::Transparent && curmode == DEFAULT)
+		&& !(ToColor(hoverstate.color_main) == sf::Color::Transparent && curmode == ONHOVER)
+		&& !(ToColor(activestate.color_main) == sf::Color::Transparent && curmode == ACTIVE)  )
+	{
+		rect.setPosition(curstate.position);
+		rect.setSize(curstate.size);
+		rect.setFillColor(ToColor(curstate.color_main));
+		rect.setOutlineThickness(curstate.border_thickness);
+		rect.setOutlineColor(ToColor(curstate.color_border));
+		window->draw(rect);
+	}
+
 	sf::Vector2f thisone = this->used_view.getSize();
 	sf::Vector2f default_size = default_view.getSize();
 	sf::View gview = window->getView();
@@ -539,7 +544,7 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 						break;
 					case CENTER:
 						obj.get()->SetPosition(curstate.position.x + defaultstate.size.x * 0.5f - obj_width * 0.5f, curstate.position.y + cur_shift_y);
-						cur_shift_y += ((tries==0)?line_height:old_line_height) + curstate.margin;
+						cur_shift_y += ((tries == 0) ? line_height : old_line_height) + curstate.margin;
 						line_height = 0;
 						cur_shift_x1 = curstate.margin;
 						cur_shift_x2 = curstate.margin;
@@ -572,7 +577,7 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 				obj.get()->used_view = boxView;
 				obj.get()->Update(window, state);
 			}
-				
+
 		}
 		this->SetInsideSize(cur_shift_y - curstate.scroll - curstate.margin);
 	}
