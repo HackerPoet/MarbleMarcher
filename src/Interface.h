@@ -81,7 +81,7 @@ struct State
 	float inside_size = 0.f;
 	ColorFloat color_main = ToColorF(sf::Color::Black);
 	ColorFloat color_second = ToColorF(sf::Color::Transparent);
-	ColorFloat color_border = ColorFloat(128,128,128);
+	ColorFloat color_border = ColorFloat(200,0,0);
 };
 
 //interpolate between states for animation effects
@@ -121,6 +121,8 @@ public:
 	void SetCallbackFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun, bool limit_repeat = false);
 	void SetHoverFunction(std::function<void(sf::RenderWindow * window, InputState & state)> fun);
 
+
+	bool RunCallback(sf::RenderWindow * window, InputState& state);
 	void clone_states();
 
 	virtual void Draw(sf::RenderWindow * window, InputState& state);
@@ -234,7 +236,9 @@ public:
 	virtual void AddObject(Object * something, Allign a);
 
 	void Cursor(int d);
+
 	void ScrollBy(float dx);
+	void ScrollTo(float scroll);
 
 	MenuBox(float dx, float dy, float x = 0, float y = 0, sf::Color color_main = sf::Color(0, 0, 0, 0));
 

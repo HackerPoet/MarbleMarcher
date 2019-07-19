@@ -7,6 +7,7 @@ std::stack<int> del; // deletion stack
 int all_obj_id = 0;
 std::map<int, bool> active;
 int focused = 0;
+int cursor = 0;
 int global_focus = 0;
 
 sf::Color default_main_color = sf::Color(128, 128, 128, 128);
@@ -16,7 +17,7 @@ float default_margin =0;
 sf::View default_view = sf::View(sf::FloatRect(0, 0, 1920, 1080));
 
 float animation_sharpness = 5.f;
-float action_dt = 0.5;
+float action_dt = 0.3;
 
 
 sf::FloatRect overlap(sf::FloatRect a, sf::FloatRect b)
@@ -88,6 +89,7 @@ int AddGlobalObject(Object & a)
 	z_value.push_back(copy->id);
 	z_index[copy->id] = z_value.size()-1;
 	global_focus = copy->id;
+	focused = copy->id;
 	return copy->id;  
 }
 
@@ -216,7 +218,9 @@ void Object::SetBackgroundColor(sf::Color color)
 
 void Object::SetBorderColor(sf::Color color)
 {
-	
+	defaultstate.color_border = color;
+	activestate.color_border = color;
+	hoverstate.color_border = color;
 }
 
 void Object::SetBorderWidth(float S)
@@ -282,16 +286,34 @@ void Object::SetHoverFunction(std::function<void(sf::RenderWindow * window, Inpu
 	hoverfn = fun;
 }
 
+bool Object::RunCallback(sf::RenderWindow * window, InputState & state)
+{
+	if (callback != NULL)
+	{
+		callback(window, state); //run callback with state info
+		return true;
+	}
+	else
+	{
+		//try to run a callback inside the object
+		for (auto &obj : objects)
+		{
+			if (obj.get()->RunCallback(window, state))
+			{
+				return true;
+			}
+		}
+
+		//mission failed. we'll get 'em next time
+		return false;
+	}
+}
+
 void Object::clone_states()
 {
 	curstate = defaultstate;
 	activestate = defaultstate;
 	hoverstate = defaultstate;
-}
-
-void Object::Draw(sf::RenderWindow * window, InputState& state)
-{
-	//nothing to draw
 }
 
 void Object::Update(sf::RenderWindow * window, InputState& state)
@@ -308,6 +330,7 @@ void Object::Update(sf::RenderWindow * window, InputState& state)
 		if (obj.contains(worldPos)) // if inside object
 		{
 			active[id] = true; //set as active
+			cursor = id;
 			if (defaultfn != NULL)
 				focused = id; // save this object as the last focused if it has a default callback
 
@@ -357,6 +380,11 @@ void Object::UpdateAction(sf::RenderWindow * window, InputState & state)
 				hoverfn(window, state); //run callback with state info
 			curmode = ONHOVER;
 		}
+	}
+
+	if (cursor == id)
+	{
+		curmode = ONHOVER;
 	}
 
 	if (active[id])
@@ -472,6 +500,11 @@ void Object::copy(Object && A)
 Object * Object::GetCopy()
 {
 	return new Object(*this);
+}
+
+void Object::Draw(sf::RenderWindow * window, InputState & state)
+{
+	//nothing to draw
 }
 
 void Object::AddObject(Object * something, Allign a)
@@ -799,17 +832,22 @@ void MenuBox::Cursor(int d)
 		if (cursor_id > 0)
 		{
 			cursor_id--;
-			this->objects[1].get()->objects[cursor_id].get()->curmode = ONHOVER;
 		}
 	}
 	else if(d == 1)
 	{
-		if (cursor_id < this->objects[2].get()->objects.size() - 1)
+		if (cursor_id < this->objects[0].get()->objects.size() - 1)
 		{
-			cursor_id++;
-			this->objects[1].get()->objects[cursor_id].get()->curmode = ONHOVER;
+			cursor_id++;	
 		}
 	}
+	cursor = this->objects[0].get()->objects[cursor_id].get()->id;
+
+	//apply scroll to chosen object
+	float ybox = this->curstate.position.y;
+	float yobj = this->objects[0].get()->objects[cursor_id].get()->curstate.position.y;
+	float dy = yobj - ybox;
+	ScrollTo(dy);
 }
 
 void MenuBox::ScrollBy(float dx)
@@ -827,6 +865,13 @@ void MenuBox::ScrollBy(float dx)
 		float scroll_a = max_slide_scroll * cur_scroll / (inside_size - height_1);
 		this->objects[1].get()->SetScroll(scroll_a);
 	}
+}
+
+void MenuBox::ScrollTo(float scroll)
+{
+	float cur_scroll = this->objects[0].get()->defaultstate.scroll;
+	float ds = scroll - this->objects[0].get()->defaultstate.margin;
+	ScrollBy(ds);
 }
 
 MenuBox::MenuBox(float dx, float dy, float x, float y, sf::Color color_main): cursor_id(0)
@@ -907,8 +952,7 @@ void MenuBox::CreateCallbacks()
 		if (state.keys[sf::Keyboard::Enter])
 		{
 			//run the callback function of the chosen object
-			parent->objects[0].get()->objects[parent->cursor_id].get()->callback(window, state);
-			A = 1;
+			A = parent->objects[0].get()->objects[parent->cursor_id].get()->RunCallback(window, state);
 		}
 
 		if (A) parent->action_time = action_dt;

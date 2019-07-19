@@ -119,6 +119,8 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	for (int i = 0; i < scene->levels.GetLevelNum(); i++)
 	{
 		Box lvlbtton(wsize.x*0.95f - 60, 60);
+		lvlbtton.hoverstate.border_thickness = 3;
+
 		Box lvltext(500, 60);
 		lvltext.SetBackgroundColor(sf::Color::Transparent);
 		Box lvltitle(500, 40);
