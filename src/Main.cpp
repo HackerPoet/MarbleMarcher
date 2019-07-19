@@ -237,6 +237,7 @@ int main(int argc, char *argv[]) {
   overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);
   
   io_state.window_size = sf::Vector2f(window.getSize().x, window.getSize().y);
+  float prev_s = 0;
 
   while (window.isOpen()) {
     sf::Event event;
@@ -701,8 +702,7 @@ int main(int argc, char *argv[]) {
 
 
 	//new interface render stuff
-
-	io_state.dt = 1.f / smooth_fps;
+	io_state.dt = prev_s;
 	io_state.time += io_state.dt;
 	UpdateAllObjects(&window, io_state);
 	window.setView(default_window_view);
@@ -718,6 +718,7 @@ int main(int argc, char *argv[]) {
 
       //If V-Sync is running higher than desired fps, slow down!
       const float s = clock.restart().asSeconds();
+	  prev_s = s;
       if (s > 0.0f) {
         smooth_fps = smooth_fps*0.9f + std::min(1.0f / s, target_fps)*0.1f;
       }
