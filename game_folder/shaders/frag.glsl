@@ -169,6 +169,15 @@ float de_marble(vec4 p) {
 	return de_sphere(p - vec4(iMarblePos, 0), iMarbleRad);
 }
 vec4 col_marble(vec4 p) {
+	vec4 col = vec4(0, 0, 0, de_sphere(p - vec4(iMarblePos, 0), iMarbleRad));
+	if(REFL_REFR_ENABLED)
+	{
+		col.xyz = vec3(0,0,0);
+	}
+	else
+	{
+		col.xyz = vec3(0.7,0.7,0.7);
+	}
 	return vec4(0, 0, 0, de_sphere(p - vec4(iMarblePos, 0), iMarbleRad));
 }
 float de_flag(vec4 p) {
@@ -208,7 +217,7 @@ vec4 col_scene(vec4 p) {
 //   Main code
 //##########################################
 
-//A faster formula to find the gradient/normal direction of the DE(the w component is the average DE)
+//A faster formula to find the gradient/normal direction of the DE
 //credit to http://www.iquilezles.org/www/articles/normalsSDF/normalsSDF.htm
 vec3 calcNormal(vec4 p, float dx) {
 	const vec3 k = vec3(1,-1,0);
