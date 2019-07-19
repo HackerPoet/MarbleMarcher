@@ -21,6 +21,75 @@ void OpenMainMenu(Scene * scene, Overlays * overlays)
 	RemoveAllObjects();
 	game_mode = MAIN_MENU;
 	scene->SetExposure(1.0f);
+	scene->SetMode(Scene::INTRO);
+	sf::Vector2f wsize = default_view.getSize();
+
+	MenuBox mainmenu(700, wsize.y*0.6f, wsize.x*0.025, wsize.y*0.3f);
+	mainmenu.SetBackgroundColor(sf::Color::Transparent);
+	//make the menu static
+	mainmenu.static_object = true;
+
+	//PLAY
+	Box playbtn(600, 50);
+	Text button1(LOCAL["Play"], LOCAL("default"), 40, sf::Color::White);
+	playbtn.hoverstate.color_main = sf::Color(200, 40, 0, 255);
+	playbtn.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
+	{
+		PlayNewGame(scene, window, 0);
+		overlays->sound_click.play();
+	});
+	playbtn.AddObject(&button1, Object::Allign::CENTER);
+	mainmenu.AddObject(&playbtn, Object::Allign::LEFT);
+
+	//LEVELS
+	Box lvlsbtn(600, 50);
+	Text button2(LOCAL["Levels"], LOCAL("default"), 40, sf::Color::White);
+	lvlsbtn.hoverstate.color_main = sf::Color(200, 40, 0, 255);
+	lvlsbtn.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
+	{
+		OpenLevelMenu(scene, overlays);
+		overlays->sound_click.play();
+	});
+	lvlsbtn.AddObject(&button2, Object::Allign::CENTER);
+	mainmenu.AddObject(&lvlsbtn, Object::Allign::LEFT);
+	
+	//Controls
+	Box cntrlbtn(600, 50);
+	Text button3(LOCAL["Controls"], LOCAL("default"), 40, sf::Color::White);
+	cntrlbtn.hoverstate.color_main = sf::Color(200, 40, 0, 255);
+	cntrlbtn.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
+	{
+		OpenControlMenu(scene, overlays);
+		overlays->sound_click.play();
+	});
+	cntrlbtn.AddObject(&button3, Object::Allign::CENTER);
+	mainmenu.AddObject(&cntrlbtn, Object::Allign::LEFT);
+
+	//Screen Saver
+	Box ssbtn(600, 50);
+	Text button4(LOCAL["Screen_Saver"], LOCAL("default"), 40, sf::Color::White);
+	ssbtn.hoverstate.color_main = sf::Color(200, 40, 0, 255);
+	ssbtn.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
+	{
+		OpenScreenSaver(scene, overlays);
+		overlays->sound_click.play();
+	});
+	ssbtn.AddObject(&button4, Object::Allign::CENTER);
+	mainmenu.AddObject(&ssbtn, Object::Allign::LEFT);
+
+	//Exit
+	Box exitbtn(600, 50);
+	Text button5(LOCAL["Exit"], LOCAL("default"), 40, sf::Color::White);
+	exitbtn.hoverstate.color_main = sf::Color(200, 40, 0, 255);
+	exitbtn.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
+	{
+		overlays->sound_click.play();
+		window->close();
+	});
+	exitbtn.AddObject(&button5, Object::Allign::CENTER);
+	mainmenu.AddObject(&exitbtn, Object::Allign::LEFT);
+
+	AddGlobalObject(mainmenu);
 }
 
 void OpenEditor(Scene * scene, Overlays * overlays, int level)
@@ -46,6 +115,30 @@ void PlayLevel(Scene * scene, sf::RenderWindow * window, int level)
 	scene->levels.GetLevelMusic(level)->setVolume(GetVol());
 	scene->levels.GetLevelMusic(level)->play();
 	scene->StartSingle(level);
+	LockMouse(*window);
+}
+
+
+void OpenControlMenu(Scene * scene, Overlays * overlays)
+{
+	RemoveAllObjects();
+	game_mode = CONTROLS;
+}
+
+void OpenScreenSaver(Scene * scene, Overlays * overlays)
+{
+	RemoveAllObjects();
+	game_mode = SCREEN_SAVER;
+	scene->SetMode(Scene::SCREEN_SAVER);
+}
+
+void PlayNewGame(Scene * scene, sf::RenderWindow * window, int level)
+{
+	RemoveAllObjects();
+	game_mode = PLAYING;
+	scene->StartNewGame();
+	scene->GetCurMusic().setVolume(GetVol());
+	scene->GetCurMusic().play();
 	LockMouse(*window);
 }
 
@@ -76,6 +169,7 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	sf::Vector2f wsize = default_view.getSize();
 
 	MenuBox levels(wsize.x*0.95f, wsize.y*0.95f, wsize.x*0.025f, wsize.y*0.025f);
+	levels.SetBackgroundColor(sf::Color(64,64,64,128));
 	//make the menu static
 	levels.static_object = true;
 
@@ -210,7 +304,7 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 void ConfirmLevelDeletion(int lvl, Scene* scene, Overlays* overlays)
 {
 	sf::Vector2f wsize = default_view.getSize();
-	Window confirm(wsize.x*0.45f, wsize.y*0.45f, 500, 215, sf::Color(0, 0, 0, 128), LOCAL["You_sure"], LOCAL("default"));
+	Window confirm(wsize.x*0.4f, wsize.y*0.4f, 500, 215, sf::Color(0, 0, 0, 128), LOCAL["You_sure"], LOCAL("default"));
 	Text button1(LOCAL["Yes"], LOCAL("default"), 30, sf::Color::White);
 	Text button2(LOCAL["No"], LOCAL("default"), 30, sf::Color::White);
 	Text text(LOCAL["You_sure"], LOCAL("default"), 30, sf::Color::White);
@@ -233,6 +327,48 @@ void ConfirmLevelDeletion(int lvl, Scene* scene, Overlays* overlays)
 	{
 		//remove lvl
 		Add2DeleteQueue(id);
+		overlays->sound_click.play();
+	});
+
+	get_glob_obj(id).objects[1].get()->objects[0].get()->objects[2].get()->SetCallbackFunction([scene, overlays, id](sf::RenderWindow * window, InputState & state)
+	{
+		Add2DeleteQueue(id);
+		overlays->sound_click.play();
+	});
+}
+
+void ConfirmEditorExit(Scene* scene, Overlays* overlays)
+{
+	sf::Vector2f wsize = default_view.getSize();
+	Window confirm(wsize.x*0.4f, wsize.y*0.4f, 500, 215, sf::Color(0, 0, 0, 128), LOCAL["You_sure"], LOCAL("default"));
+	Text button1(LOCAL["Yes"], LOCAL("default"), 30, sf::Color::White);
+	Text button2(LOCAL["No"], LOCAL("default"), 30, sf::Color::White);
+	Text text(LOCAL["You_sure"], LOCAL("default"), 30, sf::Color::White);
+
+	Box but1(0, 0, 240, 40, sf::Color(0, 64, 128, 240));
+	Box but2(0, 0, 240, 40, sf::Color(0, 64, 128, 240));
+
+	but1.hoverstate.color_main = sf::Color(230, 40, 20, 200);
+	but2.hoverstate.color_main = sf::Color(40, 230, 20, 200);
+	but1.AddObject(&button1, Box::CENTER);
+	but2.AddObject(&button2, Box::CENTER);
+
+	confirm.Add(&text, Box::CENTER);
+	confirm.Add(&but1, Box::RIGHT);
+	confirm.Add(&but2, Box::RIGHT);
+
+	int id = AddGlobalObject(confirm);
+
+	get_glob_obj(id).objects[1].get()->objects[0].get()->objects[1].get()->SetCallbackFunction([scene, overlays, id](sf::RenderWindow * window, InputState & state)
+	{
+		OpenLevelMenu(scene, overlays);
+		scene->ExitEditor();
+		scene->SetExposure(0.5f);
+		scene->SetMode(Scene::INTRO);
+		scene->StopAllMusic();
+		overlays->TWBAR_ENABLED = false;
+		TwDefine("LevelEditor visible=false");
+		TwDefine("FractalEditor visible=false");
 		overlays->sound_click.play();
 	});
 

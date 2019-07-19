@@ -31,7 +31,7 @@ static const std::string delete_png = "images/delete.png";
 static const std::string edit_png = "images/edit.png";
 static const std::string priority_png = "images/priority.png";
 static const std::string done_png = "images/done.png";
-
+extern int focused;
 
 
 struct ColorFloat

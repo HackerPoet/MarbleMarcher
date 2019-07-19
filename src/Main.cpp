@@ -239,6 +239,8 @@ int main(int argc, char *argv[]) {
   io_state.window_size = sf::Vector2f(window.getSize().x, window.getSize().y);
   float prev_s = 0;
 
+  OpenMainMenu(&scene, &overlays);
+
   while (window.isOpen()) {
     sf::Event event;
 	
@@ -277,9 +279,11 @@ int main(int argc, char *argv[]) {
 		{
 			if (event.type == sf::Event::KeyPressed) {
 				const sf::Keyboard::Key keycode = event.key.code;
+				all_keys[keycode] = true;
+				io_state.keys[keycode] = true;
 				if (event.key.code < 0 || event.key.code >= sf::Keyboard::KeyCount) { continue; }
 				if (game_mode == CREDITS) {
-					game_mode = MAIN_MENU;
+					OpenMainMenu(&scene, &overlays);
 					UnlockMouse(window);
 					scene.SetMode(Scene::INTRO);
 					scene.SetExposure(1.0f);
@@ -303,8 +307,7 @@ int main(int argc, char *argv[]) {
 						OpenMainMenu(&scene, &overlays);
 					}
 					else if (game_mode == SCREEN_SAVER) {
-						game_mode = MAIN_MENU;
-						scene.SetMode(Scene::INTRO);
+						OpenMainMenu(&scene, &overlays);
 					}
 					else if (game_mode == PAUSED) {
 						game_mode = PLAYING;
@@ -317,18 +320,8 @@ int main(int argc, char *argv[]) {
 					}
 					else if (game_mode == LEVEL_EDITOR)
 					{
-						game_mode = LEVELS;
-						scene.ExitEditor();
-						scene.SetExposure(0.5f);
-						scene.SetMode(Scene::INTRO);
-						scene.StopAllMusic();
-						//menu_music.setVolume(GetVol());
-						//menu_music.play();
-						overlays.TWBAR_ENABLED = false;
-						TwDefine("LevelEditor visible=false");
-						TwDefine("FractalEditor visible=false");
-						//overlays.ReloadLevelMenu(&scene);
-						OpenLevelMenu(&scene, &overlays);
+						RemoveGlobalObject(focused);
+						ConfirmEditorExit(&scene, &overlays);
 					}
 				}
 				else if (keycode == sf::Keyboard::R) {
@@ -342,29 +335,29 @@ int main(int argc, char *argv[]) {
 						scene.EnbaleCheats();
 					}
 				} else if (keycode == sf::Keyboard::F5) { 
-          ///Screenshot
-          screenshot_i++;
-          //Update the shader values
-		  scene.SetResolution(shader, sres_res.x, sres_res.y);
-          scene.Write(shader);
+					///Screenshot
+					screenshot_i++;
+					//Update the shader values
+					scene.SetResolution(shader, sres_res.x, sres_res.y);
+					scene.Write(shader);
 
-          //Setup full-screen shader
-          sf::RenderStates states = sf::RenderStates::Default;
-          states.shader = &shader;
-          window.setActive(false);
-          //Draw the fractal
-          //Draw to the render texture
-          screenshotTexture.setActive(true);
-          screenshotTexture.draw(rect_scrshot, states);
-          screenshotTexture.display();
-          screenshotTexture.getTexture().copyToImage().saveToFile((std::string)"screenshots/screenshot"+(std::string)num2str(time(NULL))+".jpg");
+					//Setup full-screen shader
+					sf::RenderStates states = sf::RenderStates::Default;
+					states.shader = &shader;
+					window.setActive(false);
+					//Draw the fractal
+					//Draw to the render texture
+					screenshotTexture.setActive(true);
+					screenshotTexture.draw(rect_scrshot, states);
+					screenshotTexture.display();
+					screenshotTexture.getTexture().copyToImage().saveToFile((std::string)"screenshots/screenshot"+(std::string)num2str(time(NULL))+".jpg");
 
-          screenshotTexture.setActive(false);
-          window.setActive(true);
+					screenshotTexture.setActive(false);
+					window.setActive(true);
 
-		  scene.SetResolution(shader, window_res.x, window_res.y);
-          scene.Write(shader);
-        } else if (keycode == sf::Keyboard::F4) {
+					scene.SetResolution(shader, window_res.x, window_res.y);
+					scene.Write(shader);
+			    } else if (keycode == sf::Keyboard::F4) {
 					overlays.TWBAR_ENABLED = !overlays.TWBAR_ENABLED;
 				} 	else if (keycode == sf::Keyboard::C) {
 					scene.Cheat_ColorChange();
@@ -396,8 +389,7 @@ int main(int argc, char *argv[]) {
 				} if (keycode >= sf::Keyboard::Num0 && keycode <= sf::Keyboard::Num9) {
 					scene.Cheat_Param(int(keycode) - int(sf::Keyboard::Num1));
 				}
-				all_keys[keycode] = true;
-				io_state.keys[keycode] = true;
+				
 			}
 			else if (event.type == sf::Event::KeyReleased) {
 				const sf::Keyboard::Key keycode = event.key.code;
@@ -413,6 +405,7 @@ int main(int argc, char *argv[]) {
 					io_state.mouse_press[0] = true;
 					if (game_mode == MAIN_MENU) {
 						const Overlays::Texts selected = overlays.GetOption(Overlays::PLAY, Overlays::EXIT);
+						/*
 						if (selected == Overlays::PLAY) {
 							game_mode = PLAYING;
 							menu_music.stop();
@@ -438,20 +431,19 @@ int main(int argc, char *argv[]) {
 						else if (selected == Overlays::EXIT) {
 							window.close();
 							break;
-						}
+						} */
 					}
 					else if (game_mode == CONTROLS) {
 						const Overlays::Texts selected = overlays.GetOption(Overlays::BACK, Overlays::BACK);
 						if (selected == Overlays::BACK) {
-							game_mode = MAIN_MENU;
+							OpenMainMenu(&scene, &overlays);
 						}
 					}
 					else if (game_mode == LEVELS) {
 					
 					}
 					else if (game_mode == SCREEN_SAVER) {
-						scene.SetMode(Scene::INTRO);
-						game_mode = MAIN_MENU;
+						OpenMainMenu(&scene, &overlays);
 					}
 					else if (game_mode == PAUSED) {
 						const Overlays::Texts selected = overlays.GetOption(Overlays::CONTINUE, Overlays::MOUSE);
@@ -469,13 +461,13 @@ int main(int argc, char *argv[]) {
 							LockMouse(window);
 						}
 						else if (selected == Overlays::QUIT) {
-							if (scene.IsSinglePlay()) {
-								game_mode = LEVELS;
+							if (scene.IsSinglePlay()) 
+							{
 								OpenLevelMenu(&scene, &overlays);
 							}
-							else {
-								game_mode = MAIN_MENU;
-								scene.SetExposure(1.0f);
+							else 
+							{
+								OpenMainMenu(&scene, &overlays);
 							}
 							scene.SetMode(Scene::INTRO);
 							scene.StopAllMusic();

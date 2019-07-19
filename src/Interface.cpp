@@ -10,7 +10,7 @@ int focused = 0;
 int cursor = 0;
 int global_focus = 0;
 
-sf::Color default_main_color = sf::Color(128, 128, 128, 128);
+sf::Color default_main_color = sf::Color(64, 64, 64, 128);
 sf::Color default_hover_main_color = sf::Color(200, 128, 128, 128);
 sf::Color default_active_main_color = sf::Color(255, 128, 128, 255);
 float default_margin =0;
@@ -95,10 +95,13 @@ int AddGlobalObject(Object & a)
 
 void RemoveGlobalObject(int id)
 {
-	global_objects.erase(id);
-	if(!z_value.empty())
-		z_value.erase(z_value.begin() + z_index[id]);
-	z_index.erase(id);
+	if (global_objects.count(id) != 0)
+	{
+		global_objects.erase(id);
+		if (!z_value.empty())
+			z_value.erase(z_value.begin() + z_index[id]);
+		z_index.erase(id);
+	}
 }
 
 void RemoveAllObjects1()
@@ -119,7 +122,10 @@ void RemoveAllObjects()
 
 void Add2DeleteQueue(int id)
 {
-	del.push(id);
+	if (global_objects.count(id) != 0)
+	{
+		del.push(id);
+	}
 }
 
 void UpdateAllObjects(sf::RenderWindow * window, InputState& state)
@@ -138,7 +144,10 @@ void UpdateAllObjects(sf::RenderWindow * window, InputState& state)
 	//render stuff in the following order
 	for (auto &z : z_value)
 	{
-		global_objects[z].get()->Update(window, state);
+		if (global_objects.count(z) != 0) 
+		{
+			global_objects[z].get()->Update(window, state);
+		}
 	}
 	
 	if (global_objects.count(global_focus) != 0)
@@ -149,11 +158,14 @@ void UpdateAllObjects(sf::RenderWindow * window, InputState& state)
 		//if not the top object and not a static object
 		if (top_id != global_focus)
 		{
-			global_objects[top_id]->UpdateAction(window, state);
-			if ( !global_objects[global_focus].get()->static_object)
+			if (global_objects.count(top_id) != 0)
 			{
-				std::swap(z_value[z_value.size() - 1], z_value[z_index[global_focus]]);
-				std::swap(z_index[global_focus], z_index[top_id]);
+				global_objects[top_id]->UpdateAction(window, state);
+				if (!global_objects[global_focus].get()->static_object)
+				{
+					std::swap(z_value[z_value.size() - 1], z_value[z_index[global_focus]]);
+					std::swap(z_index[global_focus], z_index[top_id]);
+				}
 			}
 		}
 		
@@ -763,6 +775,16 @@ void Window::CreateCallbacks()
 		Add2DeleteQueue(parent->id);
 	});
 
+	//delete callback
+	this->SetDefaultFunction([parent = this](sf::RenderWindow * window, InputState & state)
+	{
+		if (state.keys[sf::Keyboard::Escape] == true)
+		{
+			Add2DeleteQueue(parent->id);
+			parent->action_time = action_dt;
+		}
+	});
+
 	//drag callback
 	this->objects[0].get()->SetCallbackFunction([parent = this](sf::RenderWindow * window, InputState & state)
 	{
@@ -889,7 +911,7 @@ MenuBox::MenuBox(float dx, float dy, float x, float y, sf::Color color_main): cu
 
 	Scroll_Slide.hoverstate.color_main = sf::Color(255, 50, 0, 128);
 	Scroll_Slide.activestate.color_main = sf::Color(255, 100, 100, 255);
-
+	Inside.SetBackgroundColor(sf::Color::Transparent);
 	Scroll.SetMargin(2);
 	Inside.SetMargin(12);
 	Scroll.AddObject(&Scroll_Slide, Box::CENTER);

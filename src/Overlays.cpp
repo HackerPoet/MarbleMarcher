@@ -67,11 +67,12 @@ Overlays::Texts Overlays::GetOption(Texts from, Texts to) {
 void Overlays::UpdateMenu(float mouse_x, float mouse_y) {
   //Update text boxes
   MakeText(LOCAL["Marble_Marcher"], 60, 20, 72, sf::Color::White, all_text[TITLE]);
-  MakeText(LOCAL["Play"], 80, 230, 60, sf::Color::White, all_text[PLAY]);
+ /* MakeText(LOCAL["Play"], 80, 230, 60, sf::Color::White, all_text[PLAY]);
   MakeText(LOCAL["Levels"], 80, 300, 60, sf::Color::White, all_text[LEVELS]);
   MakeText(LOCAL["Controls"], 80, 370, 60, sf::Color::White, all_text[CONTROLS]);
   MakeText(LOCAL["Screen_Saver"], 80, 440, 60, sf::Color::White, all_text[SCREEN_SAVER]);
   MakeText(LOCAL["Exit"], 80, 510, 60, sf::Color::White, all_text[EXIT]);
+  */
   MakeText(LOCAL["About"], 16, 652, 32, sf::Color::White, all_text[CREDITS], true);
   all_text[TITLE].setLineSpacing(0.76f);
   all_text[CREDITS].setLineSpacing(0.9f);
@@ -344,7 +345,7 @@ void Overlays::UpdateHover(Texts from, Texts to, float mouse_x, float mouse_y) {
     if (bounds.contains(mouse_x, mouse_y)) {
       all_text[i].setFillColor(sf::Color(255, 64, 64));
       if (!all_hover[i]) {
-        sound_hover.play();
+        //sound_hover.play();
         all_hover[i] = true;
       }
     } else {

@@ -39,9 +39,17 @@ void OpenMainMenu(Scene * scene, Overlays * overlays);
 void OpenEditor(Scene * scene, Overlays * overlays, int level);
 void PlayLevel(Scene * scene, sf::RenderWindow * window, int level);
 
+void OpenControlMenu(Scene * scene, Overlays * overlays);
+
+void OpenScreenSaver(Scene * scene, Overlays * overlays);
+
+void PlayNewGame(Scene * scene, sf::RenderWindow * window, int level);
+
 void OpenTestWindow(sf::Font & font);
 void OpenLevelMenu(Scene* scene, Overlays* overlays);
 void ConfirmLevelDeletion(int lvl, Scene* scene, Overlays* overlays);
+
+void ConfirmEditorExit(Scene * scene, Overlays * overlays);
 
 float GetVol();
 void LockMouse(sf::RenderWindow& window);
