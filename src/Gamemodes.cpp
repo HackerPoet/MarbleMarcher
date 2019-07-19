@@ -173,7 +173,10 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	//make the menu static
 	levels.static_object = true;
 
+	scene->SetExposure(0.5f);
+	scene->SetMode(Scene::INTRO);
 	game_mode = LEVELS;
+
 	std::vector<std::string> names = scene->levels.getLevelNames();
 	std::vector<std::string> desc = scene->levels.getLevelDesc();
 	std::vector<int> ids = scene->levels.getLevelIds();
@@ -363,8 +366,6 @@ void ConfirmEditorExit(Scene* scene, Overlays* overlays)
 	{
 		OpenLevelMenu(scene, overlays);
 		scene->ExitEditor();
-		scene->SetExposure(0.5f);
-		scene->SetMode(Scene::INTRO);
 		scene->StopAllMusic();
 		overlays->TWBAR_ENABLED = false;
 		TwDefine("LevelEditor visible=false");
