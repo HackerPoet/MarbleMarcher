@@ -45,7 +45,8 @@ void OpenScreenSaver(Scene * scene, Overlays * overlays);
 
 void PlayNewGame(Scene * scene, sf::RenderWindow * window, int level);
 
-void OpenTestWindow(sf::Font & font);
+void OpenTestWindow();
+
 void OpenLevelMenu(Scene* scene, Overlays* overlays);
 void ConfirmLevelDeletion(int lvl, Scene* scene, Overlays* overlays);
 

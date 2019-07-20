@@ -3,7 +3,7 @@
 std::map<int, std::unique_ptr<Object>> global_objects;
 std::vector<int> z_value; //rendering order
 std::map<int, int> z_index;
-std::stack<int> del; // deletion stack
+std::vector<int> del; // deletion stack
 int all_obj_id = 0;
 std::map<int, bool> active;
 int focused = 0;
@@ -87,20 +87,36 @@ int AddGlobalObject(Object & a)
 	global_objects[copy->id] = std::unique_ptr<Object>(copy);//add a copy to the global list
 	global_objects[copy->id].get()->id = copy->id;
 	z_value.push_back(copy->id);
-	z_index[copy->id] = z_value.size()-1;
 	global_focus = copy->id;
 	focused = copy->id;
 	return copy->id;  
+}
+
+bool global_exists(int id)
+{
+	for (auto &obj : global_objects)
+	{
+		if (obj.first == id)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+int z_val(int id)
+{
+	std::vector<int>::iterator it = std::find(z_value.begin(), z_value.end(), id);
+	return std::distance(z_value.begin(), it);
 }
 
 void RemoveGlobalObject(int id)
 {
 	if (global_objects.count(id) != 0)
 	{
-		global_objects.erase(id);
-		if (!z_value.empty())
-			z_value.erase(z_value.begin() + z_index[id]);
-		z_index.erase(id);
+		global_objects.erase(id);	
+		int z_id = z_val(id);
+		z_value.erase(z_value.begin() + z_id);
 	}
 }
 
@@ -108,15 +124,14 @@ void RemoveAllObjects1()
 {
 	global_objects.clear();
 	z_value.clear();
-	z_index.clear();
 }
 
 
 void RemoveAllObjects()
 {
-	for (int i = 0; i < z_value.size(); i++)
+	for (auto &obj:global_objects)
 	{
-		del.push(z_value[i]);
+		del.push_back(obj.first);
 	}
 }
 
@@ -124,23 +139,19 @@ void Add2DeleteQueue(int id)
 {
 	if (global_objects.count(id) != 0)
 	{
-		del.push(id);
+		del.push_back(id);
 	}
 }
 
 void UpdateAllObjects(sf::RenderWindow * window, InputState& state)
 {
-	if (del.size() == global_objects.size())
+	for (auto &id : del)
 	{
-		RemoveAllObjects1();
+		RemoveGlobalObject(id);
 	}
 
-	while (!del.empty()) // remove everything in the del queue
-	{
-		RemoveGlobalObject(del.top());
-		del.pop();
-	}
-	
+	del.clear();
+
 	//render stuff in the following order
 	for (auto &z : z_value)
 	{
@@ -163,8 +174,9 @@ void UpdateAllObjects(sf::RenderWindow * window, InputState& state)
 				global_objects[top_id]->UpdateAction(window, state);
 				if (!global_objects[global_focus].get()->static_object)
 				{
-					std::swap(z_value[z_value.size() - 1], z_value[z_index[global_focus]]);
-					std::swap(z_index[global_focus], z_index[top_id]);
+					int global_z = z_val(global_focus);
+					int top_z = z_value.size() - 1;
+					std::swap(z_value[top_z], z_value[global_z]);
 				}
 			}
 		}
@@ -346,7 +358,7 @@ void Object::Update(sf::RenderWindow * window, InputState& state)
 			if (defaultfn != NULL)
 				focused = id; // save this object as the last focused if it has a default callback
 
-			if (z_index.count(id) != 0)
+			if (global_exists(id))
 			{
 				global_focus = id;
 			}
@@ -571,8 +583,7 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 			bool not_placed = true;
 			int tries = 0;
 			int obj_id = obj.get()->id;
-			float old_line_height = line_height;
-			line_height = std::max(obj.get()->curstate.size.y, line_height);
+			float obj_h = obj.get()->curstate.size.y;
 			while (not_placed && tries < 2) //try to place the object somewhere
 			{
 				float space_left = defaultstate.size.x - cur_shift_x1 - cur_shift_x2;
@@ -586,10 +597,11 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 					case LEFT:
 						obj.get()->SetPosition(curstate.position.x + cur_shift_x1, curstate.position.y + cur_shift_y);
 						cur_shift_x1 += obj_width + curstate.margin;
+						line_height = std::max(obj_h, line_height);
 						break;
 					case CENTER:
 						obj.get()->SetPosition(curstate.position.x + defaultstate.size.x * 0.5f - obj_width * 0.5f, curstate.position.y + cur_shift_y);
-						cur_shift_y += ((tries == 0) ? line_height : old_line_height) + curstate.margin;
+						cur_shift_y += std::max(obj_h, line_height) + curstate.margin;
 						line_height = 0;
 						cur_shift_x1 = curstate.margin;
 						cur_shift_x2 = curstate.margin;
@@ -597,12 +609,13 @@ void Box::Draw(sf::RenderWindow * window, InputState& state)
 					case RIGHT:
 						obj.get()->SetPosition(curstate.position.x + defaultstate.size.x - obj_width - cur_shift_x2, curstate.position.y + cur_shift_y);
 						cur_shift_x2 += obj_width + curstate.margin;
+						line_height = std::max(obj_h, line_height);
 						break;
 					}
 				}
 				else
 				{
-					cur_shift_y += ((tries == 0 && old_line_height != 0) ? old_line_height : line_height) + curstate.margin;
+					cur_shift_y += line_height + curstate.margin;
 					line_height = 0;
 					cur_shift_x1 = curstate.margin;
 					cur_shift_x2 = curstate.margin;

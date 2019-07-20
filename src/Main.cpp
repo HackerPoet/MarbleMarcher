@@ -405,33 +405,6 @@ int main(int argc, char *argv[]) {
 					io_state.mouse_press[0] = true;
 					if (game_mode == MAIN_MENU) {
 						const Overlays::Texts selected = overlays.GetOption(Overlays::PLAY, Overlays::EXIT);
-						/*
-						if (selected == Overlays::PLAY) {
-							game_mode = PLAYING;
-							menu_music.stop();
-							scene.StartNewGame();
-							scene.GetCurMusic().setVolume(GetVol());
-							scene.GetCurMusic().play();
-							LockMouse(window);
-						}
-						else if (selected == Overlays::CONTROLS) {
-							game_mode = CONTROLS;
-						}
-						else if (selected == Overlays::LEVELS) {
-							game_mode = LEVELS;
-							overlays.GetLevelPage() = 0;
-							scene.SetExposure(0.5f);
-							overlays.ReloadLevelMenu(&scene);
-							OpenLevelMenu(&scene, &overlays);
-						}
-						else if (selected == Overlays::SCREEN_SAVER) {
-							game_mode = SCREEN_SAVER;
-							scene.SetMode(Scene::SCREEN_SAVER);
-						}
-						else if (selected == Overlays::EXIT) {
-							window.close();
-							break;
-						} */
 					}
 					else if (game_mode == CONTROLS) {
 						const Overlays::Texts selected = overlays.GetOption(Overlays::BACK, Overlays::BACK);

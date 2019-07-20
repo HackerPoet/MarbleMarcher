@@ -170,15 +170,11 @@ float de_marble(vec4 p) {
 }
 vec4 col_marble(vec4 p) {
 	vec4 col = vec4(0, 0, 0, de_sphere(p - vec4(iMarblePos, 0), iMarbleRad));
-	if(REFL_REFR_ENABLED)
-	{
-		col.xyz = vec3(0,0,0);
-	}
-	else
+	if(!REFL_REFR_ENABLED)
 	{
 		col.xyz = vec3(0.7,0.7,0.7);
 	}
-	return vec4(0, 0, 0, de_sphere(p - vec4(iMarblePos, 0), iMarbleRad));
+	return vec4(col.x, col.y, col.z, de_sphere(p - vec4(iMarblePos, 0), iMarbleRad));
 }
 float de_flag(vec4 p) {
 	vec3 f_pos = iFlagPos + vec3(1.5, 4, 0)*iFlagScale;
@@ -486,55 +482,53 @@ void main() {
 			vec4 col_r = scene(p, ray, vignette);
 
 			//Check if this is the glass marble
-			if (col_r.w > 0.5) {
-				if(REFL_REFR_ENABLED)
-				{
-					//Calculate refraction
-					vec3 n = normalize(iMarblePos - p.xyz);
-					vec3 q = refraction(r, n, 1.0 / 1.5);
-					vec3 p2 = p.xyz + (dot(q, n) * 2.0 * iMarbleRad) * q;
-					n = normalize(p2 - iMarblePos);
-					q = (dot(q, r) * 2.0) * q - r;
-					vec4 p_temp = vec4(p2 + n * (MIN_DIST * 10), 1.0);
-					vec4 r_temp = vec4(q, 0.0);
-					vec3 refr = scene(p_temp, r_temp, 0.8).xyz;
+			if (col_r.w > 0.5 && REFL_REFR_ENABLED) 
+			{
+				//Calculate refraction
+				vec3 n = normalize(iMarblePos - p.xyz);
+				vec3 q = refraction(r, n, 1.0 / 1.5);
+				vec3 p2 = p.xyz + (dot(q, n) * 2.0 * iMarbleRad) * q;
+				n = normalize(p2 - iMarblePos);
+				q = (dot(q, r) * 2.0) * q - r;
+				vec4 p_temp = vec4(p2 + n * (MIN_DIST * 10), 1.0);
+				vec4 r_temp = vec4(q, 0.0);
+				vec3 refr = scene(p_temp, r_temp, 0.8).xyz;
 
-					//Calculate reflection
-					n = normalize(p.xyz - iMarblePos);
-					q = r - n*(2*dot(r,n));
-					p_temp = vec4(p.xyz + n * (MIN_DIST * 10), 1.0);
-					r_temp = vec4(q, 0.0);
-					vec3 refl = scene(p_temp, r_temp, 0.8).xyz;
+				//Calculate reflection
+				n = normalize(p.xyz - iMarblePos);
+				q = r - n*(2*dot(r,n));
+				p_temp = vec4(p.xyz + n * (MIN_DIST * 10), 1.0);
+				r_temp = vec4(q, 0.0);
+				vec3 refl = scene(p_temp, r_temp, 0.8).xyz;
+				
+				//PBR reflections/refractions
+				vec3 V = -r;
+				vec3 N = n;
+				
+				//Combine for final marble color
+				if(MARBLE_MODE == 0)
+				{
+					//glass
+					vec3 F0 = vec3(0.03); 
+					vec3 L = normalize(q.xyz);
+					vec3 H = normalize(V + L);
+					vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);  
 					
-					//PBR reflections/refractions
-					vec3 V = -r;
-					vec3 N = n;
+					vec3 kS = F;
+					vec3 kD = vec3(1.0) - kS;
+					col += kS*refl + kD*refr + col_r.xyz;
+				}
+				else
+				{
+					//metal
+					vec3 F0 = vec3(0.6); 
+					vec3 L = normalize(q.xyz);
+					vec3 H = normalize(V + L);
+					vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);  
 					
-					//Combine for final marble color
-					if(MARBLE_MODE == 0)
-					{
-						//glass
-						vec3 F0 = vec3(0.03); 
-						vec3 L = normalize(q.xyz);
-						vec3 H = normalize(V + L);
-						vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);  
-						
-						vec3 kS = F;
-						vec3 kD = vec3(1.0) - kS;
-						col += kS*refl + kD*refr + col_r.xyz;
-					}
-					else
-					{
-						//metal
-						vec3 F0 = vec3(0.6); 
-						vec3 L = normalize(q.xyz);
-						vec3 H = normalize(V + L);
-						vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);  
-						
-						vec3 kS = F;
-						vec3 kD = vec3(1.0) - kS;
-						col += kS*refl + col_r.xyz;
-					}
+					vec3 kS = F;
+					vec3 kD = vec3(1.0) - kS;
+					col += kS*refl + col_r.xyz;
 				}
 			} else {
 				col += col_r.xyz;

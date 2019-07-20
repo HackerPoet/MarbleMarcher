@@ -164,8 +164,8 @@ public:
 
 	Level GetLevel(int ID);
 	int GetLevelNum();
-	std::vector<std::string> getLevelNames();
-	std::vector<std::string> getLevelDesc();
+	std::map<int, std::string> getLevelNames();
+	std::map<int, std::string> getLevelDesc();
 	std::vector<int> getLevelIds();
 	std::map<int, Score> getLevelScores();
 	sf::Music* GetLevelMusic(int ID);
@@ -178,6 +178,7 @@ public:
 	void SaveScoresToFile();
 
 	bool UpdateScore(int lvl, float time);
+	void DeleteLevel(int lvl);
 	sf::Music* GetMusicByID(int ID);
 
 	void StopAllMusic();
@@ -188,8 +189,8 @@ private:
 	std::map<int, Level> level_map;
 	std::map<int, Score> score_map;
 	std::map<int, int> level_id_map;
-	std::vector<std::string> level_names;
-	std::vector<std::string> level_descriptions;
+	std::map<int, std::string> level_names;
+	std::map<int, std::string> level_descriptions;
 	std::vector<int> level_ids;
 
 	std::map<std::string, sf::Music*> music_map;

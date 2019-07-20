@@ -614,12 +614,12 @@ int All_Levels::GetLevelNum()
 	return level_num;
 }
 
-vector<string> All_Levels::getLevelNames()
+std::map<int, std::string> All_Levels::getLevelNames()
 {
 	return level_names;
 }
 
-std::vector<std::string> All_Levels::getLevelDesc()
+std::map<int, std::string> All_Levels::getLevelDesc()
 {
 	return level_descriptions;
 }
@@ -655,8 +655,8 @@ void All_Levels::LoadLevelFromFile(fs::path file)
 	cur_lvl.LoadFromFile(file);
 	level_map.insert(std::make_pair(cur_lvl.level_id, cur_lvl));
 	level_id_map.insert(std::make_pair(level_num, cur_lvl.level_id));
-	level_names.push_back(cur_lvl.txt);
-	level_descriptions.push_back(cur_lvl.desc);
+	level_names[cur_lvl.level_id] = cur_lvl.txt;
+	level_descriptions[cur_lvl.level_id] = cur_lvl.desc;
 	level_ids.push_back(cur_lvl.level_id);
 	level_num++;
 }
@@ -729,6 +729,13 @@ bool All_Levels::UpdateScore(int lvl, float time)
 	score_map[lvl].played_num++;
 	score_map[lvl].last_time = time;
 	return is_best;
+}
+
+void All_Levels::DeleteLevel(int lvl)
+{
+	std::string filename = lvl_folder + "/" + ConvertSpaces2_(level_names[lvl]) + ".lvl";
+	fs::remove(filename);
+	ReloadLevels();
 }
 
 sf::Music * All_Levels::GetMusicByID(int ID)

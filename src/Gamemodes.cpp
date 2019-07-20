@@ -24,10 +24,25 @@ void OpenMainMenu(Scene * scene, Overlays * overlays)
 	scene->SetMode(Scene::INTRO);
 	sf::Vector2f wsize = default_view.getSize();
 
-	MenuBox mainmenu(700, wsize.y*0.6f, wsize.x*0.025, wsize.y*0.3f);
+	MenuBox mainmenu(1000, wsize.y*0.8f, wsize.x*0.025, wsize.y*0.025f);
 	mainmenu.SetBackgroundColor(sf::Color::Transparent);
 	//make the menu static
 	mainmenu.static_object = true;
+
+	//TITLE
+	Text ttl(LOCAL["Marble_Marcher"], LOCAL("default"), 120, sf::Color::White);
+	ttl.SetBorderColor(sf::Color::Black);
+	ttl.SetBorderWidth(4);
+	mainmenu.AddObject(&ttl, Object::Allign::LEFT);
+
+	Text CE("Community Edition", LOCAL("default"), 60, sf::Color::White);
+	CE.SetBorderColor(sf::Color::Black);
+	CE.SetBorderWidth(4);
+	mainmenu.AddObject(&CE, Object::Allign::LEFT);
+
+	Box margin(800, 80);
+	margin.SetBackgroundColor(sf::Color::Transparent);
+	mainmenu.AddObject(&margin, Object::Allign::LEFT);
 
 	//PLAY
 	Box playbtn(600, 50);
@@ -37,7 +52,7 @@ void OpenMainMenu(Scene * scene, Overlays * overlays)
 	{
 		PlayNewGame(scene, window, 0);
 		overlays->sound_click.play();
-	});
+	}, true);
 	playbtn.AddObject(&button1, Object::Allign::CENTER);
 	mainmenu.AddObject(&playbtn, Object::Allign::LEFT);
 
@@ -49,7 +64,7 @@ void OpenMainMenu(Scene * scene, Overlays * overlays)
 	{
 		OpenLevelMenu(scene, overlays);
 		overlays->sound_click.play();
-	});
+	}, true);
 	lvlsbtn.AddObject(&button2, Object::Allign::CENTER);
 	mainmenu.AddObject(&lvlsbtn, Object::Allign::LEFT);
 	
@@ -61,7 +76,7 @@ void OpenMainMenu(Scene * scene, Overlays * overlays)
 	{
 		OpenControlMenu(scene, overlays);
 		overlays->sound_click.play();
-	});
+	}, true);
 	cntrlbtn.AddObject(&button3, Object::Allign::CENTER);
 	mainmenu.AddObject(&cntrlbtn, Object::Allign::LEFT);
 
@@ -73,7 +88,7 @@ void OpenMainMenu(Scene * scene, Overlays * overlays)
 	{
 		OpenScreenSaver(scene, overlays);
 		overlays->sound_click.play();
-	});
+	}, true);
 	ssbtn.AddObject(&button4, Object::Allign::CENTER);
 	mainmenu.AddObject(&ssbtn, Object::Allign::LEFT);
 
@@ -85,9 +100,15 @@ void OpenMainMenu(Scene * scene, Overlays * overlays)
 	{
 		overlays->sound_click.play();
 		window->close();
-	});
+	}, true);
 	exitbtn.AddObject(&button5, Object::Allign::CENTER);
 	mainmenu.AddObject(&exitbtn, Object::Allign::LEFT);
+
+	Text about(LOCAL["About"], LOCAL("mono"), 30, sf::Color::White);
+	about.SetBorderColor(sf::Color::Black);
+	about.SetBorderWidth(3);
+	mainmenu.AddObject(&about, Object::Allign::LEFT);
+	
 
 	AddGlobalObject(mainmenu);
 }
@@ -142,7 +163,7 @@ void PlayNewGame(Scene * scene, sf::RenderWindow * window, int level)
 	LockMouse(*window);
 }
 
-void OpenTestWindow(sf::Font & font)
+void OpenTestWindow()
 {
 	Window test(200, 200, 500, 500, sf::Color(0, 0, 0, 128), LOCAL["Window"], LOCAL("default"));
 	Text button(LOCAL["Button"], LOCAL("default"), 30, sf::Color::White);
@@ -169,21 +190,22 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	sf::Vector2f wsize = default_view.getSize();
 
 	MenuBox levels(wsize.x*0.95f, wsize.y*0.95f, wsize.x*0.025f, wsize.y*0.025f);
-	levels.SetBackgroundColor(sf::Color(64,64,64,128));
+	levels.SetBackgroundColor(sf::Color(32,32,32,160));
 	//make the menu static
 	levels.static_object = true;
 
-	scene->SetExposure(0.5f);
+	scene->SetExposure(0.7f);
 	scene->SetMode(Scene::INTRO);
 	game_mode = LEVELS;
 
-	std::vector<std::string> names = scene->levels.getLevelNames();
-	std::vector<std::string> desc = scene->levels.getLevelDesc();
+	std::map<int, std::string> names = scene->levels.getLevelNames();
+	std::map<int, std::string> desc = scene->levels.getLevelDesc();
 	std::vector<int> ids = scene->levels.getLevelIds();
 	std::map<int, Score> scores = scene->levels.getLevelScores();
 	Text lvl(LOCAL["Levels"], LOCAL("default"), 60, sf::Color::White);
 	levels.AddObject(&lvl, Object::Allign::CENTER);
 	Box Bk2Menu(600, 50);
+	Bk2Menu.SetBackgroundColor(sf::Color(128, 128, 128, 128));
 	Text button(LOCAL["Back2Main"], LOCAL("default"), 40, sf::Color::White);
 	Bk2Menu.hoverstate.color_main = sf::Color(200, 40, 0, 255);
 	Bk2Menu.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
@@ -195,6 +217,7 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	levels.AddObject(&Bk2Menu, Object::Allign::LEFT);
 
 	Box Newlvl(600, 50);
+	Newlvl.SetBackgroundColor(sf::Color(128, 128, 128, 128));
 	Text newlvl(LOCAL["CreateNewLvl"], LOCAL("default"), 40, sf::Color::White);
 	Newlvl.hoverstate.color_main = sf::Color(200, 40, 0, 255);
 	Newlvl.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
@@ -216,14 +239,15 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 	for (int i = 0; i < scene->levels.GetLevelNum(); i++)
 	{
 		Box lvlbtton(wsize.x*0.95f - 60, 60);
+		lvlbtton.SetBackgroundColor(sf::Color(128, 128, 128, 128));
 		lvlbtton.hoverstate.border_thickness = 3;
 
 		Box lvltext(500, 60);
 		lvltext.SetBackgroundColor(sf::Color::Transparent);
 		Box lvltitle(500, 40);
 		lvltitle.SetBackgroundColor(sf::Color::Transparent);
-		Text lvlname(utf8_to_wstring(names[i]), LOCAL("default"), 35, sf::Color::White);
-		Text lvldescr(utf8_to_wstring(desc[i]), LOCAL("default"), 18, sf::Color::White);
+		Text lvlname(utf8_to_wstring(names[ids[i]]), LOCAL("default"), 35, sf::Color::White);
+		Text lvldescr(utf8_to_wstring(desc[ids[i]]), LOCAL("default"), 18, sf::Color::White);
 		lvlname.hoverstate.color_main = sf::Color(255, 0, 0, 255);
 		lvlname.SetCallbackFunction([scene, overlays, selected = ids[i]](sf::RenderWindow * window, InputState & state)
 		{
@@ -234,7 +258,6 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 		lvltext.AddObject(&lvltitle, Object::Allign::LEFT);
 		lvltext.AddObject(&lvldescr, Object::Allign::LEFT);
 		lvlbtton.AddObject(&lvltext, Object::Allign::LEFT);
-
 
 		Box lvlscore(500, 40);
 		lvlscore.SetBackgroundColor(sf::Color::Transparent);
@@ -281,7 +304,6 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 			overlays->sound_click.play();
 		}, true);
 
-
 		Box bremove(60, 60);
 		bremove.defaultstate.color_main = sf::Color(255, 255, 255, 255);
 		bremove.hoverstate.color_main = sf::Color(255, 0, 0, 255);
@@ -295,9 +317,7 @@ void OpenLevelMenu(Scene* scene, Overlays* overlays)
 
 		buttons.AddObject(&bremove, Object::Allign::RIGHT);
 		buttons.AddObject(&bedit, Object::Allign::RIGHT);
-
 		lvlbtton.AddObject(&buttons, Object::Allign::RIGHT);
-
 		levels.AddObject(&lvlbtton, Object::Allign::LEFT);
 	}
 
@@ -326,11 +346,12 @@ void ConfirmLevelDeletion(int lvl, Scene* scene, Overlays* overlays)
 
 	int id = AddGlobalObject(confirm);
 
-	get_glob_obj(id).objects[1].get()->objects[0].get()->objects[1].get()->SetCallbackFunction([scene, overlays, id](sf::RenderWindow * window, InputState & state)
+	get_glob_obj(id).objects[1].get()->objects[0].get()->objects[1].get()->SetCallbackFunction([scene, overlays, id, lvl](sf::RenderWindow * window, InputState & state)
 	{
 		//remove lvl
-		Add2DeleteQueue(id);
+		scene->levels.DeleteLevel(lvl);
 		overlays->sound_click.play();
+		OpenLevelMenu(scene, overlays);
 	});
 
 	get_glob_obj(id).objects[1].get()->objects[0].get()->objects[2].get()->SetCallbackFunction([scene, overlays, id](sf::RenderWindow * window, InputState & state)

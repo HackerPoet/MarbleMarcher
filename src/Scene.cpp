@@ -978,7 +978,7 @@ Eigen::Vector3f Scene::MouseRayCast(int mousex, int mousey, float min_dist)
 	Eigen::Vector4f ray = cam_mat * v1;
 	Eigen::Vector4f p = cam_mat * v2;
 
-	return RayMarch(Eigen::Vector3f(p[0], p[1], p[2]), Eigen::Vector3f(ray[0], ray[1], ray[2]));
+	return RayMarch(Eigen::Vector3f(p[0], p[1], p[2]), Eigen::Vector3f(ray[0], ray[1], ray[2]), min_dist);
 }
 
 Eigen::Vector3f Scene::RayMarch(const Eigen::Vector3f & pt, const Eigen::Vector3f & ray, float min_dist)
@@ -987,11 +987,11 @@ Eigen::Vector3f Scene::RayMarch(const Eigen::Vector3f & pt, const Eigen::Vector3
 	for (int i = 0; i < MAX_MARCHES && td < MAX_DIST; i++)
 	{
 		float de = DE(pt + td * ray);
-		td += de;
 		if (de < min_dist)
 		{
 			break;
 		}
+		td += de;
 	}
 	return pt + td * ray;
 }
