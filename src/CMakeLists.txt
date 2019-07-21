@@ -26,4 +26,10 @@ add_library(MarbleMarcherSources
 
   Gamemodes.h
   Gamemodes.cpp
+  
+  Renderer.h
+  Renderer.cpp
+  
+  Shaders.h
+  Shaders.cpp
 )
