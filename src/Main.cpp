@@ -158,9 +158,12 @@ int main(int argc, char *argv[]) {
 
   sf::Vector2f screenshot_size = sf::Vector2f(addsett.screenshot_width, addsett.screenshot_height);
 
-  sf::RenderWindow window(screen_size, "Marble Marcher", window_style, settings);
+  sf::RenderWindow window(screen_size, "Marble Marcher Community Edition", window_style, settings);
   window.setVerticalSyncEnabled(VSYNC);
   window.setKeyRepeatEnabled(false);
+  sf::VideoMode fs_size = sf::VideoMode::getDesktopMode();
+  window.setSize(sf::Vector2u(fs_size.width, fs_size.width*9.f/16.f));
+  window.setPosition(sf::Vector2i(0, 0));
   window.requestFocus();
   UpdateAspectRatio(window.getSize().x, window.getSize().y);
   //set window icon

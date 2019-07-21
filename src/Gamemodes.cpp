@@ -24,13 +24,13 @@ void OpenMainMenu(Scene * scene, Overlays * overlays)
 	scene->SetMode(Scene::INTRO);
 	sf::Vector2f wsize = default_view.getSize();
 
-	MenuBox mainmenu(1000, wsize.y*0.8f, wsize.x*0.025, wsize.y*0.025f);
+	MenuBox mainmenu(1000, wsize.y*0.95f, wsize.x*0.025, wsize.y*0.025f);
 	mainmenu.SetBackgroundColor(sf::Color::Transparent);
 	//make the menu static
 	mainmenu.static_object = true;
 
 	//TITLE
-	Text ttl(LOCAL["Marble_Marcher"], LOCAL("default"), 120, sf::Color::White);
+	Text ttl("Marble\nMarcher", LOCAL("default"), 120, sf::Color::White);
 	ttl.SetBorderColor(sf::Color::Black);
 	ttl.SetBorderWidth(4);
 	mainmenu.AddObject(&ttl, Object::Allign::LEFT);

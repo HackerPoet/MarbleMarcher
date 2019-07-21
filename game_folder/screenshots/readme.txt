@@ -1,0 +1,1 @@
+To change the screenshot resolution go to assets folder and open config.txt
