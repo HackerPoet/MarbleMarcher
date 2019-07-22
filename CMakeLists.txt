@@ -7,6 +7,7 @@ set(SFML_DIR C:/Libraries/SFML-2.5.1_64/lib/cmake/SFML)
 set(SFML_INCLUDE_DIR C:/Libraries/SFML-2.5.1_64/include)
 set(SDK_DIRECTORY "C:/Program Files (x86)/Microsoft SDKs")
 set(EIGEN3_INCLUDE_DIR C:/Libraries/eigen3/)
+set(GL_INCLUDE_DIR C:/Libraries/GLCL)
 set(SFML_STATIC_LIBRARIES TRUE)
 set(ANTTWEAKBAR_DIR C:/Libraries/AntTweakBar)
 
@@ -19,6 +20,7 @@ target_include_directories(MarbleMarcherSources PUBLIC
   src
   ${EIGEN3_INCLUDE_DIR}
   ${SFML_INCLUDE_DIR}
+  ${GL_INCLUDE_DIR}
   ${ANTTWEAKBAR_DIR}/include
 )
 
@@ -43,6 +45,7 @@ target_compile_definitions(MarbleMarcher PRIVATE SFML_STATIC)
 target_link_libraries(MarbleMarcher
   MarbleMarcherSources
   ${ANTTWEAKBAR_DIR}/lib/AntTweakBar64.lib
+  ${GL_INCLUDE_DIR}/GL/lib/x86_64
   sfml-system
   sfml-window
   sfml-graphics
