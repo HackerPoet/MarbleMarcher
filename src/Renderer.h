@@ -1,1 +1,7 @@
 #pragma once
+
+
+class Renderer
+{
+
+};

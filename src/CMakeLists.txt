@@ -32,4 +32,7 @@ add_library(MarbleMarcherSources
   
   Shaders.h
   Shaders.cpp
+  
+  Camera.h
+  Camera.cpp
 )
