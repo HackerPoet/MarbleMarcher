@@ -109,3 +109,12 @@ GLuint ComputeShader::getNativeHandle()
 {
 	return ProgramID;
 }
+
+bool INIT()
+{
+	if (glewInit() != GLEW_OK) {
+		ERROR_MSG("Failed to initialize GLEW\n");
+		return false;
+	}
+	return true;
+}

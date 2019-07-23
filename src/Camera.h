@@ -94,7 +94,7 @@ private:
 	vec3 velocity;
 
 	//camera directional inertial angular velocities
-	float alpha, beta, gamma;
+	float alpha, beta, gamma, radv;
 
 	//field of view, focus distance, bokeh radius
 	float FOV, focus, bokeh;

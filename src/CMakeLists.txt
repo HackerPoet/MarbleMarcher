@@ -35,4 +35,7 @@ add_library(MarbleMarcherSources
   
   Camera.h
   Camera.cpp
+  
+  ExprParser.h
+  ExprParser.cpp
 )

@@ -8,6 +8,8 @@
 #include <fstream>
 #include <Camera.h>
 
+bool INIT();
+
 class ComputeShader
 {
 public:
