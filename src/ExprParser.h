@@ -1,4 +1,9 @@
 #pragma once
+#include <string>
+#include <algorithm>
+#include <sstream>
+#include <vector>
+#include <map>
 
 bool replace(std::string& str, const std::string& from, const std::string& to);
 
@@ -37,11 +42,11 @@ public:
 
 	void getToken();
 
-	VARN GetVarTypeNum();
+	int AddVariable();
 
 	float token2float();
 
-	void Parse(string expr);
+	void Parse(std::string expr);
 
 	int getOperatorPrecedenceLevel(int);
 
@@ -49,7 +54,7 @@ public:
 
 	bool tokenIsRBRACK();
 
-	void load_expr(string expr);
+	void load_expr(std::string expr);
 
 	float Evaluate(std::map<std::string, float> variable_map);
 };

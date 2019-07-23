@@ -5,7 +5,7 @@ bool replace(std::string& str, const std::string& from, const std::string& to) {
 	int pos = str.find(from,0);
 	if (pos == std::string::npos)
 		return false;
-	while (pos != string::npos)
+	while (pos != std::string::npos)
 	{
 		str.replace(pos, from.length(), to);
 		pos = str.find(from,pos+1);
@@ -24,11 +24,11 @@ bool isMinus(const char c)
 }
 
 // Get variable type and number
-ExprParser::VARN ExprParser::AddVariable()
+int ExprParser::AddVariable()
 {
 	std::string tokenn(token);
 	
-	if(variable_ids.cout(tokenn) == 0)
+	if(variable_ids.count(tokenn) == 0)
 	{
 		variables.push_back(tokenn);
 		variable_ids[tokenn] = variables.size();
@@ -244,9 +244,9 @@ void ExprParser::getToken()
 //convert number token to float
 float ExprParser::token2float()
 {
-	string numb(token);
+	std::string numb(token);
 
-	istringstream io(numb);
+	std::istringstream io(numb);
 	float number;
 	io >> number;
 	return number;
@@ -272,7 +272,7 @@ int ExprParser::getOperatorPrecedenceLevel(int op)
 //get operator id from the token
 int ExprParser::token2operation()
 {
-	string fnc(token);
+	std::string fnc(token);
 	std::transform(fnc.begin(), fnc.end(), fnc.begin(), ::toupper);
 	if (fnc == "+")
 		return PLUS;
@@ -312,7 +312,7 @@ int ExprParser::token2operation()
 
 bool ExprParser::tokenIsRBRACK()
 {
-	string fnc(token);
+	std::string fnc(token);
 	if (fnc == ")")
 		return 1;
 	else
@@ -320,7 +320,7 @@ bool ExprParser::tokenIsRBRACK()
 }
 
 
-void ExprParser::load_expr(string expr)
+void ExprParser::load_expr(std::string expr)
 {
 	replace(expr, "**", "^");
 	expr.copy(expression, expr.length());
@@ -329,7 +329,7 @@ void ExprParser::load_expr(string expr)
 	e[expr.length()] = '\0';
 }
 
-void ExprParser::Parse(string expr)
+void ExprParser::Parse(std::string expr)
 {
 	load_expr(expr);
 	int vari = 0, cvari = 0;
@@ -342,7 +342,7 @@ void ExprParser::Parse(string expr)
 
 		if (token_type == NUMBER)
 		{
-			vector<int> num;
+			std::vector<int> num;
 			cvari++;
 			vari++;
 			num.push_back(0);
@@ -407,7 +407,10 @@ void ExprParser::Parse(string expr)
 
 
 float ExprParser::Evaluate(std::map<std::string, float> variable_map)
-{
+{	
+	variable_map["pi"] = 3.141592653589f;
+	variable_map["e"] == 2.718281828459f;	
+
 	//code written in such a way to be compatible with OpenCL
 	float varstack[64];
 	int stack_size = 0;
@@ -499,18 +502,9 @@ float ExprParser::Evaluate(std::map<std::string, float> variable_map)
 			i++;
 			stack_size++;
 
-			
 			if (vartype == 0)
 			{
 				varstack[stack_size - 1] = IPN[i];
-			}
-			else if (varname == "pi") //Pi
-			{
-				varstack[stack_size - 1] = 3.141592653589f;
-			}
-			else if (varname == "e") //Eulers number
-			{
-				varstack[stack_size - 1] = 2.718281828459f;
 			}
 			else
 			{
