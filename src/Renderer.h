@@ -1,25 +1,26 @@
 #pragma once
 
 #include<Shaders.h>
+#include<ExprParser.h>
 
 class Renderer
 {
 public:
-	Renderer(std::string compute_folder);
+	Renderer(int w, int h, std::string compute_folder);
 
-	void SetResolution(int w, int h);
+	void Initialize(int w, int h, std::string compute_folder);
+
 	void SetOutputTexture(sf::Texture& tex);
-	void LoadPipelineFromFolder(std::string compute_folder);
-	void LoadConfig(std::string pipeline_cfg);
 	void LoadShader(std::string shader_file);
 
 	void Render();
 
 private:
-	
+	std::string shader_folder;
+	GLuint GenerateTexture(float w, float h);
+
 	int width, height;
 	std::vector<vec2> global_size;
-	std::vector<vec2> work_group_size;
-	std::vector<std::vector<GLint>> shader_textures;
+	std::vector<std::vector<GLuint>> shader_textures;
 	std::vector<ComputeShader> shader_pipeline;
 };

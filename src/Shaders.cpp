@@ -9,25 +9,36 @@ ComputeShader::ComputeShader()
 	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &work_grp_cnt[2]);
 }
 
+ComputeShader::ComputeShader(const std::string file_path)
+{
+	LoadShader(file_path);
+}
+
+std::string ComputeShader::LoadFileText(fs::path path)
+{
+	std::string text;
+	std::ifstream TextStream(path, std::ios::in);
+	if (TextStream.is_open())
+	{
+		std::string Line = "";
+		while (getline(TextStream, Line))
+			text += "\n" + Line;
+		TextStream.close();
+	}
+	else
+	{
+		ERROR_MSG(("Impossible to open file \n" + (std::string)path.c_str()).c_str());
+	}
+	return text;
+}
+
 void ComputeShader::LoadShader(const std::string file_path)
 {
 		// Create the shaders
 		GLuint ComputeShaderID = glCreateShader(GL_COMPUTE_SHADER);
 
 		// Read the Vertex Shader code from the file
-		std::string ComputeShaderCode;
-		std::ifstream ComputeShaderStream(file_path, std::ios::in);
-		if (ComputeShaderStream.is_open())
-		{
-			std::string Line = "";
-			while (getline(ComputeShaderStream, Line))
-				ComputeShaderCode += "\n" + Line;
-			ComputeShaderStream.close();
-		}
-		else
-		{
-		//	ERROR_MSG(("Impossible to open shader file \n" + (std::string)file_path).c_str());
-		}
+		std::string ComputeShaderCode = PreprocessIncludes("", fs::path(file_path));
 
 		GLint Result = GL_FALSE;
 		int InfoLogLength;
@@ -62,6 +73,13 @@ void ComputeShader::LoadShader(const std::string file_path)
 
 		glDetachShader(ProgramID, ComputeShaderID);
 		glDeleteShader(ComputeShaderID);
+}
+
+void ComputeShader::Run(vec2 global)
+{
+	glUseProgram(ProgramID);
+	glDispatchCompute(global.x, global.y, 1);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
 void ComputeShader::setUniform(std::string name, float X, float Y)
@@ -117,4 +135,42 @@ bool INIT()
 		return false;
 	}
 	return true;
+}
+
+
+std::string ComputeShader::PreprocessIncludes(const std::string& source, const fs::path& filename, int level /*= 0 */)
+{
+	if (level > 32)
+		ERROR_MSG("Header inclusion depth limit reached, might be caused by cyclic header inclusion");
+	using namespace std;
+
+	static const regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
+	stringstream input;
+	stringstream output;
+	input << source;
+
+	size_t line_number = 1;
+	smatch matches;
+
+	string line;
+	while (std::getline(input, line))
+	{
+		if (regex_search(line, matches, re))
+		{
+			std::string include_file = matches[1];
+			std::string include_string;
+
+			
+			include_string = LoadFileText(include_file);
+			
+			output << PreprocessIncludes(include_string, include_file, level + 1) << endl;
+		}
+		else
+		{
+			output << "#line " << line_number << " \"" << filename << "\"" << endl;
+			output << line << endl;
+		}
+		++line_number;
+	}
+	return output.str();
 }

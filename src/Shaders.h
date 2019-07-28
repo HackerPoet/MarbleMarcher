@@ -6,7 +6,16 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 #include <fstream>
+#include <regex>
 #include <Camera.h>
+#include <Level.h>
+
+#ifdef _WIN32
+#include <Windows.h>
+#define ERROR_MSG(x) MessageBox(nullptr, TEXT(x), TEXT("ERROR"), MB_OK);
+#else
+#define ERROR_MSG(x) std::cerr << x << std::endl;
+#endif
 
 bool INIT();
 
@@ -16,8 +25,13 @@ public:
 	GLuint ProgramID;
 
 	ComputeShader();
+	ComputeShader(const std::string file_path);
+
+	
 
 	void LoadShader(const std::string file_path);
+
+	void Run(vec2 global);
 
 	void setUniform(std::string name, float X, float Y);
 	void setUniform(std::string name, float X, float Y, float Z);
@@ -28,4 +42,7 @@ public:
 	void setCamera(gl_camera cam);
 
 	GLuint getNativeHandle();
+
+	std::string LoadFileText(fs::path path);
+	std::string PreprocessIncludes(const std::string & source, const fs::path &filename, int level = 0);
 };

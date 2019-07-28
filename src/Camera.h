@@ -3,6 +3,7 @@
 #include <glm\glm.hpp>
 #include <glm\gtc\quaternion.hpp>
 
+using namespace glm;
 
 typedef struct
 {
@@ -22,8 +23,6 @@ typedef struct
 	int stepN;
 	int step;
 } gl_camera;
-
-using namespace glm;
 
 class Camera
 {
