@@ -47,7 +47,7 @@ target_compile_definitions(MarbleMarcher PRIVATE SFML_STATIC)
 target_link_libraries(MarbleMarcher
   MarbleMarcherSources
   ${ANTTWEAKBAR_DIR}/lib/AntTweakBar64.lib
-  ${GLEW_INCLUDE_DIR}/lib/Release/x64/glew32s.lib
+  ${GLEW_INCLUDE_DIR}/lib/Release/x64/glew32.lib
   sfml-system
   sfml-window
   sfml-graphics

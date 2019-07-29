@@ -5,6 +5,10 @@ Renderer::Renderer(int w, int h,std::string compute_folder)
 	Initialize(w, h, compute_folder);
 }
 
+Renderer::Renderer()
+{
+}
+
 void Renderer::Initialize(int w, int h, std::string compute_folder)
 {
 	shader_textures.clear();
@@ -18,6 +22,11 @@ void Renderer::Initialize(int w, int h, std::string compute_folder)
 	shader_folder = compute_folder;
 
 	std::ifstream config(compute_folder + "/pipeline.cfg");
+	if (config.fail())
+	{
+		ERROR_MSG("Error opening pipeline configuration");
+		return;
+	}
 	std::string line;
 
 	int element = 0;
@@ -34,7 +43,7 @@ void Renderer::Initialize(int w, int h, std::string compute_folder)
 	{
 		if (line.substr(0, 1) != "#")
 		{
-			parser.load_expr(line);
+			parser.Parse(line);
 			switch (element++)
 			{
 			case 0:
@@ -70,6 +79,11 @@ void Renderer::Initialize(int w, int h, std::string compute_folder)
 	config.close();
 }
 
+void Renderer::SetOutputTexture(sf::Texture & tex)
+{
+	shader_textures[shader_textures.size()-1][0] = tex.getNativeHandle();
+}
+
 void Renderer::LoadShader(std::string shader_file)
 {
 	shader_pipeline.push_back(ComputeShader(shader_file));
@@ -77,8 +91,26 @@ void Renderer::LoadShader(std::string shader_file)
 
 void Renderer::Render()
 {
-	for (int i = 0; i < global_size.size(); i++)
+	int stages = global_size.size();
+	for (int i = 0; i < stages; i++)
 	{
+		int tex_id = 0;
+
+		//bind textures from the previous step
+		if (i != 0)
+		{
+			for (int j = 0; j < shader_textures[i - 1].size(); j++)
+			{
+				glBindImageTexture(tex_id++, shader_textures[i - 1][j], 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
+			}
+		}
+
+		//bind textures from the current step
+		for (int j = 0; j < shader_textures[i].size(); j++)
+		{
+			glBindImageTexture(tex_id++, shader_textures[i][j], 0, GL_FALSE, 0, GL_WRITE_ONLY, (i == stages-1)?GL_RGBA:GL_RGBA32F);
+		}
+		
 		shader_pipeline[i].Run(global_size[i]);
 	}
 }
@@ -92,6 +124,5 @@ GLuint Renderer::GenerateTexture(float w, float h)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0, GL_RGBA, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 	return texture;
 }

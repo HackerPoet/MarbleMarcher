@@ -39,10 +39,12 @@ public:
 	void setUniform(std::string name, int X);
 	void setUniform(std::string name, glm::mat3 X, bool transpose);
 	void setUniform(std::string name, glm::vec3 X);
+	void setUniform(std::string name, glm::vec2 X);
 	void setCamera(gl_camera cam);
 
 	GLuint getNativeHandle();
 
+	std::string PreprocessIncludes(const fs::path & filename, int level = 0);
+
 	std::string LoadFileText(fs::path path);
-	std::string PreprocessIncludes(const std::string & source, const fs::path &filename, int level = 0);
 };

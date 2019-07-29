@@ -7,6 +7,7 @@ class Renderer
 {
 public:
 	Renderer(int w, int h, std::string compute_folder);
+	Renderer();
 
 	void Initialize(int w, int h, std::string compute_folder);
 
@@ -18,6 +19,8 @@ public:
 private:
 	std::string shader_folder;
 	GLuint GenerateTexture(float w, float h);
+
+	Camera camera;
 
 	int width, height;
 	std::vector<vec2> global_size;

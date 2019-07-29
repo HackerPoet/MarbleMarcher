@@ -241,6 +241,14 @@ void ExprParser::getToken()
 	return;
 }
 
+void ExprParser::clear()
+{
+	op_stack.clear();
+	IPN.clear();
+	variables.clear();
+	variable_ids.clear();
+}
+
 //convert number token to float
 float ExprParser::token2float()
 {
@@ -331,6 +339,7 @@ void ExprParser::load_expr(std::string expr)
 
 void ExprParser::Parse(std::string expr)
 {
+	clear();
 	load_expr(expr);
 	int vari = 0, cvari = 0;
 	token_type = NUMBER;

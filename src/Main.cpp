@@ -14,6 +14,7 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
+#include<Renderer.h>
 #include "Scene.h"
 #include "Overlays.h"
 #include "Level.h"
@@ -33,6 +34,7 @@
 #include <mutex>
 
 #include<Gamemodes.h>
+
 
 
 #ifdef _WIN32
@@ -125,7 +127,6 @@ int main(int argc, char *argv[]) {
   high_scores.Load(save_file);
   game_settings.Load(settings_file);
 
-
   //Have user select the resolution
   SelectRes select_res(&font_mono);
   const Resolution* resolution = select_res.Run();
@@ -161,6 +162,9 @@ int main(int argc, char *argv[]) {
   sf::RenderWindow window(screen_size, "Marble Marcher Community Edition", window_style, settings);
   window.setVerticalSyncEnabled(VSYNC);
   window.setKeyRepeatEnabled(false);
+
+  INIT();
+
   sf::VideoMode fs_size = sf::VideoMode::getDesktopMode();
   window.setSize(sf::Vector2u(fs_size.width, fs_size.width*9.f/16.f));
   window.setPosition(sf::Vector2i(0, 0));
@@ -179,12 +183,22 @@ int main(int argc, char *argv[]) {
   //force fullscreen mode
   fullscreen = true;
 
+  Renderer rend(resolution->width, resolution->height, "shaders/compute");
+
   //fullscreen = false;
   //Create the render texture if needed
   sf::RenderTexture renderTexture;
   //screenshot number
   int screenshot_i = 0;
   sf::RenderTexture screenshotTexture;
+
+  //new rendering textures
+  sf::Image mimg, simg;
+  mimg.create(resolution->width, resolution->height, sf::Color::Blue);
+  sf::Texture main_txt, screenshot_txt;
+  main_txt.loadFromImage(mimg);
+  screenshot_txt.create(screenshot_size.x, screenshot_size.y);
+
   screenshotTexture.create(screenshot_size.x, screenshot_size.y, settings);
   screenshotTexture.setSmooth(false);
 
@@ -347,6 +361,8 @@ int main(int argc, char *argv[]) {
 					//Setup full-screen shader
 					sf::RenderStates states = sf::RenderStates::Default;
 					states.shader = &shader;
+					shader.setUniform("render_texture", screenshot_txt);
+
 					window.setActive(false);
 					//Draw the fractal
 					//Draw to the render texture
@@ -602,6 +618,8 @@ int main(int argc, char *argv[]) {
 	  window.setVerticalSyncEnabled(VSYNC);
       //Update the shader values
       scene.Write(shader);
+	  shader.setUniform("render_texture", main_txt);
+	  rend.SetOutputTexture(main_txt);
 
       //Setup full-screen shader
       sf::RenderStates states = sf::RenderStates::Default;
@@ -612,6 +630,7 @@ int main(int argc, char *argv[]) {
 	    window.setActive(false);
 		renderTexture.setActive(true);
         //Draw to the render texture
+		rend.Render();
         renderTexture.draw(rect, states);
         renderTexture.display();
 

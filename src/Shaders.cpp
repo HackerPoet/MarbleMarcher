@@ -22,12 +22,12 @@ std::string ComputeShader::LoadFileText(fs::path path)
 	{
 		std::string Line = "";
 		while (getline(TextStream, Line))
-			text += "\n" + Line;
+			text += Line + "\n";
 		TextStream.close();
 	}
 	else
 	{
-		ERROR_MSG(("Impossible to open file \n" + (std::string)path.c_str()).c_str());
+		ERROR_MSG("Impossible to open text file");
 	}
 	return text;
 }
@@ -38,7 +38,7 @@ void ComputeShader::LoadShader(const std::string file_path)
 		GLuint ComputeShaderID = glCreateShader(GL_COMPUTE_SHADER);
 
 		// Read the Vertex Shader code from the file
-		std::string ComputeShaderCode = PreprocessIncludes("", fs::path(file_path));
+		std::string ComputeShaderCode = PreprocessIncludes(fs::path(file_path));
 
 		GLint Result = GL_FALSE;
 		int InfoLogLength;
@@ -55,6 +55,7 @@ void ComputeShader::LoadShader(const std::string file_path)
 		{
 			std::vector<char> ComputeShaderErrorMessage(InfoLogLength + 1);
 			glGetShaderInfoLog(ComputeShaderID, InfoLogLength, NULL, &ComputeShaderErrorMessage[0]);
+			ERROR_MSG(("Compute shader compilation error. \n" + std::string(&ComputeShaderErrorMessage[0])).c_str());
 		}
 
 		// Link the program
@@ -69,6 +70,7 @@ void ComputeShader::LoadShader(const std::string file_path)
 		{
 			std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
 			glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
+			ERROR_MSG("Compute program error. \n");
 		}
 
 		glDetachShader(ProgramID, ComputeShaderID);
@@ -118,9 +120,28 @@ void ComputeShader::setUniform(std::string name, glm::vec3 X)
 	glUniform3fv(A, 1, glm::value_ptr(X));
 }
 
+void ComputeShader::setUniform(std::string name, glm::vec2 X)
+{
+	GLuint A = glGetUniformLocation(ProgramID, name.c_str());
+	glUniform2fv(A, 1, glm::value_ptr(X));
+}
+
 void ComputeShader::setCamera(gl_camera cam)
 {
-
+	setUniform("Camera.position", cam.position);
+	setUniform("Camera.bokeh", cam.bokeh);
+	setUniform("Camera.dirx", cam.dirx);
+	setUniform("Camera.diry", cam.diry);
+	setUniform("Camera.dirz", cam.dirz);
+	setUniform("Camera.exposure", cam.exposure);
+	setUniform("Camera.focus", cam.focus);
+	setUniform("Camera.FOV", cam.FOV);
+	setUniform("Camera.mblur", cam.mblur);
+	setUniform("Camera.position", cam.position);
+	setUniform("Camera.resolution", cam.resolution);
+	setUniform("Camera.size", cam.size);
+	setUniform("Camera.speckle", cam.speckle);
+	setUniform("Camera.stepN", cam.stepN);
 }
 
 GLuint ComputeShader::getNativeHandle()
@@ -138,7 +159,7 @@ bool INIT()
 }
 
 
-std::string ComputeShader::PreprocessIncludes(const std::string& source, const fs::path& filename, int level /*= 0 */)
+std::string ComputeShader::PreprocessIncludes(const fs::path& filename, int level /*= 0 */)
 {
 	if (level > 32)
 		ERROR_MSG("Header inclusion depth limit reached, might be caused by cyclic header inclusion");
@@ -147,30 +168,21 @@ std::string ComputeShader::PreprocessIncludes(const std::string& source, const f
 	static const regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
 	stringstream input;
 	stringstream output;
-	input << source;
+	input << LoadFileText(filename);
 
-	size_t line_number = 1;
 	smatch matches;
-
 	string line;
 	while (std::getline(input, line))
 	{
 		if (regex_search(line, matches, re))
 		{
 			std::string include_file = matches[1];
-			std::string include_string;
-
-			
-			include_string = LoadFileText(include_file);
-			
-			output << PreprocessIncludes(include_string, include_file, level + 1) << endl;
+			output << PreprocessIncludes(include_file, level + 1) << endl;
 		}
 		else
 		{
-			output << "#line " << line_number << " \"" << filename << "\"" << endl;
-			output << line << endl;
+			output << line << "\n";
 		}
-		++line_number;
 	}
 	return output.str();
 }

@@ -42,6 +42,8 @@ public:
 
 	void getToken();
 
+	void clear();
+
 	int AddVariable();
 
 	float token2float();
