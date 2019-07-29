@@ -108,7 +108,7 @@ void Renderer::Render()
 		//bind textures from the current step
 		for (int j = 0; j < shader_textures[i].size(); j++)
 		{
-			glBindImageTexture(tex_id++, shader_textures[i][j], 0, GL_FALSE, 0, GL_WRITE_ONLY, (i == stages-1)?GL_RGBA:GL_RGBA32F);
+			glBindImageTexture(tex_id++, shader_textures[i][j], 0, GL_FALSE, 0, GL_READ_WRITE, (i == stages-1)?GL_RGBA8:GL_RGBA32F);
 		}
 		
 		shader_pipeline[i].Run(global_size[i]);

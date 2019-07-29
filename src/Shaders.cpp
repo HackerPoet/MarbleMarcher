@@ -61,7 +61,7 @@ void ComputeShader::LoadShader(const std::string file_path)
 		// Link the program
 		ProgramID = glCreateProgram();
 		glAttachShader(ProgramID, ComputeShaderID);
-		glLinkProgram(ProgramID);
+		glLinkProgram(ProgramID); 
 
 		// Check the program
 		glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
@@ -70,11 +70,8 @@ void ComputeShader::LoadShader(const std::string file_path)
 		{
 			std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
 			glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-			ERROR_MSG("Compute program error. \n");
+			ERROR_MSG(("Compute program error. \n" + std::string(&ProgramErrorMessage[0])).c_str());
 		}
-
-		glDetachShader(ProgramID, ComputeShaderID);
-		glDeleteShader(ComputeShaderID);
 }
 
 void ComputeShader::Run(vec2 global)

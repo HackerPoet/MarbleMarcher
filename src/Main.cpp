@@ -137,8 +137,8 @@ int main(int argc, char *argv[]) {
 
   //GL settings
   sf::ContextSettings settings;
-  settings.majorVersion = 2;
-  settings.minorVersion = 0;
+  settings.majorVersion = 4;
+  settings.minorVersion = 3;
 
   //Create the window
   sf::VideoMode screen_size;
