@@ -51,7 +51,7 @@ void ComputeShader::LoadShader(const std::string file_path)
 		// Check Compute Shader
 		glGetShaderiv(ComputeShaderID, GL_COMPILE_STATUS, &Result);
 		glGetShaderiv(ComputeShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-		if (InfoLogLength > 0)
+		if (Result == GL_FALSE)
 		{
 			std::vector<char> ComputeShaderErrorMessage(InfoLogLength + 1);
 			glGetShaderInfoLog(ComputeShaderID, InfoLogLength, NULL, &ComputeShaderErrorMessage[0]);
@@ -66,7 +66,7 @@ void ComputeShader::LoadShader(const std::string file_path)
 		// Check the program
 		glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
 		glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-		if (InfoLogLength > 0)
+		if (Result == GL_FALSE)
 		{
 			std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
 			glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
