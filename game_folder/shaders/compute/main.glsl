@@ -33,7 +33,8 @@ void main() {
 		for(int j = 0; j < bundle_size; j++)
 		{
 			vec2 screen_coords = (bundle_size*gl_GlobalInvocationID.xy+vec2(i,j))/Camera.resolution;
-			ray_array[gl_WorkGroupID.x + i][gl_WorkGroupID.y + j] = get_ray(screen_coords);
+			ray_array[gl_LocalInvocationID.x + i][gl_LocalInvocationID.y + j] = get_ray(screen_coords);
+			DE_data[bundle_size*gl_LocalInvocationID.x + i][bundle_size*gl_LocalInvocationID.y + j] = 0;
 		}	  
 	}
 
@@ -49,15 +50,34 @@ void main() {
 		}	  
 	}
 	
-	bool bundle_complete = false;
-	///A loop
+	bool bundle_computing = true;
+	
+	//central ray position
 	int crx = bundle_size/2, cry = bundle_size/2;
 	
-	while(!bundle_complete)
+	///Ray bundle marching
+	while(bundle_computing)
 	{
+		bundle_computing = false;
 		//march the central rays
+		if(!complete[crx][cry])
+		{
+			complete[crx][cry] = march_ray_bundle(bundle_size*gl_LocalInvocationID.x + crx, bundle_size*gl_LocalInvocationID.y + cry);
+			bundle_computing = bundle_computing || !complete[crx][cry];
+		}
 		
 		//march the secondary rays
+		for(int i = 0; i < bundle_size; i++)
+		{
+			for(int j = 0; j < bundle_size; j++)
+			{
+				if(i != crx && j != cry && !complete[i][j])
+				{
+					complete[i][j] = march_ray_bundle(bundle_size*gl_LocalInvocationID.x + i, bundle_size*gl_LocalInvocationID.y + j);
+					bundle_computing = bundle_computing && !complete[i][j];
+				}
+			}	  
+		}
 	}
 	
 	//do some rendering stuff
