@@ -51,6 +51,7 @@ void main() {
 	
 	bool bundle_complete = false;
 	///A loop
+	int crx = bundle_size/2, cry = bundle_size/2;
 	
 	while(!bundle_complete)
 	{

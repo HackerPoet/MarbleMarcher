@@ -22,6 +22,13 @@ struct ray
 {
 	vec3 pos;
 	vec3 dir;
+	float td; //traveled distance
+	float fov; //field of view(cone angle)
+	
+	vec3 get_p()
+	{
+		return pos + dir*td;
+	}
 };
 
 uniform gl_camera Camera;
@@ -32,5 +39,7 @@ ray get_ray(vec2 screen_pos)
 	ray cray;
 	cray.pos = Camera.position;
 	cray.dir = normalize(diry + dirx*shift.x + dirz*shift.y);
+	cray.td = 0;
+	cray.fov = Camera.FOV/Camera.resolution.x; //pixel FOV
 	return cray;
 }
