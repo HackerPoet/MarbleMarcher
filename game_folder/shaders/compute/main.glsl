@@ -40,11 +40,24 @@ void main() {
 	//wait untill all the workgroup data is written
 	memoryBarrierShared();
 	
+	bool complete[bundle_size][bundle_size];
+	for(int i = 0; i < bundle_size; i++)
+	{
+		for(int j = 0; j < bundle_size; j++)
+		{
+			complete[i][j] = false;
+		}	  
+	}
+	
+	bool bundle_complete = false;
 	///A loop
-	//march the central rays
 	
-	//march the secondary rays
-	
+	while(!bundle_complete)
+	{
+		//march the central rays
+		
+		//march the secondary rays
+	}
 	
 	//do some rendering stuff
 
