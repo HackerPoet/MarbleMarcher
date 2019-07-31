@@ -1,12 +1,12 @@
 #version 430
 //4*4 ray bundle
-#define bundle_size 4
+#define bundle_size 1
 #define block_size 4
-#define MAX_MARCHES 32
+#define MAX_MARCHES 128
 #include<camera.glsl>
 
 //4*4 bundle of ray bundles(oh lol)
-layout(local_size_x = 1, local_size_y = 1) in;
+layout(local_size_x = 4, local_size_y = 4) in;
 layout(rgba8, binding = 0) uniform image2D img_output;
 
 //make all the local ray bundles shared
@@ -39,8 +39,8 @@ void main() {
 	}
 
 	//wait untill all the workgroup data is written
-	memoryBarrierShared();
-	
+	//memoryBarrierShared();
+	/*
 	bool complete[bundle_size][bundle_size];
 	for(int i = 0; i < bundle_size; i++)
 	{
@@ -82,7 +82,7 @@ void main() {
 				}
 			}	  
 		}
-	}*/
+	}
 	for(int i = 0; i < bundle_size; i++)
 	{
 		for(int j = 0; j < bundle_size; j++)
@@ -92,10 +92,10 @@ void main() {
 			vec4 ray_pos = vec4(ray_array[local_inv.x][local_inv.y].pos,1);
 			vec4 res = ray_march(ray_pos, ray_dir, 0);
 			ray_array[local_inv.x][local_inv.y].td = res.z;
-			*/
+			
 		}	  
 	}
-	
+	*/
 	vec4 pixel = vec4(0.0, 0.0, 0.0, 1.0);
 	// output to the specified image block
 	for(int i = 0; i < bundle_size; i++)
@@ -105,11 +105,10 @@ void main() {
 			//render the depth map
 			ivec2 lpos = bundle_size*local_pos + ivec2(i,j);
 			ivec2 pos = bundle_size*global_pos + ivec2(i,j);
-			ray rr = get_ray(vec2(pos)/vec2(imageSize(img_output)));
-			ray_march(rr);
-			vec3 depth = vec3(rr.td,rr.td,rr.td)/10.f;
+			ray_march(ray_array[lpos.x][lpos.y]);
+			float td = ray_array[lpos.x][lpos.y].td;
+			vec3 depth = vec3(td,td,td)/10.f;
 			imageStore(img_output, pos, vec4(depth,1));
-			memoryBarrierImage();
 		}	  
 	}
 }

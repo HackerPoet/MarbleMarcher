@@ -1,6 +1,6 @@
 #include<distance_estimators.glsl>
 
-#define MAX_DIST 1000
+#define MAX_DIST 50
 #define MIN_DIST 0.01
 float FOVperPixel = 0.001;
 
