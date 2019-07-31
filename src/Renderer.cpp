@@ -16,7 +16,7 @@ void Renderer::Initialize(int w, int h, std::string compute_folder)
 
 	width = w;
 	height = h;
-
+	camera.SetResolution(vec2(w, h));
 	camera.SetAspectRatio((float)w / (float)h);
 
 	ExprParser parser;

@@ -36,8 +36,6 @@ public:
 	ComputeShader();
 	ComputeShader(const std::string file_path);
 
-	
-
 	void LoadShader(const std::string file_path);
 
 	void Run(vec2 global);

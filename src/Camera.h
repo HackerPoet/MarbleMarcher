@@ -62,6 +62,7 @@ public:
 	void SetFocus(float f);
 	void SetSpeckleRadius(float s);
 	void SetCameraSize(float s);
+	void SetResolution(vec2 res);
 	void LookAt(vec3 pos);
 	void SetDirX(vec3 dir);
 	void SetDirY(vec3 dir);
@@ -94,6 +95,8 @@ private:
 
 	//camera inertial speed
 	vec3 velocity;
+
+	vec2 resolution;
 
 	//camera directional inertial angular velocities
 	float alpha, beta, gamma, radv;

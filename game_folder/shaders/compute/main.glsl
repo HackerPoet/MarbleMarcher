@@ -1,12 +1,12 @@
 #version 430
 //4*4 ray bundle
 #define bundle_size 4
-#define block_size 16
-#define MAX_MARCHES 16
+#define block_size 4
+#define MAX_MARCHES 32
 #include<camera.glsl>
 
 //4*4 bundle of ray bundles(oh lol)
-layout(local_size_x = 4, local_size_y = 4) in;
+layout(local_size_x = 1, local_size_y = 1) in;
 layout(rgba8, binding = 0) uniform image2D img_output;
 
 //make all the local ray bundles shared
@@ -23,15 +23,18 @@ shared float DE_data[block_size][block_size];
 //(not only a single DE sphere)
 
 void main() {
+	ivec2 global_pos = ivec2(gl_GlobalInvocationID.x,gl_GlobalInvocationID.y);
+	ivec2 local_pos = ivec2(gl_LocalInvocationID.x,gl_LocalInvocationID.y);
+
 	//initialize the ray bundle
 	for(int i = 0; i < bundle_size; i++)
 	{
 		for(int j = 0; j < bundle_size; j++)
 		{
-			ivec2 local_inv = ivec2(bundle_size*gl_LocalInvocationID.x + i,bundle_size*gl_LocalInvocationID.y + j);
-			vec2 screen_coords = (bundle_size*gl_GlobalInvocationID.xy+vec2(i,j))/vec2(imageSize(img_output));
-			ray_array[local_inv.x][local_inv.y] = get_ray(screen_coords);
-			DE_data[local_inv.x][local_inv.y] = 0;
+			ivec2 lpos = bundle_size*local_pos + ivec2(i,j);
+			ivec2 pos = bundle_size*global_pos + ivec2(i,j);
+			ray_array[lpos.x][lpos.y] = get_ray(vec2(pos)/vec2(imageSize(img_output)));
+			DE_data[lpos.x][lpos.y] = 0;
 		}	  
 	}
 
@@ -52,7 +55,6 @@ void main() {
 	//central ray position
 	int crx = bundle_size/2, cry = bundle_size/2;
 	
-	ivec2 global_pos = ivec2(gl_GlobalInvocationID.x,gl_GlobalInvocationID.y);
 	int n = 0;
 	///Ray bundle marching
 	/*while(bundle_computing && n<MAX_MARCHES)
@@ -85,15 +87,14 @@ void main() {
 	{
 		for(int j = 0; j < bundle_size; j++)
 		{
-			ivec2 local_inv = ivec2(bundle_size*gl_LocalInvocationID.x + i,bundle_size*gl_LocalInvocationID.y + j);
+			/*ivec2 local_inv = ivec2(bundle_size*gl_LocalInvocationID.x + i,bundle_size*gl_LocalInvocationID.y + j);
 			vec4 ray_dir = vec4(ray_array[local_inv.x][local_inv.y].dir,0);
 			vec4 ray_pos = vec4(ray_array[local_inv.x][local_inv.y].pos,1);
 			vec4 res = ray_march(ray_pos, ray_dir, 0);
 			ray_array[local_inv.x][local_inv.y].td = res.z;
+			*/
 		}	  
 	}
-	
-	
 	
 	vec4 pixel = vec4(0.0, 0.0, 0.0, 1.0);
 	// output to the specified image block
@@ -102,10 +103,12 @@ void main() {
 		for(int j = 0; j < bundle_size; j++)
 		{
 			//render the depth map
-			ivec2 local_inv = ivec2(bundle_size*gl_LocalInvocationID.x + i,bundle_size*gl_LocalInvocationID.y + j);
-			float d = ray_array[local_inv.x][local_inv.y].td/100; 
-			ivec2 pos = bundle_size*global_pos+ivec2(i,j);
-			imageStore(img_output, pos, vec4(d,d,d,1));
+			ivec2 lpos = bundle_size*local_pos + ivec2(i,j);
+			ivec2 pos = bundle_size*global_pos + ivec2(i,j);
+			ray rr = get_ray(vec2(pos)/vec2(imageSize(img_output)));
+			ray_march(rr);
+			vec3 depth = vec3(rr.td,rr.td,rr.td)/10.f;
+			imageStore(img_output, pos, vec4(depth,1));
 			memoryBarrierImage();
 		}	  
 	}

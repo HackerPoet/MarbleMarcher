@@ -1,4 +1,17 @@
 
+struct ray
+{
+	vec3 pos;
+	vec3 dir;
+	float td; //traveled distance
+	float fov; 
+};
+
+vec3 get_p(ray r)
+{
+	return r.pos + r.dir*r.td;
+}			
+
 struct gl_camera
 {
 	vec3 position;
@@ -18,27 +31,15 @@ struct gl_camera
 	int step;
 };
 
-struct ray
-{
-	vec3 pos;
-	vec3 dir;
-	float td; //traveled distance
-	float fov; //field of view(cone angle)
-	
-	vec3 get_p()
-	{
-		return pos + dir*td;
-	}
-};
 
 uniform gl_camera Camera;
 
 ray get_ray(vec2 screen_pos)
 {
-	vec2 shift = Camera.FOV*(2.f*screen_pos - 1)*vec2(Camera.aspect_ratio, 1.f/Camera.aspect_ratio);
+	vec2 shift = Camera.FOV*(2.f*screen_pos - 1.f)*vec2(Camera.aspect_ratio, 1.f);
 	ray cray;
 	cray.pos = Camera.position;
-	cray.dir = normalize(Camera.diry + Camera.dirx*shift.x + Camera.dirz*shift.y);
+	cray.dir = normalize(Camera.dirz + Camera.dirx*shift.x + Camera.diry*shift.y);
 	cray.td = 0;
 	cray.fov = Camera.FOV/Camera.resolution.x; //pixel FOV
 	return cray;

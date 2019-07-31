@@ -144,7 +144,7 @@ gl_camera Camera::GetGLdata()
 	cam.dirz = GetDirZ();
 	
 	cam.aspect_ratio = aspect_ratio;
-	cam.FOV = tan(FOV*3.14159 / 180);
+	cam.FOV = tan(FOV*3.14159 / 360);
 	cam.focus = focus;
 	cam.bokeh = bokeh;
 	cam.exposure = exposure;
@@ -155,7 +155,7 @@ gl_camera Camera::GetGLdata()
 	//data for the renderer
 	cam.stepN = 0; 
 	cam.step = 0;
-	cam.resolution = vec2(0, 0); //not a property of the camera, but of the renderer
+	cam.resolution = resolution; //not a property of the camera, but of the renderer
 
 	return cam;
 }
@@ -208,6 +208,11 @@ void Camera::SetSpeckleRadius(float s)
 void Camera::SetCameraSize(float s)
 {
 	size = s;
+}
+
+void Camera::SetResolution(vec2 res)
+{
+	resolution = res;
 }
 
 void Camera::LookAt(vec3 pos)
