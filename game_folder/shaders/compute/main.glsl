@@ -55,7 +55,7 @@ void main() {
 	ivec2 global_pos = ivec2(gl_GlobalInvocationID.x,gl_GlobalInvocationID.y);
 	int n = 0;
 	///Ray bundle marching
-	while(bundle_computing && n<MAX_MARCHES)
+	/*while(bundle_computing && n<MAX_MARCHES)
 	{
 		n++;
 		bundle_computing = false;
@@ -80,7 +80,19 @@ void main() {
 				}
 			}	  
 		}
+	}*/
+	for(int i = 0; i < bundle_size; i++)
+	{
+		for(int j = 0; j < bundle_size; j++)
+		{
+			ivec2 local_inv = ivec2(bundle_size*gl_LocalInvocationID.x + i,bundle_size*gl_LocalInvocationID.y + j);
+			vec4 ray_dir = vec4(ray_array[local_inv.x][local_inv.y].dir,0);
+			vec4 ray_pos = vec4(ray_array[local_inv.x][local_inv.y].pos,1);
+			vec4 res = ray_march(ray_pos, ray_dir, 0);
+			ray_array[local_inv.x][local_inv.y].td = res.z;
+		}	  
 	}
+	
 	
 	
 	vec4 pixel = vec4(0.0, 0.0, 0.0, 1.0);
@@ -91,7 +103,7 @@ void main() {
 		{
 			//render the depth map
 			ivec2 local_inv = ivec2(bundle_size*gl_LocalInvocationID.x + i,bundle_size*gl_LocalInvocationID.y + j);
-			float d = ray_array[local_inv.x][local_inv.y].td/10; 
+			float d = ray_array[local_inv.x][local_inv.y].td/100; 
 			ivec2 pos = bundle_size*global_pos+ivec2(i,j);
 			imageStore(img_output, pos, vec4(d,d,d,1));
 			memoryBarrierImage();
