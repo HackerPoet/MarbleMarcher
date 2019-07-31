@@ -35,7 +35,7 @@ public:
 	};
 
 	Camera(): alpha(0), beta(0), gamma(0), cur_mode(Free), radius(1.f),
-		smooth(0.3f), FOV(45.f), focus(1e10), bokeh(0), mblur(0), speckle(10), size(0), exposure(1.f)
+		smooth(0.3f), FOV(60.f), focus(1e10), bokeh(0), mblur(0), speckle(10), size(0), exposure(1.f)
 	{
 		//camera directions
 		dirx = quat(0, 1, 0, 0);
@@ -63,6 +63,9 @@ public:
 	void SetSpeckleRadius(float s);
 	void SetCameraSize(float s);
 	void LookAt(vec3 pos);
+	void SetDirX(vec3 dir);
+	void SetDirY(vec3 dir);
+	void SetDirZ(vec3 dir);
 
 	vec3 GetPosition();
 	vec3 GetDirX();

@@ -56,6 +56,7 @@ void ComputeShader::LoadShader(const std::string file_path)
 			std::vector<char> ComputeShaderErrorMessage(InfoLogLength + 1);
 			glGetShaderInfoLog(ComputeShaderID, InfoLogLength, NULL, &ComputeShaderErrorMessage[0]);
 			ERROR_MSG(("Compute shader compilation error. \n" + std::string(&ComputeShaderErrorMessage[0])).c_str());
+			SaveErrors(file_path, ComputeShaderCode, std::string(&ComputeShaderErrorMessage[0]));
 		}
 
 		// Link the program
@@ -83,42 +84,49 @@ void ComputeShader::Run(vec2 global)
 
 void ComputeShader::setUniform(std::string name, float X, float Y)
 {
+	glUseProgram(ProgramID);
 	GLuint A = glGetUniformLocation(ProgramID, name.c_str());
 	glUniform2f(A, X, Y);
 }
 
 void ComputeShader::setUniform(std::string name, float X, float Y, float Z)
 {
+	glUseProgram(ProgramID);
 	GLuint A = glGetUniformLocation(ProgramID, name.c_str());
 	glUniform3f(A, X, Y, Z);
 }
 
 void ComputeShader::setUniform(std::string name, float X)
 {
+	glUseProgram(ProgramID);
 	GLuint A = glGetUniformLocation(ProgramID, name.c_str());
 	glUniform1f(A, X);
 }
 
 void ComputeShader::setUniform(std::string name, int X)
 {
+	glUseProgram(ProgramID);
 	GLuint A = glGetUniformLocation(ProgramID, name.c_str());
 	glUniform1i(A, X);
 }
 
 void ComputeShader::setUniform(std::string name, glm::mat3 X, bool transpose)
 {
+	glUseProgram(ProgramID);
 	GLuint A = glGetUniformLocation(ProgramID, name.c_str());
 	glUniformMatrix3fv(A, 1, transpose, glm::value_ptr(X));
 }
 
 void ComputeShader::setUniform(std::string name, glm::vec3 X)
 {
+	glUseProgram(ProgramID);
 	GLuint A = glGetUniformLocation(ProgramID, name.c_str());
 	glUniform3fv(A, 1, glm::value_ptr(X));
 }
 
 void ComputeShader::setUniform(std::string name, glm::vec2 X)
 {
+	glUseProgram(ProgramID);
 	GLuint A = glGetUniformLocation(ProgramID, name.c_str());
 	glUniform2fv(A, 1, glm::value_ptr(X));
 }
@@ -130,6 +138,7 @@ void ComputeShader::setCamera(gl_camera cam)
 	setUniform("Camera.dirx", cam.dirx);
 	setUniform("Camera.diry", cam.diry);
 	setUniform("Camera.dirz", cam.dirz);
+	setUniform("Camera.aspect_ratio", cam.aspect_ratio);
 	setUniform("Camera.exposure", cam.exposure);
 	setUniform("Camera.focus", cam.focus);
 	setUniform("Camera.FOV", cam.FOV);
@@ -162,7 +171,7 @@ std::string ComputeShader::PreprocessIncludes(const fs::path& filename, int leve
 		ERROR_MSG("Header inclusion depth limit reached, might be caused by cyclic header inclusion");
 	using namespace std;
 
-	static const regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
+	static const regex re("^[ ]*#include\s*[\"<](.*)[\">].*");
 	stringstream input;
 	stringstream output;
 	input << LoadFileText(filename);
@@ -173,7 +182,8 @@ std::string ComputeShader::PreprocessIncludes(const fs::path& filename, int leve
 	{
 		if (regex_search(line, matches, re))
 		{
-			std::string include_file = matches[1];
+			//add the code from the included file
+			std::string include_file = filename.parent_path().string() + "/" + matches[1].str();
 			output << PreprocessIncludes(include_file, level + 1) << endl;
 		}
 		else
@@ -182,4 +192,13 @@ std::string ComputeShader::PreprocessIncludes(const fs::path& filename, int leve
 		}
 	}
 	return output.str();
+}
+
+void ComputeShader::SaveErrors(const fs::path& filename, std::string code, std::string errors)
+{
+	fs::path outf = (filename.parent_path() / filename.filename()).concat("_error.txt");
+	std::ofstream error_out(outf);
+	
+	error_out << code << std::endl << errors;
+	error_out.close();
 }

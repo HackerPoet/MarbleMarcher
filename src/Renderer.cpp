@@ -17,6 +17,8 @@ void Renderer::Initialize(int w, int h, std::string compute_folder)
 	width = w;
 	height = h;
 
+	camera.SetAspectRatio((float)w / (float)h);
+
 	ExprParser parser;
 
 	shader_folder = compute_folder;
@@ -111,7 +113,7 @@ void Renderer::Render()
 			glBindImageTexture(tex_id++, shader_textures[i][j], 0, GL_FALSE, 0, GL_READ_WRITE, (i == stages-1)?GL_RGBA8:GL_RGBA32F);
 		}
 		
-		shader_pipeline[i].setCamera(camera.GetGLdata);
+		shader_pipeline[i].setCamera(camera.GetGLdata());
 		shader_pipeline[i].Run(global_size[i]);
 	}
 }

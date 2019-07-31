@@ -15,6 +15,7 @@
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+
 #include "Level.h"
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
@@ -123,6 +124,10 @@ public:
   {
 	  cur_level = lvl;
   }
+
+  void WriteRenderer(Renderer & rd);
+
+  void WriteShader(ComputeShader & rd);
 
   float DE(const Eigen::Vector3f& pt) const;
   Eigen::Vector3f NP(const Eigen::Vector3f& pt) const;

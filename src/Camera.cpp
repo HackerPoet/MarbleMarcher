@@ -86,6 +86,20 @@ void Camera::Update(float dt)
 	gamma -= (1 - smooth)*gamma*dt;
 }
 
+void Camera::SetDirY(vec3 dir)
+{
+	diry.x = dir.x;
+	diry.y = dir.y;
+	diry.z = dir.z;
+}
+
+void Camera::SetDirZ(vec3 dir)
+{
+	dirz.x = dir.x;
+	dirz.y = dir.y;
+	dirz.z = dir.z;
+}
+
 vec3 Camera::GetPosition()
 {
 	if (cur_mode == ThirdPerson)
@@ -129,7 +143,8 @@ gl_camera Camera::GetGLdata()
 	cam.diry = GetDirY();
 	cam.dirz = GetDirZ();
 	
-	cam.FOV = FOV;
+	cam.aspect_ratio = aspect_ratio;
+	cam.FOV = tan(FOV*3.14159 / 180);
 	cam.focus = focus;
 	cam.bokeh = bokeh;
 	cam.exposure = exposure;
@@ -198,4 +213,11 @@ void Camera::SetCameraSize(float s)
 void Camera::LookAt(vec3 pos)
 {
 	//todo
+}
+
+void Camera::SetDirX(vec3 dir)
+{
+	dirx.x = dir.x;
+	dirx.y = dir.y;
+	dirx.z = dir.z;
 }

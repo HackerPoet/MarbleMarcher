@@ -1,6 +1,10 @@
 #pragma once
 #include <string>
+
+#if !defined(__gl_h_) && !defined(__GL_H__) && !defined(_GL_H) && !defined(__X_GL_H)
 #include <GL/glew.h>
+#endif
+
 #include <glm\glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <SFML/Graphics.hpp>
@@ -8,7 +12,12 @@
 #include <fstream>
 #include <regex>
 #include <Camera.h>
-#include <Level.h>
+#include <filesystem>
+#include <map>
+#include <algorithm>
+#include <sstream>
+
+namespace fs = std::filesystem;
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -45,6 +54,8 @@ public:
 	GLuint getNativeHandle();
 
 	std::string PreprocessIncludes(const fs::path & filename, int level = 0);
+
+	void SaveErrors(const fs::path & filename, std::string code, std::string errors);
 
 	std::string LoadFileText(fs::path path);
 };

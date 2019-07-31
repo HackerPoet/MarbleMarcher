@@ -9,7 +9,7 @@ bool march_ray(inout ray r, inout float de)
 		return true;
 	} 
 	r.td += de;
-	de = DE(r.get_p());
+	de = DE(vec4(r.get_p(),1));
 	return false;
 }
 
@@ -26,7 +26,7 @@ float sphere_intersection(vec3 r, vec3 p, vec3 sp, float R)
 	}
 	else
 	{
-		return (sqrt(D) - b)/(2*a);
+		return (sqrt(D) - b)/(2*a); //use furthest solution in the direction of the ray
 	}
 }
 
@@ -34,9 +34,9 @@ float find_furthest_d(vec3 r, vec3 p)
 {
 	float d = 0;
 	//check through all of the local bundles, may be slow(256 rays), so I'll probably change it
-	for(int i = 0; i < local_size_x*bundle_size; i++)
+	for(int i = 0; i < block_size; i++)
 	{
-		for(int j = 0; j < local_size_y*bundle_size; j++)
+		for(int j = 0; j < block_size; j++)
 		{
 			if(DE_data[i][j] > 0) // if the ray has a DE
 			{
@@ -48,8 +48,9 @@ float find_furthest_d(vec3 r, vec3 p)
 	return d;
 }
 
-bool march_ray_bundle(int i, int j)
+bool march_ray_bundle(ivec2 p)
 {
+	int i = p.x, j = p.y;
 	//wait untill all data is written
 	memoryBarrierShared();
 	
@@ -72,7 +73,7 @@ bool march_ray_bundle(int i, int j)
 	}
 	else //if not -> calculate a DE at this point
 	{
-		DE_data[i][j] = DE(ray_array[i][j].get_p());
+		DE_data[i][j] = DE(vec4(ray_array[i][j].get_p(),1));
 	}
 	return false;
 }

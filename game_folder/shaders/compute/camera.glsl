@@ -35,10 +35,10 @@ uniform gl_camera Camera;
 
 ray get_ray(vec2 screen_pos)
 {
-	vec2 shift = Camera.FOV*(2*screen_pos - 1)*vec2(aspect_ratio, 1/aspect_ratio);
+	vec2 shift = Camera.FOV*(2.f*screen_pos - 1)*vec2(Camera.aspect_ratio, 1.f/Camera.aspect_ratio);
 	ray cray;
 	cray.pos = Camera.position;
-	cray.dir = normalize(diry + dirx*shift.x + dirz*shift.y);
+	cray.dir = normalize(Camera.diry + Camera.dirx*shift.x + Camera.dirz*shift.y);
 	cray.td = 0;
 	cray.fov = Camera.FOV/Camera.resolution.x; //pixel FOV
 	return cray;

@@ -15,12 +15,10 @@
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
 #include "Overlays.h"
-#include "Level.h"
 #include "Res.h"
-#include "Scores.h"
 #include <Localization.h>
 
-static const float pi = 3.14159265359f;
+static const float PI = 3.14159265359f;
 static const int num_level_pages = 1 + (num_levels - 1) / Overlays::LEVELS_PER_PAGE;
 Settings game_settings;
 
@@ -95,36 +93,7 @@ void Overlays::UpdateControls(float mouse_x, float mouse_y) {
 }
 
 void Overlays::UpdateLevels(float mouse_x, float mouse_y) {
-  //Update text boxes
-  const int page_start = level_page * LEVELS_PER_PAGE;
-  const int page_end = page_start + LEVELS_PER_PAGE;
-  for (int i = page_start; i < page_end; ++i) {
-    const int j = i % LEVELS_PER_PAGE;
-    if (i < num_levels) {
-      const float y = 80.0f + float(j / 3) * 120.0f;
-      const float x = 240.0f + float(j % 3) * 400.0f;
-      const char* txt = high_scores.HasUnlocked(i) ? all_levels[i].txt.c_str() : "???";
-      MakeText(txt, x, y, 32, sf::Color::White, all_text[j + L0]);
-      const sf::FloatRect text_bounds = all_text[j + L0].getLocalBounds();
-      all_text[j + L0].setOrigin(text_bounds.width / 2, text_bounds.height / 2);
-    } else {
-      all_text[j + L0] = sf::Text();
-    }
-  }
-  if (level_page > 0) {
-    MakeText("<", 540, 652, 48, sf::Color::White, all_text[PREV]);
-  } else {
-    all_text[PREV] = sf::Text();
-  }
-  MakeText(LOCAL["Back"], 590, 660, 40, sf::Color::White, all_text[BACK2]);
-  if (level_page < num_level_pages - 1) {
-    MakeText(">", 732, 652, 48, sf::Color::White, all_text[NEXT]);
-  } else {
-    all_text[NEXT] = sf::Text();
-  }
-
-  //Check if mouse intersects anything
-  UpdateHover(L0, BACK2, mouse_x, mouse_y);
+  
 }
 
 void Overlays::UpdateLevelMenu(float mouse_x, float mouse_y, float scroll)
@@ -252,7 +221,7 @@ void Overlays::DrawArrow(sf::RenderWindow& window, const sf::Vector3f& v3) {
   const sf::Uint8 alpha = sf::Uint8(102.0f * std::max(0.0f, std::min(1.0f, (v3.z - 5.0f) / 30.0f)));
   if (alpha > 0) {
     arrow_spr.setScale(draw_scale * 0.1f, draw_scale * 0.1f);
-    arrow_spr.setRotation(90.0f + v3.x * 180.0f / pi);
+    arrow_spr.setRotation(90.0f + v3.x * 180.0f / PI);
     arrow_spr.setPosition(draw_scale * x, draw_scale * y);
     arrow_spr.setColor(sf::Color(255, 255, 255, alpha));
     window.draw(arrow_spr);

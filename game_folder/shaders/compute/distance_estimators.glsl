@@ -119,10 +119,6 @@ float de_marble(vec4 p)
 vec4 col_marble(vec4 p) 
 {
 	vec4 col = vec4(0, 0, 0, de_sphere(p - vec4(iMarblePos, 0), iMarbleRad));
-	if(!REFL_REFR_ENABLED)
-	{
-		col.xyz = vec3(0.7,0.7,0.7);
-	}
 	return vec4(col.x, col.y, col.z, de_sphere(p - vec4(iMarblePos, 0), iMarbleRad));
 }
 

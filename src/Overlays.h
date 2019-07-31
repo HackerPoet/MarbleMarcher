@@ -15,8 +15,8 @@
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "Settings.h"
 #include "Level.h"
+#include "Settings.h"
 #include "Scene.h"
 #include <SFML/Graphics.hpp>
 

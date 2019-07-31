@@ -15,11 +15,10 @@
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
 #include "Scene.h"
-#include "Scores.h"
 #include "Res.h"
 #include <iostream>
 
-static const float pi = 3.14159265359f;
+static const float PI = 3.14159265359f;
 static const float ground_force = 0.008f;
 static const float air_force = 0.004f;
 static const float ground_friction = 0.99f;
@@ -43,10 +42,10 @@ static const int mus_switches[num_level_music] = {9, 15, 21, 24};
 static const int num_levels_midpoint = 15;
 
 static void ModPi(float& a, float b) {
-  if (a - b > pi) {
-    a -= 2 * pi;
-  } else if (a - b < -pi) {
-    a += 2 * pi;
+  if (a - b > PI) {
+    a -= 2 * PI;
+  } else if (a - b < -PI) {
+    a += 2 * PI;
   }
 }
 
@@ -171,7 +170,7 @@ sf::Vector3f Scene::GetGoalDirection() const {
   goal_delta.y() = 0.0f;
   const float goal_dir = std::atan2(-goal_delta.z(), goal_delta.x());
   const float a = cam_look_x - goal_dir;
-  const float b = std::abs(cam_look_y * 2.0f / pi);
+  const float b = std::abs(cam_look_y * 2.0f / PI);
   const float d = goal_delta.norm() / marble_rad;
   return sf::Vector3f(a, b, d);
 }
@@ -465,7 +464,7 @@ void Scene::UpdateIntro(bool ssaver) {
   //Update demo fractal
   frac_params[0] = 1.6f;
   frac_params[1] = 2.0f + 0.5f*std::cos(timer * 0.0021f);
-  frac_params[2] = pi + 0.5f*std::cos(timer * 0.000287f);
+  frac_params[2] = PI + 0.5f*std::cos(timer * 0.000287f);
   frac_params[3] = -4.0f + 0.5f*std::sin(timer * 0.00161f);
   frac_params[4] = -1.0f + 0.1f*std::sin(timer * 0.00123f);
   frac_params[5] = -1.0f + 0.1f*std::cos(timer * 0.00137f);
@@ -605,9 +604,9 @@ void Scene::UpdateCameraOnly(float dx, float dy, float dz) {
   //Update look direction
   cam_look_x += dx;
   cam_look_y += dy;
-  cam_look_y = std::min(std::max(cam_look_y, -pi / 2), pi / 2);
-  while (cam_look_x > pi) { cam_look_x -= 2 * pi; }
-  while (cam_look_x < -pi) { cam_look_x += 2 * pi; }
+  cam_look_y = std::min(std::max(cam_look_y, -PI / 2), PI / 2);
+  while (cam_look_x > PI) { cam_look_x -= 2 * PI; }
+  while (cam_look_x < -PI) { cam_look_x += 2 * PI; }
 
   //Update look smoothing
   const float a = (free_camera ? look_smooth_free_camera : look_smooth);
@@ -762,6 +761,84 @@ void Scene::Write(sf::Shader& shader) const {
   shader.setUniform("MARBLE_MODE", MarbleType);
 }
 
+
+
+void Scene::WriteRenderer(Renderer & rd)
+{
+	//Update the camera
+	vec3 cam_pos = vec3(cam_mat(0, 3), cam_mat(1, 3), cam_mat(2, 3));
+	vec3 dirx = vec3(cam_mat(0, 0), cam_mat(1, 0), cam_mat(2, 0));
+	vec3 diry = vec3(cam_mat(0, 1), cam_mat(1, 1), cam_mat(2, 1));
+	vec3 dirz = -vec3(cam_mat(0, 2), cam_mat(1, 2), cam_mat(2, 2));
+	rd.camera.SetPosition(cam_pos);
+	rd.camera.SetDirX(dirx);
+	rd.camera.SetDirY(diry);
+	rd.camera.SetDirZ(dirz);
+
+	//write all the uniform values to the rendering pipeline
+	for (auto &shader : rd.shader_pipeline)
+	{
+		WriteShader(shader);
+	}
+}
+
+void Scene::WriteShader(ComputeShader& shader)
+{
+
+	if (level_editor)
+	{
+		shader.setUniform("iMarblePos", vec3(level_copy.start_pos.x(), level_copy.start_pos.y(), level_copy.start_pos.z()));
+		shader.setUniform("iFlagPos", vec3(level_copy.end_pos.x(), level_copy.end_pos.y(), level_copy.end_pos.z()));
+	}
+	else
+	{
+		shader.setUniform("iMarblePos", free_camera ?
+			vec3(999.0f, 999.0f, 999.0f) :
+			vec3(marble_pos.x(), marble_pos.y(), marble_pos.z())
+		);
+		shader.setUniform("iFlagPos", free_camera ?
+			vec3(-999.0f, -999.0f, -999.0f) :
+			vec3(flag_pos.x(), flag_pos.y(), flag_pos.z())
+		);
+	}
+
+	if (cam_mode != INTRO)
+	{
+		shader.setUniform("LIGHT_DIRECTION", vec3(level_copy.light_dir[0], level_copy.light_dir[1], level_copy.light_dir[2]));
+		shader.setUniform("PBR_ENABLED", PBR_Enabled);
+		shader.setUniform("PBR_METALLIC", level_copy.PBR_metal);
+		shader.setUniform("PBR_ROUGHNESS", level_copy.PBR_roughness);
+	}
+	else
+	{
+		shader.setUniform("LIGHT_DIRECTION", vec3(LIGHT_DIRECTION[0], LIGHT_DIRECTION[1], LIGHT_DIRECTION[2]));
+		shader.setUniform("PBR_ENABLED", PBR_Enabled);
+		shader.setUniform("PBR_METALLIC", PBR_METALLIC);
+		shader.setUniform("PBR_ROUGHNESS", PBR_ROUGHNESS);
+	}
+
+	shader.setUniform("BACKGROUND_COLOR", vec3(level_copy.background_col[0], level_copy.background_col[1], level_copy.background_col[2]));
+	shader.setUniform("LIGHT_COLOR", vec3(level_copy.light_col[0], level_copy.light_col[1], level_copy.light_col[2]));
+
+	shader.setUniform("iMarbleRad", level_copy.marble_rad);
+
+	shader.setUniform("iFlagScale", level_copy.planet ? -level_copy.marble_rad : level_copy.marble_rad);
+
+	shader.setUniform("iFracScale", frac_params_smooth[0]);
+	shader.setUniform("iFracAng1", frac_params_smooth[1]);
+	shader.setUniform("iFracAng2", frac_params_smooth[2]);
+	shader.setUniform("iFracShift", vec3(frac_params_smooth[3], frac_params_smooth[4], frac_params_smooth[5]));
+	shader.setUniform("iFracCol", vec3(frac_params_smooth[6], frac_params_smooth[7], frac_params_smooth[8]));
+
+	shader.setUniform("iExposure", exposure);
+
+
+	shader.setUniform("SHADOWS_ENABLED", Shadows_Enabled);
+	shader.setUniform("CAMERA_SIZE", camera_size*level_copy.marble_rad / 0.035f);
+	shader.setUniform("FRACTAL_ITER", Fractal_Iterations);
+	shader.setUniform("REFL_REFR_ENABLED", Refl_Refr_Enabled);
+	shader.setUniform("MARBLE_MODE", MarbleType);
+}
 
 //Hard-coded to match the fractal
 float Scene::DE(const Eigen::Vector3f& pt) const {

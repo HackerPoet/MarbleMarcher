@@ -14,13 +14,11 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.If not, see <http://www.gnu.org/licenses/>.
 */
-#include<Renderer.h>
-#include "Scene.h"
-#include "Overlays.h"
+
+#include<Gamemodes.h>
 #include "Level.h"
 #include "Res.h"
 #include "SelectRes.h"
-#include "Scores.h"
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
@@ -33,7 +31,7 @@
 #include <thread>
 #include <mutex>
 
-#include<Gamemodes.h>
+
 
 
 
@@ -123,8 +121,6 @@ int main(int argc, char *argv[]) {
   const std::string save_file = save_dir + "/scores.bin";
   const std::string settings_file = save_dir + "/settings.bin";
 
-  //Load scores if available
-  high_scores.Load(save_file);
   game_settings.Load(settings_file);
 
   //Have user select the resolution
@@ -347,7 +343,7 @@ int main(int argc, char *argv[]) {
 					}
 				}
 				else if (keycode == sf::Keyboard::F1) {
-					if (game_mode == PLAYING && high_scores.HasCompleted(num_levels - 1)) {
+					if (game_mode == PLAYING) {
 						show_cheats = !show_cheats;
 						scene.EnbaleCheats();
 					}
@@ -618,6 +614,7 @@ int main(int argc, char *argv[]) {
 	  window.setVerticalSyncEnabled(VSYNC);
       //Update the shader values
       scene.Write(shader);
+	  scene.WriteRenderer(rend);
 	  shader.setUniform("render_texture", main_txt);
 	  rend.SetOutputTexture(main_txt);
 
