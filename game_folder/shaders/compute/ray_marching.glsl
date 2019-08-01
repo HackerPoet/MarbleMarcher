@@ -24,35 +24,42 @@ void ray_march(inout ray r)
 float sphere_intersection(vec3 r, vec3 p, vec3 sp, float R)
 {
 	vec3 dp = p - sp;
-	float a = dot(r,r);
 	float b = 2*dot(dp, r);
 	float c = dot(dp,dp) - R*R;
-	float D = b*b - 4*a*c;
+	float D = b*b - 4*c;
 	if(D < 0 || c > 0) //if no intersection or outside the sphere
 	{
 		return 0;
 	}
 	else
 	{
-		return (sqrt(D) - b)/(2*a); //use furthest solution in the direction of the ray
+		return (sqrt(D) - b)*0.5f; //use furthest solution in the direction of the ray
 	}
 }
 
-float find_furthest_d(vec3 r, vec3 p)
+float find_furthest_d(vec3 r, vec3 p, ivec2 pi)
 {
 	float d = 0;
-	//check through all of the local bundles, may be slow(256 rays), so I'll probably change it
-	for(int i = 0; i < block_size; i++)
+	/*//check through all of the local bundles
+	for(int i = 0; i < group_size; i++)
 	{
-		for(int j = 0; j < block_size; j++)
+		for(int j = 0; j < group_size; j++)
 		{
 			if(DE_data[i][j] > 0) // if the ray has a DE
 			{
-				float this_d = sphere_intersection(r, p, ray_array[i][j].pos, DE_data[i][j]);
+				int ix = bundle_size*i + bundle_size/2;
+				int iy = bundle_size*j+ bundle_size/2;
+				float this_d = sphere_intersection(r, p, ray_array[ix][iy].pos, DE_data[ix][iy]);
 				d = max(d, this_d);
 			}
 		}
-	}
+	}*/
+	//check this one and the central one
+	d = max(d,sphere_intersection(r, p, get_p(ray_array[pi.x][pi.y]), DE_data[pi.x][pi.y]));
+	
+	int cx = pi.x/bundle_size + bundle_size/2;
+	int cy = pi.y/bundle_size + bundle_size/2;
+	d = max(d, sphere_intersection(r, p, get_p(ray_array[cx][cy]), DE_data[cx][cy]));
 	return d;
 }
 
@@ -68,7 +75,7 @@ bool march_ray_bundle(ivec2 p)
 		return true;
 	} 
 	
-	float new_march = find_furthest_d(ray_array[i][j].dir, get_p(ray_array[i][j]));
+	float new_march = find_furthest_d(ray_array[i][j].dir, get_p(ray_array[i][j]), p);
 	
 	//wait untill all data is written, not sure if we need 2 barriers though
 	memoryBarrierShared();

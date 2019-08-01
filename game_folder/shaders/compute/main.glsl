@@ -1,12 +1,13 @@
 #version 430
 //4*4 ray bundle
-#define bundle_size 1
-#define block_size 4
+#define bundle_size 4
+#define group_size 4
+#define block_size 16
 #define MAX_MARCHES 128
 #include<camera.glsl>
 
 //4*4 bundle of ray bundles(oh lol)
-layout(local_size_x = 4, local_size_y = 4) in;
+layout(local_size_x = group_size, local_size_y = group_size) in;
 layout(rgba8, binding = 0) uniform image2D img_output;
 
 //make all the local ray bundles shared
@@ -39,8 +40,8 @@ void main() {
 	}
 
 	//wait untill all the workgroup data is written
-	//memoryBarrierShared();
-	/*
+	memoryBarrierShared();
+	
 	bool complete[bundle_size][bundle_size];
 	for(int i = 0; i < bundle_size; i++)
 	{
@@ -57,15 +58,15 @@ void main() {
 	
 	int n = 0;
 	///Ray bundle marching
-	/*while(bundle_computing && n<MAX_MARCHES)
+	while(bundle_computing && n<MAX_MARCHES)
 	{
 		n++;
 		bundle_computing = false;
 		//march the central rays
 		if(!complete[crx][cry])
 		{
-			ivec2 pos = bundle_size*global_pos+ivec2(crx,cry);
-			complete[crx][cry] = march_ray_bundle(pos);
+			ivec2 lpos = bundle_size*local_pos + ivec2(crx,cry);
+			complete[crx][cry] = march_ray_bundle(lpos);
 			bundle_computing = bundle_computing || !complete[crx][cry];
 		}
 		
@@ -76,27 +77,26 @@ void main() {
 			{
 				if(i != crx && j != cry && !complete[i][j])
 				{
-					ivec2 pos = bundle_size*global_pos+ivec2(i,j);
-					complete[i][j] = march_ray_bundle(pos);
+					ivec2 lpos = bundle_size*local_pos + ivec2(i,j);
+					complete[i][j] = march_ray_bundle(lpos);
 					bundle_computing = bundle_computing && !complete[i][j];
 				}
 			}	  
 		}
 	}
-	for(int i = 0; i < bundle_size; i++)
+	
+	
+	/*for(int i = 0; i < bundle_size; i++)
 	{
 		for(int j = 0; j < bundle_size; j++)
 		{
-			/*ivec2 local_inv = ivec2(bundle_size*gl_LocalInvocationID.x + i,bundle_size*gl_LocalInvocationID.y + j);
-			vec4 ray_dir = vec4(ray_array[local_inv.x][local_inv.y].dir,0);
-			vec4 ray_pos = vec4(ray_array[local_inv.x][local_inv.y].pos,1);
-			vec4 res = ray_march(ray_pos, ray_dir, 0);
-			ray_array[local_inv.x][local_inv.y].td = res.z;
-			
+			ivec2 lpos = bundle_size*local_pos + ivec2(i,j);
+			ray_march(ray_array[lpos.x][lpos.y]);
 		}	  
-	}
-	*/
+	}*/
+	
 	vec4 pixel = vec4(0.0, 0.0, 0.0, 1.0);
+	
 	// output to the specified image block
 	for(int i = 0; i < bundle_size; i++)
 	{
@@ -105,7 +105,6 @@ void main() {
 			//render the depth map
 			ivec2 lpos = bundle_size*local_pos + ivec2(i,j);
 			ivec2 pos = bundle_size*global_pos + ivec2(i,j);
-			ray_march(ray_array[lpos.x][lpos.y]);
 			float td = ray_array[lpos.x][lpos.y].td;
 			vec3 depth = vec3(td,td,td)/10.f;
 			imageStore(img_output, pos, vec4(depth,1));
