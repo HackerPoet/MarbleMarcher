@@ -1,46 +1,57 @@
 #include<distance_estimators.glsl>
 
 #define MAX_DIST 50
-#define MIN_DIST 0.01
-float FOVperPixel = 0.01;
+#define MIN_DIST 0.001
 
-void ray_march(inout vec4 pos, inout vec3 dir) 
+
+void ray_march(inout vec4 pos, inout vec4 dir, inout vec4 var, float fov = fovray) 
 {
 	//March the ray
 	pos.w = DE(pos.xyz);
-	float td = 0;
-	for (float s = 0; s < MAX_MARCHES; s += 1.0) {
+	float s = 0;
+	for (; s < 5; s += 1.0) {
 		//if the distance from the surface is less than the distance per pixel we stop
-		float min_dist = max(FOVperPixel*td, MIN_DIST);
-		if(td > MAX_DIST || pos.w < min_dist)
+		float min_dist = max(fov*dir.w, MIN_DIST);
+		if(dir.w > MAX_DIST || pos.w < min_dist)
 		{
 			break;
 		}
-		td += pos.w;
-		pos.xyz += pos.w*dir;
+		dir.w += pos.w;
+		pos.xyz += pos.w*dir.xyz;
 		pos.w = DE(pos.xyz);
 	}
+	var.x = s;
 }
 
 
 float sphere_intersection(vec3 r, vec3 p, vec4 sphere)
 {
-	vec3 dp = sphere.xyz - p;
-	float b = dot(dp, r);
-	float c = sphere.w*sphere.w - dot(dp,dp);
-	float D = b*b + c;
-	if((D < 0) || (c < 0)) //if no intersection
+	if(sphere.w > MIN_DIST && sphere.w < MAX_DIST)
 	{
-		return 0;
+		vec3 dp = sphere.xyz - p;
+		/*if(dp == vec3(0))
+		{
+			return sphere.w;
+		}*/
+		
+		float b = dot(dp, r);
+		float c = sphere.w*sphere.w - dot(dp,dp);
+		float D = b*b + c;
+		
+		if((D <= 0) || (c <= 0)) //if no intersection
+		{
+			return 0;
+		}
+		else
+		{
+			return sqrt(D) + b; //use furthest solution in the direction of the ray
+		}
 	}
-	else
-	{
-		return sqrt(D) + b; //use furthest solution in the direction of the ray
-	}
+	return 0;	
 }
+
+
 /*
-
-
 bool march_ray_bundle(ivec2 p)
 {
 	int i = p.x, j = p.y;
@@ -70,7 +81,7 @@ bool march_ray_bundle(ivec2 p)
 	}
 	return false;
 }*/
-
+/*
 vec4 find_furthest_DE_sphere(vec3 r, vec3 p)
 {
 	float d = 0;
@@ -88,10 +99,10 @@ vec4 find_furthest_DE_sphere(vec3 r, vec3 p)
 	return desphere;
 }
 
-float find_furthest_DE_local(vec3 r, vec3 p, int id)
+float find_furthest_DE_local(vec3 r, vec3 p, int id, float tr)
 {
 	float d = 0;
-	ivec2 id2 = getGpos(id);
+	/*ivec2 id2 = getGpos(id);
 	ivec2 id11 = max(id2 - 1,0);
 	ivec2 id22 = min(id2 + 1,group_size);
 	//check through all of the local bundles
@@ -99,76 +110,148 @@ float find_furthest_DE_local(vec3 r, vec3 p, int id)
 	{
 		for(int j = id11.y; j < id22.y; j++)
 		{
-			float this_d = sphere_intersection(r, p, ray_pos[i + group_size*j]);
-			d = max(this_d, d);
+			int index = i + group_size*j;
+			if(ray_pos[index].w < 2*tr)
+				d = max(sphere_intersection(r, p, ray_pos[index]), d);
 		}
 	}
+	d = max(sphere_intersection(r, p, ray_pos[id]), d);
 	return d;
 }
 
 float find_furthest_DE(vec3 r, vec3 p, int id)
 {
 	float d = 0;
+	float tr = ray_pos[id].w;
 	//check through all of the local bundles
-	/*
+	
 	for(int i = 0; i < block_size; i++)
 	{
-		memoryBarrierShared();
-		float this_d = sphere_intersection(r, p, ray_pos[i]);
-		d = max(this_d, d);
+		if(ray_pos[i].w < 2*tr)
+			d = max(sphere_intersection(r, p, ray_pos[i]), d);
 	}
-	*/
-	d = max(sphere_intersection(r, p, ray_pos[max(id-1, 0)]), d);
-	d = max(sphere_intersection(r, p, ray_pos[id]), d);
+	
+	
+//	d = max(sphere_intersection(r, p, ray_pos[id]), d);
 	return d;
 }
 
-void ray_bundle_marching(inout vec4 pos[bundle_length], inout vec3 dir[bundle_length], int id)
+void ray_bundle_marching(inout vec4 pos[bundle_length], inout vec4 dir[bundle_length], int id)
 {
-	float bundle_fov = bundle_size*fovray;
-	float td = 0;
+	float bundle_fov = 4*bundle_size*fovray;
 	float d = 0;
 	bool marching = true;
-	
+	int l = 0;
 	for(int m = 0; (m < MAX_MARCHES) && marching; m++)
 	{
 		memoryBarrierShared();
 		ray_pos[id].w = DE(ray_pos[id].xyz);
 		memoryBarrierShared();
-		if(ray_pos[id].w < bundle_fov*td) 
+		if(ray_pos[id].w < bundle_fov*ray_dir[id].w) 
 		{
-			break;
 			marching = false;
 			//march the ray bundle
 			for(int i = 0; i < bundle_length; i++)
 			{
-				if(pos[i].w > fovray)
+				if(l == 0)
+				{
+					pos[i].xyz += dir[i].xyz*ray_dir[id].w;
+					pos[i].w = d;
+					dir[i].w = ray_dir[id].w;
+				}
+				
+				if(pos[i].w > fovray*dir[i].w)
 				{
 					marching = true;
-					pos[i].w = find_furthest_DE_local(dir[i], pos[i].xyz, id);
+					d = find_furthest_DE_local(dir[i].xyz, pos[i].xyz, id, pos[i].w);
 					//if found a usable DE
-					if(pos[i].w  > 0)
-					{
-						pos[i].xyz += dir[i]*pos[i].w;
-					}
-					else //calculate a new DE
+					if(true || d == 0)
 					{
 						pos[i].w = DE(pos[i].xyz);
-						pos[i].xyz += dir[i]*pos[i].w;
+						pos[i].xyz += dir[i].xyz*pos[i].w;
+						dir[i].w += pos[i].w;
+					}
+					else
+					{
+						pos[i].xyz += dir[i].xyz*d;
+						dir[i].w += d;
 					}
 				}
+			}	
+			l++;
+		}
+		else if(ray_dir[id].w > MAX_DIST)
+		{
+			for(int i = 0; i < bundle_length; i++)
+			{
+				pos[i] = ray_pos[id];
+				dir[i] = ray_dir[id];
 			}
+			break;
 		}
 		else
 		{
-			d = find_furthest_DE(ray_dir[id], ray_pos[id].xyz, id);
+			d = find_furthest_DE_local(ray_dir[id].xyz, ray_pos[id].xyz, id, ray_pos[id].w);
 			memoryBarrierShared();
-			ray_pos[id].xyz += ray_dir[id]*d;
+			ray_dir[id].w += d;
+			ray_pos[id].xyz += ray_dir[id].xyz*d;
 		}
 	}
+}
+*/
+void ray_bundle_marching1(inout vec4 pos[bundle_length], inout vec4 dir[bundle_length], inout vec4 var[bundle_length], int id)
+{
+	bool marching = true;
+	float d = 0.f;
 	
-	for(int i = 0; i < bundle_length; i++)
+	//march central ray while safe to do so(ray bundle within ray cone)
+	ray_march(pos[bundle_center], dir[bundle_center], var[bundle_center], fovray*bundle_size*4);
+	
+	pos[bundle_center].w = 0;
+	for(int i = bundle_center+1; i < bundle_length+bundle_center; i++)
 	{
-		pos[i] = ray_pos[id];
+		int ii = i%bundle_length;
+		pos[ii].xyz += dir[ii].xyz*dir[bundle_center].w;
+		dir[ii].w = dir[bundle_center].w;
+		var[ii] = var[bundle_center];
+	}
+	
+	vec4 sphere = vec4(0);
+	for(int m = 0; (m < MAX_MARCHES) && marching; m++)
+	{
+		marching = false;
+		sphere.w = 0;
+		for(int i = 0; i < bundle_length; i++)
+		{
+			if((dir[i].w > MAX_DIST || (pos[i].w < fovray*dir[i].w && pos[i].w > 0)) && dir[i].w > 0)
+			{
+				continue;
+			}
+			else
+			{
+				marching = true;
+			}
+
+			
+			pos[i].xyz += dir[i].xyz*abs(pos[i].w);
+			dir[i].w += abs(pos[i].w);
+			var[i].x += 1.f;
+			
+			memoryBarrierShared();
+			d = sphere_intersection(dir[i].xyz, pos[i].xyz, sphere);
+			
+			if(d == 0)
+			{
+				pos[i].w = DE(pos[i].xyz);
+				if(sphere.w < pos[i].w)
+				{
+					sphere = pos[i];
+				}
+			}
+			else //if found a usable DE
+			{
+				pos[i].w = -d;
+			}
+		}
 	}
 }

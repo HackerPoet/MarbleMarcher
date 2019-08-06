@@ -78,7 +78,7 @@ void ComputeShader::LoadShader(const std::string file_path)
 void ComputeShader::Run(vec2 global)
 {
 	glUseProgram(ProgramID);
-	glDispatchCompute(global.x, global.y, 1);
+	glDispatchCompute(ceil(global.x), ceil(global.y), 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 

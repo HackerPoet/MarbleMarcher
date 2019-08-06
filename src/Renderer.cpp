@@ -53,16 +53,16 @@ void Renderer::Initialize(int w, int h, std::string compute_folder)
 				LoadShader(shader_file);
 				break;
 			case 1:
-				global.x = parser.Evaluate(variables);
+				global.x = ceil(parser.Evaluate(variables));
 				break;
 			case 2:
-				global.y = parser.Evaluate(variables);
+				global.y = ceil(parser.Evaluate(variables));
 				break;
 			case 3:
-				tex_resolution.x = parser.Evaluate(variables);
+				tex_resolution.x = ceil(parser.Evaluate(variables));
 				break;
 			case 4:
-				tex_resolution.y = parser.Evaluate(variables);
+				tex_resolution.y = ceil(parser.Evaluate(variables));
 				break;
 			case 5:
 				int tnum = parser.Evaluate(variables);
