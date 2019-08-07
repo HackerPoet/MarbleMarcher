@@ -4,21 +4,19 @@
 #define MIN_DIST 0.001
 
 
-void ray_march(inout vec4 pos, inout vec4 dir, inout vec4 var, float fov = fovray) 
+void ray_march(inout vec4 pos, inout vec4 dir, inout vec4 var, float fov) 
 {
 	//March the ray
-	pos.w = DE(pos.xyz);
 	float s = 0;
-	for (; s < 5; s += 1.0) {
+	for (; s < MAX_MARCHES; s += 1.0) {
+		pos.w = DE(pos.xyz);
 		//if the distance from the surface is less than the distance per pixel we stop
-		float min_dist = max(fov*dir.w, MIN_DIST);
-		if(dir.w > MAX_DIST || pos.w < min_dist)
+		if(dir.w > MAX_DIST || pos.w < max(fov*dir.w, MIN_DIST))
 		{
 			break;
 		}
 		dir.w += pos.w;
 		pos.xyz += pos.w*dir.xyz;
-		pos.w = DE(pos.xyz);
 	}
 	var.x = s;
 }
@@ -26,28 +24,21 @@ void ray_march(inout vec4 pos, inout vec4 dir, inout vec4 var, float fov = fovra
 
 float sphere_intersection(vec3 r, vec3 p, vec4 sphere)
 {
-	if(sphere.w > MIN_DIST && sphere.w < MAX_DIST)
+	p = sphere.xyz - p;
+	if(p == vec3(0)) return sphere.w;
+	
+	r.x = dot(p, r);
+	r.y = sphere.w*sphere.w - dot(r,r);
+	r.z = r.x*r.x + r.y;
+	
+	if((r.z <= 0) || (r.y <= 0)) //if no intersection
 	{
-		vec3 dp = sphere.xyz - p;
-		/*if(dp == vec3(0))
-		{
-			return sphere.w;
-		}*/
-		
-		float b = dot(dp, r);
-		float c = sphere.w*sphere.w - dot(dp,dp);
-		float D = b*b + c;
-		
-		if((D <= 0) || (c <= 0)) //if no intersection
-		{
-			return 0;
-		}
-		else
-		{
-			return sqrt(D) + b; //use furthest solution in the direction of the ray
-		}
+		return 0;
 	}
-	return 0;	
+	else
+	{
+		return sqrt(r.z) + r.x; //use furthest solution in the direction of the ray
+	}
 }
 
 
@@ -199,31 +190,37 @@ void ray_bundle_marching(inout vec4 pos[bundle_length], inout vec4 dir[bundle_le
 	}
 }
 */
+
+float divergence(in vec4 dir[bundle_length])
+{
+	return sqrt(1-pow(dot(dir[0], dir[bundle_length-1]),2));
+}
+
 void ray_bundle_marching1(inout vec4 pos[bundle_length], inout vec4 dir[bundle_length], inout vec4 var[bundle_length], int id)
 {
 	bool marching = true;
 	float d = 0.f;
 	
 	//march central ray while safe to do so(ray bundle within ray cone)
-	ray_march(pos[bundle_center], dir[bundle_center], var[bundle_center], fovray*bundle_size*4);
+	ray_march(pos[bundle_center], dir[bundle_center], var[bundle_center], divergence(dir));
 	
 	pos[bundle_center].w = 0;
-	for(int i = bundle_center+1; i < bundle_length+bundle_center; i++)
+	#pragma unroll
+	for(int i = bundle_center+1, ii = i; i < bundle_length+bundle_center; ii = ++i%bundle_length)
 	{
-		int ii = i%bundle_length;
 		pos[ii].xyz += dir[ii].xyz*dir[bundle_center].w;
 		dir[ii].w = dir[bundle_center].w;
 		var[ii] = var[bundle_center];
 	}
-	
+
 	vec4 sphere = vec4(0);
-	for(int m = 0; (m < MAX_MARCHES) && marching; m++)
+	for(int m = 0; (m < MAX_MARCHES -var[bundle_center].x ) && marching; m++)
 	{
 		marching = false;
 		sphere.w = 0;
 		for(int i = 0; i < bundle_length; i++)
 		{
-			if((dir[i].w > MAX_DIST || (pos[i].w < fovray*dir[i].w && pos[i].w > 0)) && dir[i].w > 0)
+			if((dir[i].w > MAX_DIST || (pos[i].w < fovray*dir[i].w &&  pos[i].w > 0)) && (dir[i].w > 0))
 			{
 				continue;
 			}
@@ -233,14 +230,14 @@ void ray_bundle_marching1(inout vec4 pos[bundle_length], inout vec4 dir[bundle_l
 			}
 
 			
-			pos[i].xyz += dir[i].xyz*abs(pos[i].w);
-			dir[i].w += abs(pos[i].w);
+			pos[i].xyz += dir[i].xyz*pos[i].w;
+			dir[i].w += pos[i].w;
 			var[i].x += 1.f;
 			
-			memoryBarrierShared();
+			//memoryBarrierShared();
 			d = sphere_intersection(dir[i].xyz, pos[i].xyz, sphere);
 			
-			if(d == 0)
+			if(d < fovray*dir[i].w)
 			{
 				pos[i].w = DE(pos[i].xyz);
 				if(sphere.w < pos[i].w)
@@ -250,7 +247,7 @@ void ray_bundle_marching1(inout vec4 pos[bundle_length], inout vec4 dir[bundle_l
 			}
 			else //if found a usable DE
 			{
-				pos[i].w = -d;
+				pos[i].w = d;
 			}
 		}
 	}

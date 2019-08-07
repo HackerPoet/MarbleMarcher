@@ -10,7 +10,7 @@ uniform vec3 iMarblePos;
 uniform float iMarbleRad;
 uniform float iFlagScale;
 uniform vec3 iFlagPos;
-uniform int FRACTAL_ITER;
+#define FRACTAL_ITER 16
 
 ///Original MM distance estimators
 
@@ -144,6 +144,7 @@ vec4 col_flag(vec4 p)
 
 float de_scene(vec3 pos) 
 {
+	DE_count = DE_count+1;
 	vec4 p = vec4(pos,1.f);
 	float d = de_fractal(p);
 	d = min(d, de_marble(p));
@@ -153,6 +154,7 @@ float de_scene(vec3 pos)
 
 vec4 col_scene(vec3 pos) 
 {
+	DE_count = DE_count+1;
 	vec4 p = vec4(pos,1.f);
 	vec4 col = col_fractal(p);
 	vec4 col_f = col_flag(p);
