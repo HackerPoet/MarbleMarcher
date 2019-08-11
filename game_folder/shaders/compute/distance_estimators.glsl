@@ -142,9 +142,11 @@ vec4 col_flag(vec4 p)
 	}
 }
 
+//float DE_count = 0;
+
 float de_scene(vec3 pos) 
 {
-	DE_count = DE_count+1;
+	//DE_count = DE_count+1;
 	vec4 p = vec4(pos,1.f);
 	float d = de_fractal(p);
 	d = min(d, de_marble(p));
@@ -154,7 +156,7 @@ float de_scene(vec3 pos)
 
 vec4 col_scene(vec3 pos) 
 {
-	DE_count = DE_count+1;
+	//DE_count = DE_count+1;
 	vec4 p = vec4(pos,1.f);
 	vec4 col = col_fractal(p);
 	vec4 col_f = col_flag(p);
@@ -164,4 +166,14 @@ vec4 col_scene(vec3 pos)
 		return vec4(col_m.xyz, 1.0);
 	}
 	return vec4(col.xyz, 0.0);
+}
+
+//A faster formula to find the gradient/normal direction of the DE
+//credit to http://www.iquilezles.org/www/articles/normalsSDF/normalsSDF.htm
+vec4 calcNormal(vec3 p, float dx) {
+	const vec3 k = vec3(1,-1,0);
+	return   (k.xyyx*DE(p + k.xyy*dx) +
+			 k.yyxx*DE(p + k.yyx*dx) +
+			 k.yxyx*DE(p + k.yxy*dx) +
+			 k.xxxx*DE(p + k.xxx*dx))/vec4(4*dx,4*dx,4*dx,4);
 }

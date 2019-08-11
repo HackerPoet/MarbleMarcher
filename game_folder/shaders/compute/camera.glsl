@@ -24,12 +24,6 @@ struct gl_camera
 	int step;
 };
 
-ivec2 getLPos(int index)
-{
-	int y = index/bundle_size;
-	int x = index%bundle_size;
-	return ivec2(x,y);
-}
 
 ivec2 getGpos(int index)
 {

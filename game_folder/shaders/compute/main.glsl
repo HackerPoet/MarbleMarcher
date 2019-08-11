@@ -3,9 +3,8 @@
 #define bundle_size 1
 #define bundle_length 1
 #define bundle_center 0
-#define group_size 4
-#define block_size 16
-#define MAX_MARCHES 128
+#define group_size 8
+#define block_size 64
 #define RBM 0
 #include<camera.glsl>
 
@@ -14,8 +13,8 @@ layout(local_size_x = group_size, local_size_y = group_size) in;
 layout(rgba8, binding = 0) uniform image2D img_output;
 
 //make all the local distance estimator spheres shared
-shared vec4 de_sph[block_size]; 
-float DE_count = 0;
+shared vec4 de_sph[group_size][group_size]; 
+
 #include<ray_marching.glsl>
 
 
@@ -40,7 +39,7 @@ void main() {
 		//initialize the ray bundle
 		ivec2 pix = block_pos;
 		#pragma unroll
-		for(int i = 0; i < bundle_length; pix = block_pos + getLPos(++i))
+		for(int i = 0; i < bundle_length; i++)
 		{	
 			ray rr = get_ray(vec2(pix)/img_size);
 			pos[i] = vec4(rr.pos,0);
@@ -50,34 +49,29 @@ void main() {
 		
 		//de_sph[local_indx] = pos[bundle_center]; 
 		
-		memoryBarrierShared();
-		
-		#if RBM
-			ray_bundle_marching1(pos, dir, var, local_indx);
-		#else
-			#pragma unroll
-			for(int i = 0; i < bundle_length; i++)
-			{
-				ray_march(pos[i], dir[i], var[i], fovray);
-			}
-		#endif
+	
+		#pragma unroll
+		for(int i = 0; i < bundle_length; i++)
+		{
+			ray_march(pos[i], dir[i], var[i], fovray);
+		}
 		
 		// output to the specified image block
 		
 		pix = block_pos;
 		#pragma unroll
-		for(int i = 0; i < bundle_length; pix = block_pos + getLPos(++i))
+		for(int i = 0; i < bundle_length; i++)
 		{	
 			//ray rr = get_ray(vec2(pix)/vec2(imageSize(img_output)));
 			
 		/*	pos[i] = vec4(rr.pos,0);
 			dir[i] = vec4(rr.dir,0);
 			ray_march(pos[i], dir[i]);*/
-			float DE_per_pix = DE_count/float(bundle_length*MAX_MARCHES);
+		//	float DE_per_pix = DE_count/float(bundle_length*MAX_MARCHES);
 			float ao = (1 -  var[i].x/MAX_MARCHES);
 			float td = (1 - dir[i].w*0.06f);
 			//memoryBarrierImage();
-			imageStore(img_output, pix, vec4(DE_per_pix,DE_per_pix,DE_per_pix,1));	  
+			imageStore(img_output, pix, vec4(ao,ao,ao,1));	  
 		}
 	}
 }

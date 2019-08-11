@@ -71,6 +71,7 @@ void Renderer::Initialize(int w, int h, std::string compute_folder)
 					stage_textures.push_back(GenerateTexture(tex_resolution.x, tex_resolution.y));
 				}
 				shader_textures.push_back(stage_textures);
+				stage_textures.clear();
 				global_size.push_back(global);
 				element = 0;
 				break;
