@@ -2,6 +2,7 @@
 //4*4 ray bundle
 #define group_size 8
 #define block_size 64
+#define RBM1 0
 
 layout(local_size_x = group_size, local_size_y = group_size) in;
 layout(rgba32f, binding = 0) uniform image2D DE_input; 
@@ -27,30 +28,38 @@ void main() {
 	
 	ivec2 prev_pos = min(ivec2((vec2(global_pos)/MRRM_step_scale) + 0.5),ivec2(pimg_size)-1);
 	//initialize the ray
-	de_sph[local_indx.x][local_indx.y] = imageLoad(DE_input, prev_pos);
-	memoryBarrierShared();
-	 
+	vec4 sph = imageLoad(DE_input, prev_pos);
+	
+	#if(RBM1)
+		de_sph[local_indx.x][local_indx.y] = sph;
+		memoryBarrierShared(); 
+	#endif
+	
 	ray rr = get_ray(vec2(global_pos)/img_size);
 	vec4 pos = vec4(rr.pos,0);
 	vec4 dir = vec4(rr.dir,0);
-	vec4 var = interp(var_input, vec2(global_pos)/MRRM_step_scale);;
-		
-	float td = length(pos.xyz - de_sph[local_indx.x][local_indx.y].xyz);//traveled distance
+	vec4 var = interp(var_input, vec2(global_pos)/MRRM_step_scale);
+		float vv = var.x;
+	float td = dot(dir.xyz, sph.xyz - pos.xyz);//traveled distance
 	
 	//first order, MRRM
-	pos.xyz += dir.xyz*td;//move local ray beginning inside the DE sphere;
-	dir.w += td;
+	pos.xyz += dir.xyz*td;//move local ray beginning inside the DE sphere	
+	dir.w += td; 
 	
 	//calculate new best pos, second order, MRRBM
-	barrier();
-	float d = find_furthest_intersection(dir.xyz, pos.xyz, local_indx);
+	#if(RBM1)
+		barrier();
+		float d = find_furthest_intersection(dir.xyz, pos.xyz, local_indx);
+	#else
+		float d = sphere_intersection(dir.xyz, pos.xyz, sph);
+	#endif
 	
-	pos.xyz += dir.xyz*d; //move the ray beginning to the furthest sphere intersection
-	dir.w += d;
+	pos.w = d;
+	var.w = 1;
 	
-	fovray = 3*Camera.FOV/img_size.x;
+	fovray = Camera.FOV/img_size.x;
 	
-	ray_march(pos, dir, var, fovray);
+	ray_march(pos, dir, var, fovray, fovray);
 
 	//var = interp(var_input, vec2(global_pos)/MRRM_step_scale);
 	//save the DE sphere

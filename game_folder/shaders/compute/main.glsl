@@ -53,7 +53,7 @@ void main() {
 		#pragma unroll
 		for(int i = 0; i < bundle_length; i++)
 		{
-			ray_march(pos[i], dir[i], var[i], fovray);
+			ray_march(pos[i], dir[i], var[i], fovray, 0);
 		}
 		
 		// output to the specified image block
@@ -70,8 +70,11 @@ void main() {
 		//	float DE_per_pix = DE_count/float(bundle_length*MAX_MARCHES);
 			float ao = (1 -  var[i].x/MAX_MARCHES);
 			float td = (1 - dir[i].w*0.06f);
+			vec4 norm = calcNormal(pos[i].xyz, pos[i].w/16);
+			pos[i].xyz -= norm.xyz*norm.w;
+			vec4 color = COL(pos[i].xyz);
 			//memoryBarrierImage();
-			imageStore(img_output, pix, vec4(ao,ao,ao,1));	  
+			imageStore(img_output, pix, vec4(color.xyz*ao,1));	  
 		}
 	}
 }
