@@ -1,11 +1,11 @@
 #include<distance_estimators.glsl>
 
 #define MAX_DIST 50
-#define MIN_DIST 0.0001
+#define MIN_DIST 1e-6
 #define MAX_MARCHES 150
 #define AMBIENT_MARCHES 5
-#define NORMARCHES 3
-#define BACKGROUND_COLOR vec3(0.4,0.7,1)
+#define NORMARCHES 1
+#define BACKGROUND_COLOR vec4(1,1,1,1)
 
 void ray_march(inout vec4 pos, inout vec4 dir, inout vec4 var, float fov, float d0) 
 {
@@ -94,7 +94,8 @@ float find_furthest_intersection_all(vec3 r, vec3 p, ivec2 id)
 void normarch(inout vec4 pos)
 {
 	//calculate the normal
-	vec4 norm = calcNormal(pos.xyz, pos.w/4); 
+	vec4 norm = calcNormal(pos.xyz, pos.w/8); 
+	norm.xyz = normalize(norm.xyz);
 	pos.w = norm.w;
 	
 	//march in the direction of the normal
@@ -106,14 +107,17 @@ void normarch(inout vec4 pos)
 	}
 }
 
-vec4 shading(in vec4 pos, in vec4 dir)
+vec4 shading(in vec4 pos, in vec4 dir, float fov)
 {
 	//calculate the normal
-	vec4 norm = calcNormal(pos.xyz, pos.w/4); 
-	pos.w = norm.w;
+	float error = fov*dir.w;
+	vec4 norm = calcNormal(pos.xyz, error/4); 
+	norm.xyz = normalize(norm.xyz);
+	pos.w = 6*error;
 
 	vec4 color = COL(pos.xyz - norm.w*norm.xyz);
 	float occlusion_angle = 1;
+
 	//march in the direction of the normal
 	#pragma unroll
 	for(int i = 0; i < AMBIENT_MARCHES; i++)
@@ -121,10 +125,7 @@ vec4 shading(in vec4 pos, in vec4 dir)
 		norm.w += pos.w;
 		pos.xyz += pos.w*norm.xyz;
 		pos.w = DE(pos.xyz);
-		if(pos.w>0)
-		{
-			occlusion_angle = occlusion_angle*0.3 + 0.8*min(occlusion_angle, pos.w/norm.w);
-		}
+		occlusion_angle = occlusion_angle*0.5 + 0.5*min(occlusion_angle, pos.w/norm.w);
 	}
 	//its a surface area
 	float ill_surface = pow(occlusion_angle,2);

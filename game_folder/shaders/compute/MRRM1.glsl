@@ -28,7 +28,7 @@ void main() {
 	vec4 dir = vec4(rr.dir,0);
 	vec4 var = vec4(0);
 	
-	fovray = 1*Camera.FOV/img_size.x;
+	fovray = 1.2*Camera.FOV/img_size.x;
 	
 	ray_march(pos, dir, var, fovray, fovray);
 	

@@ -3,6 +3,11 @@
 #include<Shaders.h>
 #include<ExprParser.h>
 
+class WorldModel
+{
+
+};
+
 class Renderer
 {
 public:

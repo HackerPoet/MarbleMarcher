@@ -69,7 +69,7 @@ void main() {
 	vec4 color;
 	if(pos.w<1)
 	{
-		color = shading(pos, dir);
+		color = shading(pos, dir, fovray);
 	}
 	else
 	{
