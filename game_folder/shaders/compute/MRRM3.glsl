@@ -15,7 +15,7 @@ layout(rgba8, binding = 3) uniform image2D DE_output; //calculate final DE spher
 shared vec4 de_sph[group_size][group_size]; 
 
 #include<camera.glsl>
-#include<ray_marching.glsl>
+#include<shading.glsl>
 
 ///The second step of multi resolution ray marching
 
@@ -73,10 +73,10 @@ void main() {
 	}
 	else
 	{
-		color = vec4(1);
+		color = BACKGROUND_COLOR;
 	}
 	//color = vec4(rad);
 	
 	//save the DE sphere
-	imageStore(DE_output, global_pos, vec4(color.xyz,1));	  
+	imageStore(DE_output, global_pos, HDRmapping(color.xyz, Camera.exposure, 0.5));	  
 }
