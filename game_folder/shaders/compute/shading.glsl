@@ -1,8 +1,8 @@
 #include<ray_marching.glsl>
 
 #define PI 3.14159265
-#define AMBIENT_MARCHES 3
-#define BACKGROUND_COLOR 30*vec4(0.2,0.3,1,1)
+#define AMBIENT_MARCHES 12
+#define BACKGROUND_COLOR 6*vec4(1,1,1,1)
 
 //better to use a sampler though
 vec4 interp(layout (rgba32f) image2D text, vec2 coord)
@@ -65,11 +65,16 @@ vec4 shading(in vec4 pos, in vec4 dir, float fov)
 	float error = fov*dir.w;
 	vec4 norm = calcNormal(pos.xyz, error/8); 
 	norm.xyz = normalize(norm.xyz);
-	pos.w = 30*error;
+	pos.w = iMarbleRad/2 + error;
+	
+	float dcoef = 0.01/iMarbleRad;
 
 	vec3 albedo = COL(pos.xyz - norm.w*norm.xyz).xyz;
 	
-	float occlusion_angle = 1;
+	float occlusion_angle = 0;
+	float integral = 0;
+	float i_coef = 0;
+	
 	//march in the direction of the normal
 	#pragma unroll
 	for(int i = 0; i < AMBIENT_MARCHES; i++)
@@ -77,8 +82,12 @@ vec4 shading(in vec4 pos, in vec4 dir, float fov)
 		norm.w += pos.w;
 		pos.xyz += pos.w*norm.xyz;
 		pos.w = DE(pos.xyz);
-		occlusion_angle = occlusion_angle*0.5 + 0.5*min(occlusion_angle, pos.w/norm.w);
+		i_coef = 1/(dcoef*norm.w+1);//importance
+		occlusion_angle += i_coef*pos.w/norm.w;
+		integral += i_coef;
 	}
+	
+	occlusion_angle /= integral; // average weighted by importance
 	
 	//square because its a surface
 	vec4 ambient_color = BACKGROUND_COLOR*pow(occlusion_angle,2);

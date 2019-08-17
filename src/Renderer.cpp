@@ -82,6 +82,77 @@ void Renderer::Initialize(int w, int h, std::string compute_folder)
 	config.close();
 }
 
+void Renderer::ReInitialize(int w, int h)
+{
+	shader_textures.clear();
+	global_size.clear();
+
+	width = w;
+	height = h;
+	camera.SetResolution(vec2(w, h));
+	camera.SetAspectRatio((float)w / (float)h);
+
+	ExprParser parser;
+
+	std::ifstream config(shader_folder + "/pipeline.cfg");
+	if (config.fail())
+	{
+		ERROR_MSG("Error opening pipeline configuration");
+		return;
+	}
+	std::string line;
+
+	int element = 0;
+	int cur_shader = 0;
+
+	std::map<std::string, float> variables;
+	variables["width"] = width;
+	variables["height"] = height;
+
+	std::vector<GLuint> stage_textures;
+	std::string shader_file;
+	vec2 global, tex_resolution;
+	while (std::getline(config, line))
+	{
+		if (line.substr(0, 1) != "#")
+		{
+			parser.Parse(line);
+			switch (element++)
+			{
+			case 0:
+				//shader_file = compute_folder + "/" + line;
+			//	LoadShader(shader_file);
+				break;
+			case 1:
+				global.x = ceil(parser.Evaluate(variables));
+				break;
+			case 2:
+				global.y = ceil(parser.Evaluate(variables));
+				break;
+			case 3:
+				tex_resolution.x = ceil(parser.Evaluate(variables));
+				break;
+			case 4:
+				tex_resolution.y = ceil(parser.Evaluate(variables));
+				break;
+			case 5:
+				int tnum = parser.Evaluate(variables);
+				for (int i = 0; i < tnum; i++)
+				{
+					stage_textures.push_back(GenerateTexture(tex_resolution.x, tex_resolution.y));
+				}
+				shader_textures.push_back(stage_textures);
+				stage_textures.clear();
+				global_size.push_back(global);
+				element = 0;
+				break;
+			}
+		}
+	}
+
+	config.close();
+}
+
 void Renderer::SetOutputTexture(sf::Texture & tex)
 {
 	shader_textures[shader_textures.size()-1][0] = tex.getNativeHandle();

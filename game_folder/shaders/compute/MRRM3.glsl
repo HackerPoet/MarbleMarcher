@@ -78,5 +78,5 @@ void main() {
 	//color = vec4(rad);
 	
 	//save the DE sphere
-	imageStore(DE_output, global_pos, HDRmapping(color.xyz, Camera.exposure, 0.5));	  
+	imageStore(DE_output, global_pos, HDRmapping(color.xyz, Camera.exposure, 2.2));	  
 }

@@ -2,7 +2,7 @@
 
 #define MAX_DIST 50
 #define MIN_DIST 1e-6
-#define MAX_MARCHES 150
+#define MAX_MARCHES 200
 #define NORMARCHES 2
 
 

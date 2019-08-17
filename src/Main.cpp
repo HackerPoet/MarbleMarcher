@@ -352,17 +352,22 @@ int main(int argc, char *argv[]) {
 					screenshot_i++;
 					//Update the shader values
 					scene.SetResolution(shader, sres_res.x, sres_res.y);
+					rend.ReInitialize(sres_res.x, sres_res.y);
+					scene.WriteRenderer(rend);
+					shader.setUniform("render_texture", screenshot_txt);
+					rend.SetOutputTexture(screenshot_txt);
 					scene.Write(shader);
 
 					//Setup full-screen shader
 					sf::RenderStates states = sf::RenderStates::Default;
 					states.shader = &shader;
-					shader.setUniform("render_texture", screenshot_txt);
+					//shader.setUniform("render_texture", screenshot_txt);
 
 					window.setActive(false);
 					//Draw the fractal
 					//Draw to the render texture
 					screenshotTexture.setActive(true);
+					rend.Render();
 					screenshotTexture.draw(rect_scrshot, states);
 					screenshotTexture.display();
 					screenshotTexture.getTexture().copyToImage().saveToFile((std::string)"screenshots/screenshot"+(std::string)num2str(time(NULL))+".jpg");
@@ -371,6 +376,7 @@ int main(int argc, char *argv[]) {
 					window.setActive(true);
 
 					scene.SetResolution(shader, window_res.x, window_res.y);
+					rend.ReInitialize(window_res.x, window_res.y);
 					scene.Write(shader);
 			    } else if (keycode == sf::Keyboard::F4) {
 					overlays.TWBAR_ENABLED = !overlays.TWBAR_ENABLED;
