@@ -30,7 +30,7 @@ void main() {
 	
 	fovray = 1.2*Camera.FOV/img_size.x;
 	
-	ray_march(pos, dir, var, fovray, fovray);
+	ray_march(pos, dir, var, fovray, 5*fovray);
 	
 	vec4 pos1 = pos;
 	

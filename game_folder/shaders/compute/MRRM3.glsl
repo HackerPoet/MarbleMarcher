@@ -6,10 +6,11 @@
 
 layout(local_size_x = group_size, local_size_y = group_size) in;
 layout(rgba32f, binding = 0) uniform image2D DE_input; 
-layout(rgba32f, binding = 1) uniform image2D DE2_output;
+layout(rgba32f, binding = 1) uniform image2D DE2_input;
 layout(rgba32f, binding = 2) uniform image2D var_input; 
-layout(rgba8, binding = 3) uniform image2D DE_output; //calculate final DE spheres
-
+layout(rgba32f, binding = 3) uniform image2D DE_output; //calculate final DE spheres
+layout(rgba32f, binding = 4) uniform image2D DE2_output;
+layout(rgba32f, binding = 5) uniform image2D var_output; 
 
 //make all the local distance estimator spheres shared
 shared vec4 de_sph[group_size][group_size]; 
@@ -30,7 +31,7 @@ void main() {
 	ivec2 prev_pos = min(ivec2((vec2(global_pos)/MRRM_step_scale) + 0.5),ivec2(pimg_size)-1);
 	//initialize the ray
 	vec4 sph = imageLoad(DE_input, prev_pos);
-	vec4 sph_norm = imageLoad(DE2_output, prev_pos);
+	vec4 sph_norm = imageLoad(DE2_input, prev_pos);
 	
 	#if(RBM1)
 		de_sph[local_indx.x][local_indx.y] = sph;
@@ -60,23 +61,12 @@ void main() {
 	pos.w = d;
 	var.w = 1;
 	
-	fovray = Camera.FOV/img_size.x;
+	fovray = 1*Camera.FOV/img_size.x;
 	
 	ray_march(pos, dir, var, fovray, 0);
-
-	float rad = sph.w*0.5;
-	float depth = (1 - dir.w*0.06f);
-	vec4 color;
-	if(pos.w<1)
-	{
-		color = shading(pos, dir, fovray);
-	}
-	else
-	{
-		color = vec4(1);
-	}
-	//color = vec4(rad);
 	
-	//save the DE sphere
-	imageStore(DE_output, global_pos, vec4(color.xyz,1));	  
+	//save the DE spheres
+	imageStore(DE_output, global_pos, pos);	 
+	imageStore(DE2_output, global_pos, vec4(0));	 
+	imageStore(var_output, global_pos, var);				
 }
