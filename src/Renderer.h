@@ -15,6 +15,7 @@ public:
 	Renderer();
 
 	void Initialize(int w, int h, std::string compute_folder);
+	void ReInitialize(int w, int h);
 
 	void SetOutputTexture(sf::Texture& tex);
 	void LoadShader(std::string shader_file);

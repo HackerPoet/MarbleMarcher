@@ -16,7 +16,7 @@ layout(rgba32f, binding = 5) uniform image2D var_output;
 shared vec4 de_sph[group_size][group_size]; 
 
 #include<camera.glsl>
-#include<ray_marching.glsl>
+#include<shading.glsl>
 
 ///The second step of multi resolution ray marching
 
