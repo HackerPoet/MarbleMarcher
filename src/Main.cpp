@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
   //force fullscreen mode
   fullscreen = true;
 
-  Renderer rend(resolution->width, resolution->height, "shaders/compute");
+  Renderer rend(resolution->width, resolution->height, "shaders/compute/MAIN.cfg");
 
   //fullscreen = false;
   //Create the render texture if needed

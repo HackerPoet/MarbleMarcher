@@ -1,8 +1,12 @@
 # Marble Marcher: Community Edition
 
-This is the community edition of Marble Marcher, a procedurally rendered fractal physics marble game in which you must get to the flag in each level as fast as you can. With 24 levels to unlock and an active speedrunning community, along with a rudimentary level editor, there's always new features being developed. If you complete all levels, you can use cheats to enhance and create a more exploratory experience.
+### Version 1.4.0 beta
 
-Because version 1.1.0 is most likely going to be the last feature update of Marble Marcher, we (the Marble Marcher Speedrunning Community) have opted to create a community edition to keep the community around the game alive and continuously improve the experience.
+![Logo](https://github.com/MichaelMoroz/MarbleMarcher/blob/master/doc/LOGO.PNG)
+
+This is the community edition of Marble Marcher, a procedurally rendered fractal physics marble game in which you must get to the flag in each level as fast as you can. With 24 levels to unlock and an active [speedrunning community](https://www.speedrun.com/marblemarcher), along with a rudimentary level editor, there's always new features being developed. If you complete all levels, you can use cheats to create and enhance a more exploratory experience.
+
+Because version 1.1.0 was the last feature update of Marble Marcher, we (the Marble Marcher Speedrunning Community) opted to create a community edition to keep the community around the game alive and continuously improve the experience.
 Currently this is maintained mainly by members of the [Marble Marcher Speedrunning Community on Discord](https://discord.gg/r3XrJxH), in addition to the members of the [subreddit](https://www.reddit.com/r/marblemarcher) and anyone else who has contributed.
 
 All credit goes to [HackerPoet](https://github.com/HackerPoet) (aka [CodeParade](https://www.youtube.com/channel/UCrv269YwJzuZL3dH5PCgxUw)) for the [original game](https://github.com/HackerPoet/MarbleMarcher).
@@ -26,16 +30,25 @@ All credit goes to [HackerPoet](https://github.com/HackerPoet) (aka [CodeParade]
 - [Building](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#building)
   - [macOS](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#macos-1)
   - [Arch Linux](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#arch-linux-1)
-  - [Cross-Compile for Windows (macOS)](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#cross-compile-for-windows-on-macos)
   - [Compiling on Windows](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#compiling-on-windows)
+  - [Cross-Compile for Windows (macOS)](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#cross-compile-for-windows-on-macos)
 - [Launching](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#launching)
   - [macOS](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#macos-2)
+  - [Other OSes](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#windowslinuxanything-else)
 - [Other](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#other)
+  - [Shortcuts](https://github.com/WAUthethird/Marble-Marcher-Community-Edition/blob/master/README.md#shortcuts)
 
 ## Changes
 - numerous miscellaneous fixes have been applied
 - easier compilation for macOS
+- feasible Windows compilation
+- README.md overhaul
+- new rendering engine
 - ingame statistics added (marble speed, ground/air state, ...). Press `o` to toggle.
+- AntTweakBar editor added. Press `F4` to toggle.
+- Level Editor and custom level support
+![Editor](https://github.com/MichaelMoroz/MarbleMarcher/blob/master/doc/EDITOR.PNG)
+![Levels](https://github.com/MichaelMoroz/MarbleMarcher/blob/master/doc/LEVELS.PNG)
 
 ## Proposed Changes
 Though Marble Marcher CE is a largely finished game, there are still several improvements we'd like to implement. Here are our proposed changes:
@@ -45,7 +58,7 @@ Though Marble Marcher CE is a largely finished game, there are still several imp
   - mouse/camera speed is too fast while skipping cutscenes
   - figure out why so many people get `Failed to compile vertex shader`
 - ### User Experience Improvements
-  - pre-built versions for the common operating systems and make them available as github releases (in progress)
+  - pre-built versions for the common operating systems and make them available as GitHub releases (in progress)
   - make the fractal recoloring from cheats persistent
   - more efficient anti-aliasing modes
   - toggle to always activate fast cutscenes
@@ -61,6 +74,8 @@ Though Marble Marcher CE is a largely finished game, there are still several imp
   - screenshot mode (temporarily higher resolution and AA)
   - native controller support (+deadzone)
   - custom marble designs
+  - add a script to build for all platforms at once
+  - have MarbleMarcher added to package managers
 - ### Currently WIP
   - in-game level editor
   - metal marble skin
@@ -68,32 +83,40 @@ Though Marble Marcher CE is a largely finished game, there are still several imp
   - recording/replay functionality
   - debug info screen
   - cheat: unlock all levels
+  - add creation of macOS `.dmg` for easy distribution.
 
 ## System Dependencies
 * [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 * [SFML 2.5.0](https://www.sfml-dev.org)
+* [AntTweakBar](http://anttweakbar.sourceforge.net/)
+* [CMake](https://cmake.org/)
+* [OpenAL](https://www.openal.org/) (in case you get an "OpenAL DLL not found" error while trying to run the software, seems to be Windows-specific)
 ### MacOS
 On macOS these can be conveniently installed using [HomeBrew](https://brew.sh):
 
-`brew install eigen sfml`
+`brew install cmake eigen sfml anttweakbar`
 
-The version of SFML required is 2.5.1 or newer. HomeBrew does not have this version yet so it must be [downloaded manually](https://www.sfml-dev.org/download/sfml/2.5.1/) and installed using [these instructions](https://www.sfml-dev.org/tutorials/2.5/start-osx.php). You must install the Frameworks option not the dylib option or the build script may fail.
-**It is very important that if you installed SFML with brew before realizing that you have to install it manually, that you remove the version of SFML that Brew installed using `brew remove sfml`.**
+The version of SFML required is 2.5.1 or newer. It has come to my attention that HomeBrew does now have this version (unlike when these instructions where first written) so installing via HomeBrew should work but you can still [download manually](https://www.sfml-dev.org/download/sfml/2.5.1/) if you wish and install using [these instructions](https://www.sfml-dev.org/tutorials/2.5/start-osx.php). You must install the Frameworks option not the dylib option or the build script may fail.
+**Note that if HomeBrew installed a version of SFML older than 2.5.1 for some reason or you wish to install manually, you must remove the version of SFML that Brew installed using `brew remove sfml`.**
 
-Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
+Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used though it is unsupported:
 
-`vcpkg install eigen3 sfml`
+`vcpkg install cmake eigen3 sfml anttweakbar`
+
+It may also be possible to use MacPorts which is also unsupported and untested.
 ### Arch Linux
-`sudo pacman -S eigen sfml git cmake make`
+`sudo pacman -S eigen sfml anttweakbar git cmake make`
 
 
 ## Building
 ### MacOS
 #### Build Script
+**Note for the current version: the macOS build is not yet entirely working properly so revert to the previous prerelease as required. SFML is properly included but as of yet, AntTweakBar is not so this executable will not work on machines without it installed.**
 Simply run `./macOSBuild.sh`. This will generate the full Application bundle that can be used like any other application. It can even be used on systems without SFML as SFML is included in the bundle and the binary is relinked to these versions. Currently the script will only do the relinking part properly if you use SFML 2.5.1 specifically however it is planned to allow for any version. If you have another version, the script will still work, the app just won't work on a machine without SFML.
 #### Manual
 * `mkdir build && cd build`
 * `cmake ..`
+* `cmake -DCMAKE_CXX_FLAGS="-I/usr/local/include" ..`
     * If you use `vcpkg`, add the flag `-DCMAKE_TOOLCHAIN_FILE=[path/to/vcpkg]/scripts/buildsystems/vcpkg.cmake`
 * `cd ..`
 * `cmake --build build`
@@ -114,14 +137,14 @@ Alternatively, one can use the platform-dependent build system, for example `Mak
 * `cmake --build build`
 * `cp build/MarbleMarcher ./`
 
+### Compiling on Windows
+Windows compilation should work just fine now. It's relatively easy to do without help, but in case you'd like them, [here are some configuring and compiling instructions](https://www.reddit.com/r/Marblemarcher/comments/bamqyh/how_to_configure_and_compile_source_for_windows/). A [copy of the instructions](build_on_windows.md) is also in the root.
+
 ### Cross-Compile for Windows on macOS
 This requires you to install wget, mingw-w64, and git (which you probably already have) either with HomeBrew (recommended) or otherwise. Theoretically, you should be able to just run `winMacOSBuild.sh`. There are no manual instructions because due to issues I had to just compile the thing manually which is annoying and has too many steps.
 
-### Compiling on Windows
-Windows compilation has proved to be quite tough, and all efforts to compile via CMake have failed. There's only been one person who has managed to compile and run on Windows, and that was via manual compilation. But in case you'd like to try your hand at it, [here are some configuring (not compiling) instructions](https://www.reddit.com/r/Marblemarcher/comments/atpq47/how_to_configure_source_for_windows_with_cmake/). Keep in mind that after you finish the configuration, (which is a lot easier to pull off than compilation) you're on your own. But don't fret; we'll be fixing these issues once we figure out *how* exactly to do it.
-
 ## Launching
-## macOS
+### macOS
 If the macOS build script was used, simply launch the app as normal, otherwise:
 * Make sure that the current working directory contains the `assets` folder
 * Run the executable generated by CMake, located in `build` (or a subdirectory)
@@ -133,10 +156,10 @@ You'll just need to run MarbleMarcher with the correct `LD_LIBRARY_PATH`:
 ```shell
 LD_LIBRARY_PATH=`pwd`/usr/lib ./MarbleMarcher
 ```
+### Windows/Linux/Anything Else
+Launching should be self-explanatory for these systems, just run the excecutable file relevant to your system that is generated by the build process.
 
-## Other
-### Debug Screen
-Press `o` to toggle the debug screen.
-
-### Screenshots
-Press `F5` to take a screenshot.
+## Special Controls
+* Press `o` to toggle the debug screen.
+* Press `F5` to take a screenshot.
+* Press `F4` to open AntTweakBar.

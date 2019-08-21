@@ -1,16 +1,17 @@
 #include "Renderer.h"
 
-Renderer::Renderer(int w, int h,std::string compute_folder)
+Renderer::Renderer(int w, int h,std::string config_file)
 {
-	Initialize(w, h, compute_folder);
+	Initialize(w, h, config_file);
 }
 
 Renderer::Renderer()
 {
 }
 
-void Renderer::Initialize(int w, int h, std::string compute_folder)
+void Renderer::Initialize(int w, int h, std::string config_file)
 {
+	main_textures.clear();
 	shader_textures.clear();
 	global_size.clear();
 
@@ -21,9 +22,9 @@ void Renderer::Initialize(int w, int h, std::string compute_folder)
 
 	ExprParser parser;
 
-	shader_folder = compute_folder;
+	std::string compute_folder = fs::path(config_file).parent_path().generic_string();
 
-	std::ifstream config(compute_folder + "/pipeline.cfg");
+	std::ifstream config(config_file);
 	if (config.fail())
 	{
 		ERROR_MSG("Error opening pipeline configuration");
@@ -31,7 +32,7 @@ void Renderer::Initialize(int w, int h, std::string compute_folder)
 	}
 	std::string line;
 
-	int element = 0;
+	int element = -1;
 	int cur_shader = 0;
 
 	std::map<std::string, float> variables;
@@ -48,6 +49,12 @@ void Renderer::Initialize(int w, int h, std::string compute_folder)
 			parser.Parse(line);
 			switch (element++)
 			{
+			case -1:
+				for (int i = 0; i < parser.Evaluate(variables); i++)
+				{
+					main_textures.push_back(GenerateTexture(width, height));
+				}
+				break;
 			case 0:
 				shader_file = compute_folder + "/" + line;
 				LoadShader(shader_file);
@@ -65,8 +72,7 @@ void Renderer::Initialize(int w, int h, std::string compute_folder)
 				tex_resolution.y = ceil(parser.Evaluate(variables));
 				break;
 			case 5:
-				int tnum = parser.Evaluate(variables);
-				for (int i = 0; i < tnum; i++)
+				for (int i = 0; i < parser.Evaluate(variables); i++)
 				{
 					stage_textures.push_back(GenerateTexture(tex_resolution.x, tex_resolution.y));
 				}
@@ -94,7 +100,9 @@ void Renderer::ReInitialize(int w, int h)
 
 	ExprParser parser;
 
-	std::ifstream config(shader_folder + "/pipeline.cfg");
+	std::string compute_folder = fs::path(config_file).parent_path().generic_string();
+
+	std::ifstream config(config_file);
 	if (config.fail())
 	{
 		ERROR_MSG("Error opening pipeline configuration");
@@ -102,7 +110,7 @@ void Renderer::ReInitialize(int w, int h)
 	}
 	std::string line;
 
-	int element = 0;
+	int element = -1;
 	int cur_shader = 0;
 
 	std::map<std::string, float> variables;
@@ -119,6 +127,12 @@ void Renderer::ReInitialize(int w, int h)
 			parser.Parse(line);
 			switch (element++)
 			{
+			case -1:
+				for (int i = 0; i < parser.Evaluate(variables); i++)
+				{
+					main_textures.push_back(GenerateTexture(width, height));
+				}
+				break;
 			case 0:
 				//shader_file = compute_folder + "/" + line;
 			//	LoadShader(shader_file);
@@ -136,8 +150,7 @@ void Renderer::ReInitialize(int w, int h)
 				tex_resolution.y = ceil(parser.Evaluate(variables));
 				break;
 			case 5:
-				int tnum = parser.Evaluate(variables);
-				for (int i = 0; i < tnum; i++)
+				for (int i = 0; i < parser.Evaluate(variables); i++)
 				{
 					stage_textures.push_back(GenerateTexture(tex_resolution.x, tex_resolution.y));
 				}
@@ -169,6 +182,11 @@ void Renderer::Render()
 	for (int i = 0; i < stages; i++)
 	{
 		int tex_id = 0;
+
+		for (int j = 0; j < main_textures.size(); j++)
+		{
+			glBindImageTexture(tex_id++, main_textures[j], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+		}
 
 		//bind textures from the previous step
 		if (i != 0)

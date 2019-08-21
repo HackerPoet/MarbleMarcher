@@ -67,6 +67,18 @@ void OpenMainMenu(Scene * scene, Overlays * overlays)
 	}, true);
 	lvlsbtn.AddObject(&button2, Object::Allign::CENTER);
 	mainmenu.AddObject(&lvlsbtn, Object::Allign::LEFT);
+
+	//Settings
+	Box sttbtn(600, 50);
+	Text buttonstt(LOCAL["Settings"], LOCAL("default"), 40, sf::Color::White);
+	sttbtn.hoverstate.color_main = sf::Color(200, 40, 0, 255);
+	sttbtn.SetCallbackFunction([scene, overlays](sf::RenderWindow * window, InputState & state)
+	{
+		overlays->TWBAR_ENABLED = !overlays->TWBAR_ENABLED;
+		overlays->sound_click.play();
+	}, true);
+	sttbtn.AddObject(&buttonstt, Object::Allign::CENTER);
+	mainmenu.AddObject(&sttbtn, Object::Allign::LEFT);
 	
 	//Controls
 	Box cntrlbtn(600, 50);
