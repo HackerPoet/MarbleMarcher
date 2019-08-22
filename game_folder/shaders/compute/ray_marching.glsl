@@ -1,9 +1,9 @@
 #include<distance_estimators.glsl>
 
 #define MAX_DIST 50
-#define MIN_DIST 1e-6
+#define MIN_DIST 1e-7
 #define MAX_MARCHES 512
-#define NORMARCHES 1
+#define NORMARCHES 2
 
 
 void ray_march(inout vec4 pos, inout vec4 dir, inout vec4 var, float fov, float d0) 
@@ -30,17 +30,30 @@ void ray_march(inout vec4 pos, inout vec4 dir, inout vec4 var, float fov, float 
 	pos.w += d0*dir.w;
 }
 
+// Polynomial smooth minimum by iq
+float smin(float a, float b, float k) {
+  float h = clamp(0.5 + 0.5*(a-b)/k, 0.0, 1.0);
+  return mix(a, b, h) - k*h*(1.0-h);
+}
+
 float shadow_march(vec4 pos, vec4 dir, float distance2light, float light_angle)
 {
 	float light_visibility=1;
+	float ph = 1e5;
 	pos.w = DE(pos.xyz);
 	int i = 0;
 	for (; i < MAX_MARCHES; i++) {
 	
 		dir.w += pos.w;
 		pos.xyz += pos.w*dir.xyz;
-		light_visibility = min(light_visibility, pos.w/(light_angle*dir.w));
 		pos.w = DE(pos.xyz);
+		
+		float y = pos.w*pos.w/(2.0*ph);
+        float d = sqrt(pos.w*pos.w-y*y);
+		float angle = d/(max(MIN_DIST,dir.w-y)*light_angle);
+        light_visibility = min(light_visibility, angle);
+        ph = pos.w;
+		
 		
 		if(dir.w >= distance2light)
 		{
@@ -52,7 +65,7 @@ float shadow_march(vec4 pos, vec4 dir, float distance2light, float light_angle)
 			return 0;
 		}
 	}
-	return light_visibility*light_visibility;
+	return light_visibility*light_visibility; //smoothens out the shadow, and is more physically accurate
 }
 
 float sphere_intersection(vec3 r, vec3 p, vec4 sphere)

@@ -1,7 +1,7 @@
 #include<ray_marching.glsl>
 
 #define PI 3.14159265
-#define AMBIENT_MARCHES 8
+#define AMBIENT_MARCHES 5
 #define AMBIENT_COLOR 2*vec4(1,1,1,1)
 
 uniform vec3 BACKGROUND_COLOR;
@@ -9,6 +9,8 @@ uniform vec3 LIGHT_DIRECTION;
 uniform float PBR_METALLIC;
 uniform float PBR_ROUGHNESS;
 uniform vec3 LIGHT_COLOR;
+
+uniform bool SHADOWS_ENABLED; 
 
 //better to use a sampler though
 vec4 interp(layout (rgba32f) image2D text, vec2 coord)
@@ -67,10 +69,9 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 
 float ambient_occlusion(in vec4 pos, in vec4 norm)
 {
-	if(pos.w > 0)
-	{
+	
 		pos.w = iMarbleRad/2; 
-		float dcoef = 0.005/iMarbleRad;
+		float dcoef = 0.02/iMarbleRad;
 		float occlusion_angle = 0;
 		float integral = 0;
 		float i_coef = 0;
@@ -82,6 +83,7 @@ float ambient_occlusion(in vec4 pos, in vec4 norm)
 			norm.w += pos.w;
 			pos.xyz += pos.w*norm.xyz;
 			pos.w = DE(pos.xyz);
+			
 			i_coef = 1/(dcoef*norm.w+1);//importance
 			occlusion_angle += i_coef*pos.w/norm.w;
 			integral += i_coef;
@@ -90,11 +92,7 @@ float ambient_occlusion(in vec4 pos, in vec4 norm)
 		occlusion_angle /= integral; // average weighted by importance
 		
 		return pow(occlusion_angle,2);
-	}
-	else
-	{
-		return 1; 
-	}
+	
 }
 
 vec4 shading(in vec4 pos, in vec4 dir, float fov, float shadow)
@@ -148,62 +146,65 @@ vec4 shading(in vec4 pos, in vec4 dir, float fov, float shadow)
 		Lo += (kD * albedo / PI + specular) * radiance * NdotL;
 	}
 	
-	{ //light contribution
-		float roughness = PBR_ROUGHNESS;
-		vec3 L = normalize(LIGHT_DIRECTION);
-		vec3 H = normalize(V + L);
-		vec3 radiance = 10*LIGHT_COLOR*shadow*(0.6+0.4*ao);        
-		
-		// cook-torrance brdf
-		float NDF = DistributionGGX(N, H, roughness);        
-		float G   = GeometrySmith(N, V, L, roughness);      
-		vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
-		
-		vec3 kS = F;
-		vec3 kD = vec3(1.0) - kS;
-		kD *= 1.0 - metallic;	  
-		
-		vec3 numerator    = NDF * G * F;
-		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-		vec3 specular     = numerator / max(denominator, 0.001);  
+	if(SHADOWS_ENABLED)
+	{
+		{ //light contribution
+			float roughness = PBR_ROUGHNESS;
+			vec3 L = normalize(LIGHT_DIRECTION);
+			vec3 H = normalize(V + L);
+			vec3 radiance = 10*LIGHT_COLOR*shadow*(0.6+0.4*ao);        
 			
-		// add to outgoing radiance Lo
-		float NdotL = max(dot(N, L), 0.0);                
-		Lo += (kD * albedo / PI + specular) * radiance * NdotL;
-	}
-	
-	{ //light reflection, GI imitation
-		float roughness = 0.6;
-		vec3 L = normalize(-LIGHT_DIRECTION);
-		vec3 H = normalize(V + L);
-		vec3 radiance = 6*LIGHT_COLOR*ao*(1-ao);        
-		
-		// cook-torrance brdf
-		float NDF = DistributionGGX(N, H, roughness);        
-		float G   = GeometrySmith(N, V, L, roughness);      
-		vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
-		
-		vec3 kS = F;
-		vec3 kD = vec3(1.0) - kS;
-		kD *= 1.0 - metallic;	  
-		
-		vec3 numerator    = NDF * G * F;
-		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-		vec3 specular     = numerator / max(denominator, 0.001);  
+			// cook-torrance brdf
+			float NDF = DistributionGGX(N, H, roughness);        
+			float G   = GeometrySmith(N, V, L, roughness);      
+			vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
 			
-		// add to outgoing radiance Lo
-		float NdotL = max(dot(N, L), 0.0);                
-		Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+			vec3 kS = F;
+			vec3 kD = vec3(1.0) - kS;
+			kD *= 1.0 - metallic;	  
+			
+			vec3 numerator    = NDF * G * F;
+			float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+			vec3 specular     = numerator / max(denominator, 0.001);  
+				
+			// add to outgoing radiance Lo
+			float NdotL = max(dot(N, L), 0.0);                
+			Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+		}
+		
+		{ //light reflection, GI imitation
+			float roughness = 0.6;
+			vec3 L = normalize(-LIGHT_DIRECTION);
+			vec3 H = normalize(V + L);
+			vec3 radiance = 6*LIGHT_COLOR*ao*(1-ao);        
+			
+			// cook-torrance brdf
+			float NDF = DistributionGGX(N, H, roughness);        
+			float G   = GeometrySmith(N, V, L, roughness);      
+			vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
+			
+			vec3 kS = F;
+			vec3 kD = vec3(1.0) - kS;
+			kD *= 1.0 - metallic;	  
+			
+			vec3 numerator    = NDF * G * F;
+			float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+			vec3 specular     = numerator / max(denominator, 0.001);  
+				
+			// add to outgoing radiance Lo
+			float NdotL = max(dot(N, L), 0.0);                
+			Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+		}
 	}
 	
 	return vec4(Lo,1);
 }
 
 
-vec4 HDRmapping(vec3 color, float exposure, float gamma)
+vec3 HDRmapping(vec3 color, float exposure, float gamma)
 {
 	// Exposure tone mapping
     vec3 mapped = vec3(1.0) - exp(-color * exposure);
     // Gamma correction 
-    return vec4(pow(mapped, vec3(1.0 / gamma)),1);
+    return pow(mapped, vec3(1.0 / gamma));
 }

@@ -18,7 +18,6 @@ shared vec4 de_sph[group_size][group_size];
 
 #define VIGNETTE_STRENGTH 0.2
 
-///The second step of multi resolution ray marching
 
 void main() {
 	ivec2 global_pos = ivec2(gl_GlobalInvocationID.xy);
@@ -39,7 +38,7 @@ void main() {
 	dir.w += td; 
 	
 	vec4 color;
-	if(pos.w<2*td*fovray)
+	if(pos.w < max(2*fovray*td, MIN_DIST) )
 	{
 		color = shading(pos, dir, fovray, illum.x);
 	}
@@ -49,9 +48,11 @@ void main() {
 	}
 	
 	vec4 prev_color = imageLoad(color_HDR, global_pos);
-	
-	color = prev_color*Camera.mblur + (1-Camera.mblur)*color; //a bit of blur
-	float vignette = 1.0 - VIGNETTE_STRENGTH * length(vec2(global_pos)/img_size - 0.5);
-	imageStore(color_HDR, global_pos, color);	 
-	imageStore(color_output, global_pos, HDRmapping(color.xyz, Camera.exposure, 2.2)*vignette);	  	
+	if(!isnan(color.x) && !isnan(color.y) && !isnan(color.z))
+	{
+		color = prev_color*Camera.mblur + (1-Camera.mblur)*color; //blur
+		float vignette = 1.0 - VIGNETTE_STRENGTH * length(vec2(global_pos)/img_size - 0.5);
+		imageStore(color_HDR, global_pos, vec4(color.xyz, 1));	 
+		imageStore(color_output, global_pos,  vec4(HDRmapping(color.xyz, Camera.exposure, 2.2)*vignette, 1));	  	
+	}
 }

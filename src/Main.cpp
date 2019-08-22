@@ -247,7 +247,7 @@ int main(int argc, char *argv[]) {
  
 
   scene.StartDefault();
-  overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);
+  overlays.SetAntTweakBar(window.getSize().x, window.getSize().y, smooth_fps, &scene, &rend, &VSYNC, &mouse_sensitivity, &wheel_sensitivity, &music_vol, &target_fps);
   
   io_state.window_size = sf::Vector2f(window.getSize().x, window.getSize().y);
   float prev_s = 0;
@@ -367,7 +367,10 @@ int main(int argc, char *argv[]) {
 					//Draw the fractal
 					//Draw to the render texture
 					screenshotTexture.setActive(true);
+
+					rend.camera.SetMotionBlur(0);
 					rend.Render();
+
 					screenshotTexture.draw(rect_scrshot, states);
 					screenshotTexture.display();
 					screenshotTexture.getTexture().copyToImage().saveToFile((std::string)"screenshots/screenshot"+(std::string)num2str(time(NULL))+".jpg");

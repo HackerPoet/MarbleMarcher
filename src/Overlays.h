@@ -66,7 +66,6 @@ public:
 
   //Relative to 1280x720
   void SetScale(float scale) { draw_scale = scale; }
-  void SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, bool *vsync, float *mouse_sensitivity, float *wheel_sensitivity, float *music_vol, float *target_fps);
   void SetTWBARResolution(int Width, int Height);
 
   Texts GetOption(Texts from, Texts to);
@@ -91,6 +90,7 @@ public:
   void DrawSumTime(sf::RenderWindow& window, int t);
   void DrawCheatsEnabled(sf::RenderWindow& window);
   void DrawCheats(sf::RenderWindow& window);
+  void SetAntTweakBar(int Width, int Height, float & fps, Scene * scene, Renderer * rd, bool * vsync, float * mouse_sensitivity, float * wheel_sensitivity, float * music_vol, float * target_fps);
   void DrawAntTweakBar();
 
   bool TwManageEvent(sf::Event * event);

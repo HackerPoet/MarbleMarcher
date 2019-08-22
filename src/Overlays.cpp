@@ -391,7 +391,7 @@ void TW_CALL CopyStdStringToClient(std::string& destinationClientString, const s
 }
 
 
-void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, bool *vsync, float *mouse_sensitivity, float *wheel_sensitivity, float *music_vol, float *target_fps)
+void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, Renderer* rd, bool *vsync, float *mouse_sensitivity, float *wheel_sensitivity, float *music_vol, float *target_fps)
 {
 	//TW interface
 	TwInit(TW_OPENGL, NULL);
@@ -411,10 +411,10 @@ void Overlays::SetAntTweakBar(int Width, int Height, float &fps, Scene *scene, b
 	settings = TwNewBar("Settings");
 
 	TwAddVarRW(settings, "VSYNC", TW_TYPE_BOOLCPP, vsync, "group='Graphics settings'");
-	TwAddVarRW(settings, "PBR", TW_TYPE_BOOLCPP, &scene->PBR_Enabled, "group='Graphics settings'");
-	TwAddVarRW(settings, "Sun direction", TW_TYPE_DIR3F, scene->LIGHT_DIRECTION.data(), " group='Graphics settings'");
 	TwAddVarRW(settings, "Shadows", TW_TYPE_BOOLCPP, &scene->Shadows_Enabled, "group='Graphics settings'");
-	TwAddVarRW(settings, "Reflection and Refraction", TW_TYPE_BOOLCPP, &scene->Refl_Refr_Enabled, "group='Graphics settings'");
+	//TwAddVarRW(settings, "Reflection and Refraction", TW_TYPE_BOOLCPP, &scene->Refl_Refr_Enabled, "group='Graphics settings'");
+	TwAddVarRW(settings, "Blur", TW_TYPE_FLOAT, &rd->camera.mblur, "min=0 step=0.001 max=0.75 group='Graphics settings'");
+	TwAddVarRW(settings, "Exposure", TW_TYPE_FLOAT, &rd->camera.exposure, "min=0 max=5 step=0.001 group='Graphics settings'");
 
 	TwEnumVal marble_type[] = { { 0, "Glass"  },
 								{ 1,  "Metal" } };

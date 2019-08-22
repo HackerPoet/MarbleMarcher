@@ -30,11 +30,11 @@ void main() {
 	
 	fovray = 1.2*Camera.FOV/img_size.x;
 	
-	ray_march(pos, dir, var, fovray, 10*fovray);
+	ray_march(pos, dir, var, fovray, fovray);
 	
 	vec4 pos1 = pos;
 	
-	//normarch(pos1);
+	normarch(pos1);
 	
 	//save the DE spheres
 	imageStore(DE_output, global_pos, pos);	 

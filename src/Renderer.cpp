@@ -7,12 +7,22 @@ Renderer::Renderer(int w, int h,std::string config_file)
 
 Renderer::Renderer()
 {
+	main_textures.clear();
+	shader_textures.clear();
+	global_size.clear();
 }
 
 void Renderer::Initialize(int w, int h, std::string config_f)
 {
+	//glDeleteTextures(main_textures.size(), main_textures.data());
 	main_textures.clear();
+
+	for (int i = 0; i < shader_textures.size(); i++)
+	{
+	//	glDeleteTextures(shader_textures[i].size(), shader_textures[i].data());
+	}
 	shader_textures.clear();
+
 	global_size.clear();
 
 	width = w;
@@ -90,9 +100,9 @@ void Renderer::Initialize(int w, int h, std::string config_f)
 
 void Renderer::ReInitialize(int w, int h)
 {
+	main_textures.clear();
 	shader_textures.clear();
 	global_size.clear();
-	main_textures.clear();
 
 	width = w;
 	height = h;
@@ -166,6 +176,7 @@ void Renderer::ReInitialize(int w, int h)
 
 	config.close();
 }
+
 
 void Renderer::SetOutputTexture(sf::Texture & tex)
 {
