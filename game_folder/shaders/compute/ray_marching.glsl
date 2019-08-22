@@ -30,6 +30,31 @@ void ray_march(inout vec4 pos, inout vec4 dir, inout vec4 var, float fov, float 
 	pos.w += d0*dir.w;
 }
 
+float shadow_march(vec4 pos, vec4 dir, float distance2light, float light_angle)
+{
+	float light_visibility=1;
+	pos.w = DE(pos.xyz);
+	int i = 0;
+	for (; i < MAX_MARCHES; i++) {
+	
+		dir.w += pos.w;
+		pos.xyz += pos.w*dir.xyz;
+		light_visibility = min(light_visibility, pos.w/(light_angle*dir.w));
+		pos.w = DE(pos.xyz);
+		
+		if(dir.w >= distance2light)
+		{
+			return light_visibility*light_visibility;
+		}
+		
+		if(dir.w > MAX_DIST || pos.w < max(fovray*dir.w, MIN_DIST))
+		{
+			return 0;
+		}
+	}
+	return light_visibility*light_visibility;
+}
+
 float sphere_intersection(vec3 r, vec3 p, vec4 sphere)
 {
 	p = p - sphere.xyz;

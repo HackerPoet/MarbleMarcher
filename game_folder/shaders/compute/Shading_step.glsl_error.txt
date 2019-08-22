@@ -1,0 +1,577 @@
+#version 430
+//4*4 ray bundle
+#define group_size 8
+#define block_size 64
+
+layout(local_size_x = group_size, local_size_y = group_size) in;
+layout(rgba32f, binding = 0) uniform image2D illumination; //calculate final color
+layout(rgba8, binding = 1) uniform image2D color_output; //calculate final color
+layout(rgba32f, binding = 2) uniform image2D DE_input; 
+layout(rgba32f, binding = 3) uniform image2D color_HDR; //calculate final color
+
+
+//make all the local distance estimator spheres shared
+shared vec4 de_sph[group_size][group_size]; 
+
+
+struct ray
+{
+	vec3 pos;
+	vec3 dir;
+};		
+
+struct gl_camera
+{
+	vec3 position;
+	vec3 dirx;
+	vec3 diry;
+	vec3 dirz;
+	vec2 resolution;
+	float aspect_ratio;
+	float FOV;
+	float focus;
+	float bokeh;
+	float exposure;
+	float mblur;
+	float speckle;
+	float size;
+	int stepN;
+	int step;
+};
+
+
+ivec2 getGpos(int index)
+{
+	int y = index/group_size;
+	int x = index%group_size;
+	return ivec2(x,y);
+}
+
+uniform gl_camera Camera;
+float fovray;
+
+ray get_ray(vec2 screen_pos)
+{
+	vec2 shift = Camera.FOV*(2.f*screen_pos - 1.f)*vec2(Camera.aspect_ratio, 1.f);
+	ray cray;
+	cray.pos = Camera.position;
+	cray.dir = normalize(Camera.dirx*shift.x + Camera.diry*shift.y + Camera.dirz);
+	fovray = Camera.FOV/Camera.resolution.x; //pixel FOV
+	return cray;
+}
+
+#define COL col_scene
+#define DE de_scene
+
+uniform float iFracScale;
+uniform float iFracAng1;
+uniform float iFracAng2;
+uniform vec3 iFracShift;
+uniform vec3 iFracCol;
+uniform vec3 iMarblePos;
+uniform float iMarbleRad;
+uniform float iFlagScale;
+uniform vec3 iFlagPos;
+#define FRACTAL_ITER 16
+
+///Original MM distance estimators
+
+float s1 = sin(iFracAng1), c1 = cos(iFracAng1), s2 = sin(iFracAng2), c2 = cos(iFracAng2);
+
+//##########################################
+//   Space folding
+//##########################################
+void planeFold(inout vec4 z, vec3 n, float d) {
+	z.xyz -= 2.0 * min(0.0, dot(z.xyz, n) - d) * n;
+}
+void sierpinskiFold(inout vec4 z) {
+	z.xy -= min(z.x + z.y, 0.0);
+	z.xz -= min(z.x + z.z, 0.0);
+	z.yz -= min(z.y + z.z, 0.0);
+}
+void mengerFold(inout vec4 z) {
+	float a = min(z.x - z.y, 0.0);
+	z.x -= a;
+	z.y += a;
+	a = min(z.x - z.z, 0.0);
+	z.x -= a;
+	z.z += a;
+	a = min(z.y - z.z, 0.0);
+	z.y -= a;
+	z.z += a;
+}
+void boxFold(inout vec4 z, vec3 r) {
+	z.xyz = clamp(z.xyz, -r, r) * 2.0 - z.xyz;
+}
+void rotX(inout vec4 z, float s, float c) {
+	z.yz = vec2(c*z.y + s*z.z, c*z.z - s*z.y);
+}
+void rotY(inout vec4 z, float s, float c) {
+	z.xz = vec2(c*z.x - s*z.z, c*z.z + s*z.x);
+}
+void rotZ(inout vec4 z, float s, float c) {
+	z.xy = vec2(c*z.x + s*z.y, c*z.y - s*z.x);
+}
+void rotX(inout vec4 z, float a) {
+	rotX(z, sin(a), cos(a));
+}
+void rotY(inout vec4 z, float a) {
+	rotY(z, sin(a), cos(a));
+}
+void rotZ(inout vec4 z, float a) {
+	rotZ(z, sin(a), cos(a));
+}
+
+//##########################################
+//   Primitive DEs
+//##########################################
+float de_sphere(vec4 p, float r) {
+	return (length(p.xyz) - r) / p.w;
+}
+float de_box(vec4 p, vec3 s) {
+	vec3 a = abs(p.xyz) - s;
+	return (min(max(max(a.x, a.y), a.z), 0.0) + length(max(a, 0.0))) / p.w;
+}
+float de_tetrahedron(vec4 p, float r) {
+	float md = max(max(-p.x - p.y - p.z, p.x + p.y - p.z),
+				max(-p.x + p.y + p.z, p.x - p.y + p.z));
+	return (md - r) / (p.w * sqrt(3.0));
+}
+float de_capsule(vec4 p, float h, float r) {
+	p.y -= clamp(p.y, -h, h);
+	return (length(p.xyz) - r) / p.w;
+}
+
+//##########################################
+//   Main DEs
+//##########################################
+float de_fractal(vec4 p)
+{
+	for (int i = 0; i < FRACTAL_ITER; ++i) {
+		p.xyz = abs(p.xyz);
+		rotZ(p, s1, c1);
+		mengerFold(p);
+		rotX(p, s2, c2);
+		p *= iFracScale;
+		p.xyz += iFracShift;
+	}
+	return de_box(p, vec3(6.0));
+}
+
+vec4 col_fractal(vec4 p) 
+{
+	vec3 orbit = vec3(0.0);
+	for (int i = 0; i < FRACTAL_ITER; ++i) {
+		p.xyz = abs(p.xyz);
+		rotZ(p, s1, c1);
+		mengerFold(p);
+		rotX(p, s2, c2);
+		p *= iFracScale;
+		p.xyz += iFracShift;
+		orbit = max(orbit, p.xyz*iFracCol);
+	}
+	return vec4(orbit, de_box(p, vec3(6.0)));
+}
+
+float de_marble(vec4 p) 
+{
+	return de_sphere(p - vec4(iMarblePos, 0), iMarbleRad);
+}
+
+vec4 col_marble(vec4 p) 
+{
+	vec4 col = vec4(0, 0, 0, de_sphere(p - vec4(iMarblePos, 0), iMarbleRad));
+	return vec4(col.x, col.y, col.z, de_sphere(p - vec4(iMarblePos, 0), iMarbleRad));
+}
+
+float de_flag(vec4 p) 
+{
+	vec3 f_pos = iFlagPos + vec3(1.5, 4, 0)*iFlagScale;
+	float d = de_box(p - vec4(f_pos, 0), vec3(1.5, 0.8, 0.08)*iMarbleRad);
+	d = min(d, de_capsule(p - vec4(iFlagPos + vec3(0, iFlagScale*2.4, 0), 0), iMarbleRad*2.4, iMarbleRad*0.18));
+	return d;
+}
+
+vec4 col_flag(vec4 p) 
+{
+	vec3 f_pos = iFlagPos + vec3(1.5, 4, 0)*iFlagScale;
+	float d1 = de_box(p - vec4(f_pos, 0), vec3(1.5, 0.8, 0.08)*iMarbleRad);
+	float d2 = de_capsule(p - vec4(iFlagPos + vec3(0, iFlagScale*2.4, 0), 0), iMarbleRad*2.4, iMarbleRad*0.18);
+	if (d1 < d2) {
+		return vec4(1.0, 0.2, 0.1, d1);
+	} else {
+		return vec4(0.9, 0.9, 0.1, d2);
+	}
+}
+
+//float DE_count = 0;
+
+float de_scene(vec3 pos) 
+{
+	//DE_count = DE_count+1;
+	vec4 p = vec4(pos,1.f);
+	float d = de_fractal(p);
+	d = min(d, de_marble(p));
+	d = min(d, de_flag(p));
+	return d;
+}
+
+vec4 col_scene(vec3 pos) 
+{
+	//DE_count = DE_count+1;
+	vec4 p = vec4(pos,1.f);
+	vec4 col = col_fractal(p);
+	vec4 col_f = col_flag(p);
+	if (col_f.w < col.w) { col = col_f; }
+	vec4 col_m = col_marble(p);
+	if (col_m.w < col.w) {
+		return vec4(col_m.xyz, 1.0);
+	}
+	return vec4(col.xyz, 0.0);
+}
+
+//A faster formula to find the gradient/normal direction of the DE
+//credit to http://www.iquilezles.org/www/articles/normalsSDF/normalsSDF.htm
+vec4 calcNormal(vec3 p, float dx) {
+	const vec3 k = vec3(1,-1,0);
+	return   (k.xyyx*DE(p + k.xyy*dx) +
+			 k.yyxx*DE(p + k.yyx*dx) +
+			 k.yxyx*DE(p + k.yxy*dx) +
+			 k.xxxx*DE(p + k.xxx*dx))/vec4(4*dx,4*dx,4*dx,4);
+}
+
+
+#define MAX_DIST 50
+#define MIN_DIST 1e-6
+#define MAX_MARCHES 256
+#define NORMARCHES 2
+
+
+void ray_march(inout vec4 pos, inout vec4 dir, inout vec4 var, float fov, float d0) 
+{
+	//March the ray
+	for (; var.x < MAX_MARCHES; var.x += 1.0) {
+		//if the distance from the surface is less than the distance per pixel we stop
+		if(dir.w > MAX_DIST || pos.w<0)
+		{
+			break;
+		}
+		
+		if(pos.w < max(fov*dir.w, MIN_DIST) && var.x > 0 && var.w < 1)
+		{
+			break;
+		}
+		
+		dir.w += pos.w;
+		pos.xyz += pos.w*dir.xyz;
+		pos.w = DE(pos.xyz)-d0*dir.w;
+		var.w = 0;
+	}
+	
+	pos.w += d0*dir.w;
+}
+
+float shadow_march(in vec4 pos, in vec4 dir, float distance2light, float light_angle)
+{
+	float light_visibility=1;
+	for (int i = 0; i < MAX_MARCHES; i++) {
+		//if the distance from the surface is less than the distance per pixel we stop
+		if(dir.w > MAX_DIST || pos.w < max(fovray*dir.w, MIN_DIST))
+		{
+			return 0;
+		}
+		
+		if(dir.w >= distance2light)
+		{
+			break;
+		}
+		
+		dir.w += pos.w;
+		pos.xyz += pos.w*dir.xyz;
+		pos.w = DE(pos.xyz);
+		light_visibility = min(light_visibility, pos.w/(light_angle*dir.w));
+	}
+	return light_visibility;
+}
+
+float sphere_intersection(vec3 r, vec3 p, vec4 sphere)
+{
+	p = p - sphere.xyz;
+	if(p == vec3(0)) return sphere.w;
+	
+	float b = dot(p, r);
+	float c = sphere.w*sphere.w - dot(p,p);
+	float d = b*b + c;
+	
+	if((d <= 0) || (c <= 0)) //if no intersection
+	{
+		return 0;
+	}
+	else
+	{
+		return sqrt(d) - b; //use furthest solution in the direction of the ray
+	}
+}
+
+float find_furthest_intersection(vec3 r, vec3 p, ivec2 id)
+{
+	float d = 0;
+	ivec2 idR = min(id+1, group_size-1);
+	ivec2 idL = max(id-1, 0);
+	for(int i = idL.x; i <= idR.x; i++)
+	{
+		for(int j = idL.y; j <= idR.y; j++)
+		{
+			d = max(d, sphere_intersection(r,p,de_sph[i][j]));
+		}
+	}
+	return d;
+}
+
+
+float find_furthest_intersection_all(vec3 r, vec3 p, ivec2 id)
+{
+	float d = 0;
+	for(int i = 0; i < group_size; i++)
+	{
+		for(int j = 0; j < group_size; j++)
+		{
+			d = max(d, sphere_intersection(r,p,de_sph[i][j]));
+		}
+	}
+	return d;
+}
+
+void normarch(inout vec4 pos)
+{
+	//calculate the normal
+	vec4 norm = calcNormal(pos.xyz, pos.w/8); 
+	norm.xyz = normalize(norm.xyz);
+	pos.w = norm.w;
+	
+	//march in the direction of the normal
+	#pragma unroll
+	for(int i = 0; i < NORMARCHES; i++)
+	{
+		pos.xyz += pos.w*norm.xyz;
+		pos.w = DE(pos.xyz);
+	}
+}
+
+
+#define PI 3.14159265
+#define AMBIENT_MARCHES 12
+#define BACKGROUND_COLOR 6*vec4(1,1,1,1)
+
+uniform vec3 LIGHT_DIRECTION;
+uniform float PBR_METALLIC;
+uniform float PBR_ROUGHNESS;
+uniform vec3 LIGHT_COLOR;
+
+//better to use a sampler though
+vec4 interp(layout (rgba32f) image2D text, vec2 coord)
+{
+	//coord *= 0.99;
+	ivec2 ci = ivec2(coord);
+	vec2 d = coord - floor(coord);
+	return imageLoad(text, ci)*(1-d.x)*(1-d.y) +
+		   imageLoad(text, ci+ivec2(1,0))*d.x*(1-d.y) +
+		   imageLoad(text, ci+ivec2(0,1))*(1-d.x)*d.y +
+		   imageLoad(text, ci+ivec2(1))*d.x*d.y;
+}
+
+
+///PBR functions 
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+}  
+
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a      = roughness*roughness;
+    float a2     = a*a;
+    float NdotH  = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
+	
+    float num   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+	
+    return num / denom;
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float num   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+	
+    return num / denom;
+}
+
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+	
+    return ggx1 * ggx2;
+}
+///END PBR functions
+
+float ambient_occlusion(in vec4 pos, in vec4 norm)
+{
+	float dcoef = 0.01/iMarbleRad;
+	float occlusion_angle = 0;
+	float integral = 0;
+	float i_coef = 0;
+	
+	//march in the direction of the normal
+	#pragma unroll
+	for(int i = 0; i < AMBIENT_MARCHES; i++)
+	{
+		norm.w += pos.w;
+		pos.xyz += pos.w*norm.xyz;
+		pos.w = DE(pos.xyz);
+		i_coef = 1/(dcoef*norm.w+1);//importance
+		occlusion_angle += i_coef*pos.w/norm.w;
+		integral += i_coef;
+	}
+	
+	occlusion_angle /= integral; // average weighted by importance
+	
+	return pow(occlusion_angle,2);
+}
+
+vec4 shading(in vec4 pos, in vec4 dir, float fov, float shadow, float ao)
+{
+	//calculate the normal
+	float error = fov*dir.w;
+	vec4 norm = calcNormal(pos.xyz, MIN_DIST); 
+	norm.xyz = normalize(norm.xyz);
+
+	//optimize color sampling 
+	vec3 cpos = pos.xyz - norm.w*norm.xyz;
+	cpos = cpos - DE(cpos)*norm.xyz;
+//	cpos = cpos - DE(cpos)*norm.xyz;
+	vec3 albedo = COL(cpos).xyz;
+	
+	//square because its a surface
+	vec4 ambient_color = BACKGROUND_COLOR*ao;
+	
+	float metallic = PBR_METALLIC;
+	vec3 F0 = vec3(0.04); 
+	F0 = mix(F0, albedo, metallic);
+	
+	//reflectance equation
+	vec3 Lo = vec3(0.0);
+	vec3 V = -dir.xyz;
+	vec3 N = norm.xyz;
+	
+	{ //ambient occlusion contribution
+		float roughness = 0.4;
+		vec3 L = normalize(N);
+		vec3 H = normalize(V + L);
+		vec3 radiance = ambient_color.xyz;        
+		
+		// cook-torrance brdf
+		float NDF = DistributionGGX(N, H, roughness);        
+		float G   = GeometrySmith(N, V, L, roughness);      
+		vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
+		
+		vec3 kS = F;
+		vec3 kD = vec3(1.0) - kS;
+		kD *= 1.0 - metallic;	  
+		
+		vec3 numerator    = NDF * G * F;
+		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+		vec3 specular     = numerator / max(denominator, 0.001);  
+			
+		// add to outgoing radiance Lo
+		float NdotL = max(dot(N, L), 0.0);                
+		Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+	}
+	
+	{ //light contribution
+		float roughness = PBR_ROUGHNESS;
+		vec3 L = normalize(LIGHT_DIRECTION);
+		vec3 H = normalize(V + L);
+		vec3 radiance = LIGHT_COLOR*shadow;        
+		
+		// cook-torrance brdf
+		float NDF = DistributionGGX(N, H, roughness);        
+		float G   = GeometrySmith(N, V, L, roughness);      
+		vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
+		
+		vec3 kS = F;
+		vec3 kD = vec3(1.0) - kS;
+		kD *= 1.0 - metallic;	  
+		
+		vec3 numerator    = NDF * G * F;
+		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+		vec3 specular     = numerator / max(denominator, 0.001);  
+			
+		// add to outgoing radiance Lo
+		float NdotL = max(dot(N, L), 0.0);                
+		Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+	}
+	
+	return vec4(Lo,1);
+}
+
+
+vec4 HDRmapping(vec3 color, float exposure, float gamma)
+{
+	// Exposure tone mapping
+    vec3 mapped = vec3(1.0) - exp(-color * exposure);
+    // Gamma correction 
+    return vec4(pow(mapped, vec3(1.0 / gamma)),1);
+}
+
+
+///The second step of multi resolution ray marching
+
+void main() {
+	ivec2 global_pos = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 local_indx = ivec2(gl_LocalInvocationID.xy);
+	vec2 img_size = vec2(imageSize(color_output));
+	
+	vec4 sph = imageLoad(DE_input, global_pos);
+	vec4 illum = interp(illumination, vec2(global_pos)*0.5f);
+	
+	ray rr = get_ray(vec2(global_pos)/img_size);
+	vec4 pos = vec4(rr.pos,0);
+	vec4 dir = vec4(rr.dir,0);
+	vec4 var = vec4(0);
+	
+	float td = dot(dir.xyz, sph.xyz - pos.xyz);//traveled distance
+	
+	pos = sph;
+	dir.w += td; 
+	
+	vec4 color;
+	if(pos.w<2*td*fovray)
+	{
+		color = shading(pos, dir, fovray, illum.x, illum.y);
+	}
+	else
+	{
+		color = BACKGROUND_COLOR;
+	}
+	
+	vec4 prev_color = imageLoad(color_HDR_output, global_pos);
+	
+	color = prev_color*0.15 + 0.85*color; //a bit of blur
+	
+	imageStore(color_HDR, global_pos, color);	 
+	imageStore(color_output, global_pos, HDRmapping(color.xyz, Camera.exposure, 2.2));	  	
+}
+
+ERROR: 0:566: 'color_HDR_output' : undeclared identifier 
+ERROR: 0:567: 'imageLoad' : no matching overloaded function found (using implicit conversion) 
+ERROR: 0:566: '=' :  cannot convert from 'const highp float' to '4-component vector of highp float'
+

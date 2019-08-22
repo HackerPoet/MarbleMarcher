@@ -165,7 +165,7 @@ vec4 col_scene(vec3 pos)
 	if (col_m.w < col.w) {
 		return vec4(col_m.xyz, 1.0);
 	}
-	return vec4(col.xyz, 0.0);
+	return vec4(min(col.xyz,1), 0.0);
 }
 
 //A faster formula to find the gradient/normal direction of the DE

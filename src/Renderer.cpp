@@ -9,7 +9,7 @@ Renderer::Renderer()
 {
 }
 
-void Renderer::Initialize(int w, int h, std::string config_file)
+void Renderer::Initialize(int w, int h, std::string config_f)
 {
 	main_textures.clear();
 	shader_textures.clear();
@@ -21,7 +21,7 @@ void Renderer::Initialize(int w, int h, std::string config_file)
 	camera.SetAspectRatio((float)w / (float)h);
 
 	ExprParser parser;
-
+	config_file = config_f;
 	std::string compute_folder = fs::path(config_file).parent_path().generic_string();
 
 	std::ifstream config(config_file);
@@ -92,6 +92,7 @@ void Renderer::ReInitialize(int w, int h)
 {
 	shader_textures.clear();
 	global_size.clear();
+	main_textures.clear();
 
 	width = w;
 	height = h;
@@ -183,11 +184,6 @@ void Renderer::Render()
 	{
 		int tex_id = 0;
 
-		for (int j = 0; j < main_textures.size(); j++)
-		{
-			glBindImageTexture(tex_id++, main_textures[j], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-		}
-
 		//bind textures from the previous step
 		if (i != 0)
 		{
@@ -201,6 +197,12 @@ void Renderer::Render()
 		for (int j = 0; j < shader_textures[i].size(); j++)
 		{
 			glBindImageTexture(tex_id++, shader_textures[i][j], 0, GL_FALSE, 0, GL_READ_WRITE, (i == stages-1)?GL_RGBA8:GL_RGBA32F);
+		}
+
+
+		for (int j = 0; j < main_textures.size(); j++)
+		{
+			glBindImageTexture(tex_id++, main_textures[j], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 		}
 		
 		shader_pipeline[i].setCamera(camera.GetGLdata());

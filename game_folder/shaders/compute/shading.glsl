@@ -1,8 +1,13 @@
 #include<ray_marching.glsl>
 
 #define PI 3.14159265
-#define AMBIENT_MARCHES 5
-#define BACKGROUND_COLOR 6*vec4(1,1,1,1)
+#define AMBIENT_MARCHES 8
+#define BACKGROUND_COLOR 2*vec4(1,1,1,1)
+
+uniform vec3 LIGHT_DIRECTION;
+uniform float PBR_METALLIC;
+uniform float PBR_ROUGHNESS;
+uniform vec3 LIGHT_COLOR;
 
 //better to use a sampler though
 vec4 interp(layout (rgba32f) image2D text, vec2 coord)
@@ -59,22 +64,9 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 }
 ///END PBR functions
 
-vec4 shading(in vec4 pos, in vec4 dir, float fov)
+float ambient_occlusion(in vec4 pos, in vec4 norm)
 {
-	//calculate the normal
-	float error = fov*dir.w;
-	vec4 norm = calcNormal(pos.xyz, MIN_DIST); 
-	norm.xyz = normalize(norm.xyz);
-	pos.w = iMarbleRad/2 + error;
-	
-	float dcoef = 0.01/iMarbleRad;
-
-	//optimize color sampling 
-	vec3 cpos = pos.xyz - norm.w*norm.xyz;
-	cpos = cpos - DE(cpos)*norm.xyz;
-//	cpos = cpos - DE(cpos)*norm.xyz;
-	vec3 albedo = COL(cpos).xyz;
-	
+	float dcoef = 0.005/iMarbleRad;
 	float occlusion_angle = 0;
 	float integral = 0;
 	float i_coef = 0;
@@ -93,10 +85,26 @@ vec4 shading(in vec4 pos, in vec4 dir, float fov)
 	
 	occlusion_angle /= integral; // average weighted by importance
 	
-	//square because its a surface
-	vec4 ambient_color = BACKGROUND_COLOR*pow(occlusion_angle,2);
+	return pow(occlusion_angle,2);
+}
+
+vec4 shading(in vec4 pos, in vec4 dir, float fov, float shadow)
+{
+	//calculate the normal
+	float error = fov*dir.w;
+	vec4 norm = calcNormal(pos.xyz, error/2); 
+	norm.xyz = normalize(norm.xyz);
+
+	//optimize color sampling 
+	vec3 cpos = pos.xyz - norm.w*norm.xyz;
+	cpos = cpos - DE(cpos)*norm.xyz;
+//	cpos = cpos - DE(cpos)*norm.xyz;
+	vec3 albedo = COL(cpos).xyz;
 	
-	float metallic = 0.2;
+	//square because its a surface
+	vec4 ambient_color = BACKGROUND_COLOR*ambient_occlusion(pos, norm);
+	
+	float metallic = PBR_METALLIC;
 	vec3 F0 = vec3(0.04); 
 	F0 = mix(F0, albedo, metallic);
 	
@@ -106,10 +114,34 @@ vec4 shading(in vec4 pos, in vec4 dir, float fov)
 	vec3 N = norm.xyz;
 	
 	{ //ambient occlusion contribution
-		float roughness = 0.4;
+		float roughness = 0.6;
 		vec3 L = normalize(N);
 		vec3 H = normalize(V + L);
 		vec3 radiance = ambient_color.xyz;        
+		
+		// cook-torrance brdf
+		float NDF = DistributionGGX(N, H, roughness);        
+		float G   = GeometrySmith(N, V, L, roughness);      
+		vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
+		
+		vec3 kS = F;
+		vec3 kD = vec3(1.0) - kS;
+		kD *= 1.0 - metallic;	  
+		
+		vec3 numerator    = NDF * G * F;
+		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+		vec3 specular     = numerator / max(denominator, 0.001);  
+			
+		// add to outgoing radiance Lo
+		float NdotL = max(dot(N, L), 0.0);                
+		Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+	}
+	
+	{ //light contribution
+		float roughness = PBR_ROUGHNESS;
+		vec3 L = normalize(LIGHT_DIRECTION);
+		vec3 H = normalize(V + L);
+		vec3 radiance = 10*LIGHT_COLOR*shadow;        
 		
 		// cook-torrance brdf
 		float NDF = DistributionGGX(N, H, roughness);        

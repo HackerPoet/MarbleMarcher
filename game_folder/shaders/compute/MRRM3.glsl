@@ -9,8 +9,6 @@ layout(rgba32f, binding = 0) uniform image2D DE_input;
 layout(rgba32f, binding = 1) uniform image2D DE2_input;
 layout(rgba32f, binding = 2) uniform image2D var_input; 
 layout(rgba32f, binding = 3) uniform image2D DE_output; //calculate final DE spheres
-layout(rgba32f, binding = 4) uniform image2D DE2_output;
-layout(rgba32f, binding = 5) uniform image2D var_output; 
 
 //make all the local distance estimator spheres shared
 shared vec4 de_sph[group_size][group_size]; 
@@ -66,7 +64,5 @@ void main() {
 	ray_march(pos, dir, var, fovray, 0);
 	
 	//save the DE spheres
-	imageStore(DE_output, global_pos, pos);	 
-	imageStore(DE2_output, global_pos, vec4(0));	 
-	imageStore(var_output, global_pos, var);				
+	imageStore(DE_output, global_pos, pos);	 	
 }
