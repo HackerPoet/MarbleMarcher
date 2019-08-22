@@ -2,8 +2,9 @@
 
 #define PI 3.14159265
 #define AMBIENT_MARCHES 8
-#define BACKGROUND_COLOR 2*vec4(1,1,1,1)
+#define AMBIENT_COLOR 2*vec4(1,1,1,1)
 
+uniform vec3 BACKGROUND_COLOR;
 uniform vec3 LIGHT_DIRECTION;
 uniform float PBR_METALLIC;
 uniform float PBR_ROUGHNESS;
@@ -66,26 +67,34 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 
 float ambient_occlusion(in vec4 pos, in vec4 norm)
 {
-	float dcoef = 0.005/iMarbleRad;
-	float occlusion_angle = 0;
-	float integral = 0;
-	float i_coef = 0;
-	
-	//march in the direction of the normal
-	#pragma unroll
-	for(int i = 0; i < AMBIENT_MARCHES; i++)
+	if(pos.w > 0)
 	{
-		norm.w += pos.w;
-		pos.xyz += pos.w*norm.xyz;
-		pos.w = DE(pos.xyz);
-		i_coef = 1/(dcoef*norm.w+1);//importance
-		occlusion_angle += i_coef*pos.w/norm.w;
-		integral += i_coef;
+		pos.w = iMarbleRad/2; 
+		float dcoef = 0.005/iMarbleRad;
+		float occlusion_angle = 0;
+		float integral = 0;
+		float i_coef = 0;
+		
+		//march in the direction of the normal
+		#pragma unroll
+		for(int i = 0; i < AMBIENT_MARCHES; i++)
+		{
+			norm.w += pos.w;
+			pos.xyz += pos.w*norm.xyz;
+			pos.w = DE(pos.xyz);
+			i_coef = 1/(dcoef*norm.w+1);//importance
+			occlusion_angle += i_coef*pos.w/norm.w;
+			integral += i_coef;
+		}
+		
+		occlusion_angle /= integral; // average weighted by importance
+		
+		return pow(occlusion_angle,2);
 	}
-	
-	occlusion_angle /= integral; // average weighted by importance
-	
-	return pow(occlusion_angle,2);
+	else
+	{
+		return 1; 
+	}
 }
 
 vec4 shading(in vec4 pos, in vec4 dir, float fov, float shadow)
@@ -100,9 +109,11 @@ vec4 shading(in vec4 pos, in vec4 dir, float fov, float shadow)
 	cpos = cpos - DE(cpos)*norm.xyz;
 //	cpos = cpos - DE(cpos)*norm.xyz;
 	vec3 albedo = COL(cpos).xyz;
+	albedo *= albedo;
 	
 	//square because its a surface
-	vec4 ambient_color = BACKGROUND_COLOR*ambient_occlusion(pos, norm);
+	float ao = ambient_occlusion(pos, norm);
+	vec4 ambient_color = vec4(BACKGROUND_COLOR,1)*ao;
 	
 	float metallic = PBR_METALLIC;
 	vec3 F0 = vec3(0.04); 
@@ -141,7 +152,31 @@ vec4 shading(in vec4 pos, in vec4 dir, float fov, float shadow)
 		float roughness = PBR_ROUGHNESS;
 		vec3 L = normalize(LIGHT_DIRECTION);
 		vec3 H = normalize(V + L);
-		vec3 radiance = 10*LIGHT_COLOR*shadow;        
+		vec3 radiance = 10*LIGHT_COLOR*shadow*(0.6+0.4*ao);        
+		
+		// cook-torrance brdf
+		float NDF = DistributionGGX(N, H, roughness);        
+		float G   = GeometrySmith(N, V, L, roughness);      
+		vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
+		
+		vec3 kS = F;
+		vec3 kD = vec3(1.0) - kS;
+		kD *= 1.0 - metallic;	  
+		
+		vec3 numerator    = NDF * G * F;
+		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+		vec3 specular     = numerator / max(denominator, 0.001);  
+			
+		// add to outgoing radiance Lo
+		float NdotL = max(dot(N, L), 0.0);                
+		Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+	}
+	
+	{ //light reflection, GI imitation
+		float roughness = 0.6;
+		vec3 L = normalize(-LIGHT_DIRECTION);
+		vec3 H = normalize(V + L);
+		vec3 radiance = 6*LIGHT_COLOR*ao*(1-ao);        
 		
 		// cook-torrance brdf
 		float NDF = DistributionGGX(N, H, roughness);        

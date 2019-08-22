@@ -47,7 +47,7 @@ void main() {
 		norm.xyz = normalize(norm.xyz);
 		pos.xyz += norm.xyz* 10*td*fovray;
 		illum.x = shadow_march(pos, normalize(vec4(LIGHT_DIRECTION,0)), MAX_DIST, 0.08);
-		pos.w = iMarbleRad/2;
+		
 		//illum.y = ambient_occlusion(pos, norm);
 	}
 	

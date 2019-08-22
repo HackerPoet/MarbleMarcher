@@ -31,7 +31,7 @@ void main() {
 	ivec2 prev_pos = min(ivec2((vec2(global_pos)/MRRM_step_scale) + 0.5),ivec2(pimg_size)-1);
 	//initialize the ray
 	vec4 sph = imageLoad(DE_input, prev_pos);
-	vec4 sph_norm = imageLoad(DE2_input, prev_pos);
+	//vec4 sph_norm = imageLoad(DE2_input, prev_pos);
 	
 	#if(RBM1)
 		de_sph[local_indx.x][local_indx.y] = sph;
@@ -55,13 +55,13 @@ void main() {
 		float d = find_furthest_intersection(dir.xyz, pos.xyz, local_indx);
 	#else
 		float d = sphere_intersection(dir.xyz, pos.xyz, sph);
-		d = max(d, sphere_intersection(dir.xyz, pos.xyz, sph_norm));
+		//d = max(d, sphere_intersection(dir.xyz, pos.xyz, sph_norm));
 	#endif
 	
 	pos.w = d;
 	var.w = 1;
 	
-	fovray = 1*Camera.FOV/img_size.x;
+	fovray = 1.2*Camera.FOV/img_size.x;
 	
 	ray_march(pos, dir, var, fovray, fovray);
 	

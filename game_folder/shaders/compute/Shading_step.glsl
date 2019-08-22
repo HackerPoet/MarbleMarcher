@@ -16,6 +16,8 @@ shared vec4 de_sph[group_size][group_size];
 #include<camera.glsl>
 #include<shading.glsl>
 
+#define VIGNETTE_STRENGTH 0.2
+
 ///The second step of multi resolution ray marching
 
 void main() {
@@ -43,13 +45,13 @@ void main() {
 	}
 	else
 	{
-		color = BACKGROUND_COLOR;
+		color = vec4(BACKGROUND_COLOR*BACKGROUND_COLOR*BACKGROUND_COLOR,0);
 	}
 	
 	vec4 prev_color = imageLoad(color_HDR, global_pos);
 	
-	color = prev_color*0.05 + 0.95*color; //a bit of blur
-	
+	color = prev_color*Camera.mblur + (1-Camera.mblur)*color; //a bit of blur
+	float vignette = 1.0 - VIGNETTE_STRENGTH * length(vec2(global_pos)/img_size - 0.5);
 	imageStore(color_HDR, global_pos, color);	 
-	imageStore(color_output, global_pos, HDRmapping(color.xyz, Camera.exposure, 2.2));	  	
+	imageStore(color_output, global_pos, HDRmapping(color.xyz, Camera.exposure, 2.2)*vignette);	  	
 }

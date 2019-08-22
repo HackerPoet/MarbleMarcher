@@ -2,8 +2,8 @@
 
 #define MAX_DIST 50
 #define MIN_DIST 1e-6
-#define MAX_MARCHES 256
-#define NORMARCHES 2
+#define MAX_MARCHES 512
+#define NORMARCHES 1
 
 
 void ray_march(inout vec4 pos, inout vec4 dir, inout vec4 var, float fov, float d0) 
