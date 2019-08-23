@@ -41,6 +41,7 @@ ray get_ray(vec2 screen_pos)
 	ray cray;
 	cray.pos = Camera.position + Camera.size*(Camera.dirx*shift.x + Camera.diry*shift.y);
 	cray.dir = normalize(Camera.dirx*shift.x + Camera.diry*shift.y + Camera.dirz);
-	fovray = Camera.FOV/Camera.resolution.x; //pixel FOV
+	float aspect_ratio_ratio = Camera.aspect_ratio/(Camera.resolution.x/Camera.resolution.y);
+	fovray = 1.41*Camera.FOV*max(1.f/aspect_ratio_ratio, aspect_ratio_ratio)/Camera.resolution.x; //pixel FOV
 	return cray;
 }

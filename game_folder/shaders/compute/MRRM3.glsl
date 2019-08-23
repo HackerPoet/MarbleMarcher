@@ -59,8 +59,6 @@ void main() {
 	pos.w = d;
 	var.w = 1;
 	
-	fovray = 1*Camera.FOV/img_size.x;
-	
 	ray_march(pos, dir, var, fovray, 0);
 	
 	//save the DE spheres

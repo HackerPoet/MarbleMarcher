@@ -105,7 +105,7 @@ vec4 shading(in vec4 pos, in vec4 dir, float fov, float shadow)
 	//optimize color sampling 
 	vec3 cpos = pos.xyz - norm.w*norm.xyz;
 	cpos = cpos - DE(cpos)*norm.xyz;
-//	cpos = cpos - DE(cpos)*norm.xyz;
+	cpos = cpos - DE(cpos)*norm.xyz;
 	vec3 albedo = COL(cpos).xyz;
 	albedo *= albedo;
 	

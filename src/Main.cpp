@@ -285,6 +285,7 @@ int main(int argc, char *argv[]) {
 			io_state.window_size = sf::Vector2f(window.getSize().x, window.getSize().y);
 			UpdateAspectRatio(window.getSize().x, window.getSize().y);
 			scene.SetWindowResolution(window.getSize().x, window.getSize().y);
+			rend.camera.SetAspectRatio((float)window.getSize().x / (float)window.getSize().y);
 		}
 
 		// If event has not been handled by AntTweakBar, process it
