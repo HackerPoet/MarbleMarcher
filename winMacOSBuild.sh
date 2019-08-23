@@ -3,12 +3,14 @@
 mkdir -p winBuild
 cp  src/* winBuild/
 cd winBuild
-wget -nc http://bitbucket.org/eigen/eigen/get/3.3.7.zip
+wget -nc https://bitbucket.org/eigen/eigen/get/3.3.7.zip
 wget -nc https://www.sfml-dev.org/files/SFML-2.5.1-windows-gcc-7.3.0-mingw-64-bit.zip
+wget -nc https://astuteinternet.dl.sourceforge.net/project/anttweakbar/AntTweakBar_116.zip
 unzip -u -o 3.3.7.zip
 unzip -u -o SFML-2.5.1-windows-gcc-7.3.0-mingw-64-bit.zip
+unzip -u -o AntTweakBar_116.zip
 git clone https://github.com/SFML/SFML.git
-export CPATH=`pwd`/eigen-eigen-323c052e1731/:`pwd`/SFML-2.5.1/include:`pwd`/SFML/exttlibs/headers
+export CPATH=`pwd`/eigen-eigen-323c052e1731/:`pwd`/SFML-2.5.1/include:`pwd`/SFML/exttlibs/headers:`pwd`/AntTweakBar/lib:`pwd`/AntTweakBar/include
 
 x86_64-w64-mingw32-g++ -Ofast -c Level.cpp -D SFML_STATIC
 x86_64-w64-mingw32-g++ -Ofast -c Level.h -D SFML_STATIC
@@ -39,7 +41,7 @@ x86_64-w64-mingw32-ar rvs MarbleMarcherSources.a Settings.h.gch
 
 x86_64-w64-mingw32-g++ -Ofast -pipe -o MarbleMarcher Main.cpp -D SFML_STATIC -D SFML_USE_STATIC_LIBS=true \
 -static -static-libgcc -static-libstdc++ MarbleMarcherSources.a -L `pwd`/SFML/extlibs/libs-mingw/x64 -L \
-`pwd`/SFML-2.5.1/lib -lsfml-window-s -lsfml-graphics-s -lsfml-audio-s -lsfml-system-s -lopengl32 -lfreetype \
+`pwd`/SFML-2.5.1/lib -L `pwd`/AntTweakBar/lib/AntTweakBar.dll -lsfml-window-s -lsfml-graphics-s -lsfml-audio-s -lsfml-system-s -lopengl32 -lfreetype \
 -lwinmm -lgdi32 -lopenal32 -lvorbisfile -lvorbisenc -lvorbis -lflac -logg
 
 cd ..
