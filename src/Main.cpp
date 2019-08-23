@@ -381,6 +381,7 @@ int main(int argc, char *argv[]) {
 
 					scene.SetResolution(shader, window_res.x, window_res.y);
 					rend.ReInitialize(window_res.x, window_res.y);
+					rend.camera.SetAspectRatio((float)window.getSize().x / (float)window.getSize().y);
 					scene.Write(shader);
 			    } else if (keycode == sf::Keyboard::F4) {
 					overlays.TWBAR_ENABLED = !overlays.TWBAR_ENABLED;
