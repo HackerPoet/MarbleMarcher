@@ -41,6 +41,11 @@ Alternatively, [vcpkg](https://github.com/Microsoft/vcpkg) can be used:
 Alternatively, one can use the platform-dependent build system, for example `Make`:
 
 * `make -C build`
+### Nix (flakes)
+With nix and flakes enabled:
+* To build `nix build .`
+* To build and run `nix run .`
+
 ### Arch Linux
 * `cd ~`
 * `git clone https://github.com/HackerPoet/MarbleMarcher.git`
